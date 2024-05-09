@@ -1,0 +1,10 @@
+COND
+DOCKERHUB
+gpgsign
+Sarif
+SARIF
+sarif
+Semgrep
+SEMGREP
+semgrep
+signingkey

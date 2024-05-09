@@ -1,0 +1,38 @@
+{
+  "search.useIgnoreFiles": true,
+  "search.exclude": {
+    "_site": true,
+    "report": true,
+    "bin": true,
+    "out": true,
+    "logs": true,
+    "backup": true,
+    "megalinter-reports": true,
+    "vendor": true
+  },
+  "explorer.autoReveal": false,
+  "files.exclude": {
+    "**/.git": true,
+    "out": true,
+    "bin": true
+  },
+  "markdown.extension.toc.omittedFromToc": {
+    "*.md": ["# %%"]
+  },
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.indentSize": "tabSize",
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "workbench.editorAssociations": {
+    "*.md": "default"
+  },
+  "markdown.extension.toc.levels": "2..6",
+  "plantuml.server": "http://localhost:8080/",
+  "shellcheck.customArgs": ["--source-path=SCRIPTDIR", "--external-sources"],
+  "shellcheck.ignorePatterns": {
+    "**/*.tpl": true
+  },
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": ["--fast"]
+}

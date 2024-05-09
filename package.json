@@ -1,0 +1,7 @@
+{
+  "cspell": "cspell.yaml",
+  "devDependencies": {
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-json": "^3.1.0"
+  }
+}

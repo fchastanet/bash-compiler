@@ -1,0 +1,17 @@
+Aftertabs
+cpes
+crashlytics
+distro
+dylib
+ecma
+gitleaks
+gitmodules
+golangci
+GRYPE
+logrus
+sbom
+shellcheckrc
+tabwidth
+tagname
+unindexed
+UNINDEXED

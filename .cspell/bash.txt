@@ -1,0 +1,5 @@
+buildx
+coverprofile
+golangci
+ldflags
+pipefail
