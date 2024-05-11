@@ -12,6 +12,7 @@ goprintffuncname
 gosec
 gostub
 gotestfmt
+gtpl
 isatty
 ldflags
 maxprocs

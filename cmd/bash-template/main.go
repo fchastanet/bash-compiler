@@ -7,6 +7,7 @@ import (
 	"os"
 
 	myTemplate "github.com/fchastanet/bash-compiler/internal/template"
+	"github.com/fchastanet/bash-compiler/internal/template/functions"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/template/functions"
 )
 
@@ -41,11 +42,9 @@ func main() {
 		panic(err)
 	}
 
-	templateData := TemplateData{
-		Name: "Example",
-	}
-
-	str, err = templateContext.Render(templateContext.Name, templateData)
+	templateContext.Data = functions.FromYAMLFile("templates-examples/shellcheckLint.yaml")
+	templateContext.RootData = templateContext.Data
+	str, err = templateContext.Render(templateContext.Name)
 	if err != nil {
 		panic(err)
 	}

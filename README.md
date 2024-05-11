@@ -83,8 +83,7 @@ type Context struct {
   whole RootData)
 
 Then each filter has to be called with the right context. The special filter
-`include` allows to include a sub template overriding context Data. It allows
-also in some cases to override RootData.
+`include` allows to include a sub template overriding context Data.
 
 Template filter functions: my current template filter functions are inspired by
 [Sprig](https://github.com/Masterminds/sprig)

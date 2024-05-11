@@ -3,6 +3,7 @@ command:
   functionName: "shellcheckLintCommand"
   version: "1.0"
   help: Lint bash files using shellcheck.
+  helpType: string
   longDescription: |
     shellcheck wrapper that will:
     - install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically
@@ -65,5 +66,6 @@ command:
         files to validate with shellcheck (if not provided,
         all files from git repository which are beginning
         with a bash shebang, unless --staged option is provided
+      helpType: string
       alts:
         - "--xargs"
