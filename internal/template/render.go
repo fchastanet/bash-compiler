@@ -2,7 +2,7 @@ package template
 
 import (
 	"bytes"
-	"fmt"
+	"log/slog"
 	"path"
 	"path/filepath"
 	"text/template"
@@ -10,34 +10,43 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/files"
 )
 
-var TemplateDir string
+type Context struct {
+	Template *template.Template
+	Name     string
+	RootData any
+	Data     any
+}
 
-func Render(
-	templateDir string,
-	templateFile string,
-	templateData any,
-	funcMap template.FuncMap) (string, error) {
-	TemplateDir = templateDir // TODO find another to store this
-
+func NewTemplate(templateDir string, templateFile string,
+	funcMap template.FuncMap) (templateContext *Context, err error) {
 	files, err := files.MatchPatterns(
 		filepath.Join(templateDir, "**/*.tpl"),
 		filepath.Join(templateDir, "**.tpl"),
 	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	fmt.Println(files)
-
 	name := path.Base(templateFile)
-	myTemplate := template.New(name).
-		Funcs(funcMap)
+	slog.Info("Loaded template", name, files)
+
+	myTemplate := template.New(name).Funcs(funcMap)
 	_, err = myTemplate.ParseFiles(files...)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// TODO render should only do this part, myTemplate should be stored somewhere
+	templateContext = &Context{myTemplate, name, nil, nil}
+
+	return templateContext, nil
+}
+
+func (templateContext Context) Render(template string, data any) (string, error) {
 	var tplWriter bytes.Buffer
-	err = myTemplate.ExecuteTemplate(&tplWriter, name, templateData)
+	templateContext.Data = data
+	if templateContext.RootData == nil {
+		templateContext.RootData = data
+	}
+	slog.Debug("Render template", slog.String("template", template))
+	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, templateContext)
 	return tplWriter.String(), err
 }

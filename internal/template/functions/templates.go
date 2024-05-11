@@ -10,18 +10,22 @@ import (
 // include allows to include a template
 // allowing to use filter
 // Eg: {{ include "template.tpl" | indent 4 }}
-func include(template string, templateData any) string {
+func include(
+	template string, templateData any,
+	templateContext myTemplate.Context, overrideRootData bool) string {
 	var output string
-	output, _ = mustInclude(template, templateData)
+	output, _ = mustInclude(template, templateData, templateContext, overrideRootData)
 	return output
 }
 
-func mustInclude(template string, templateData any) (string, error) {
+func mustInclude(template string, templateData any,
+	templateContext myTemplate.Context, overrideRootData bool) (string, error) {
 	var output string
 	var err error
-
-	output, err = myTemplate.Render(
-		myTemplate.TemplateDir, template, templateData, FuncMap())
+	if overrideRootData {
+		templateContext.RootData = templateData
+	}
+	output, err = templateContext.Render(template, templateData)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

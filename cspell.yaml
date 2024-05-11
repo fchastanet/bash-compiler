@@ -106,6 +106,7 @@ languageSettings:
       - markdown
       - bash
       - myBash
+      - go
       - mySoftwares
       - softwareTerms
       - software
