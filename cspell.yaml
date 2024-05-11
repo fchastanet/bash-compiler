@@ -104,6 +104,8 @@ languageSettings:
     locale: "*"
     dictionaries:
       - markdown
+      - bash
+      - myBash
       - mySoftwares
       - softwareTerms
       - software
@@ -131,7 +133,9 @@ overrides:
       - "**/Dockerfile"
     languageId: dockerFiles
 
-  - filename: ".github/**/*.yml"
+  - filename:
+      - ".github/**/*.yml"
+      - "templates-examples/**"
     languageId: githubWorkflow
 
   - filename: "**/*.puml"
@@ -155,6 +159,7 @@ overrides:
   - filename:
       - "**/*.go"
       - "go.sum"
+      - "go.mod"
     languageId: go
 
   - filename:
