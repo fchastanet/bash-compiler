@@ -12,20 +12,19 @@ import (
 // Eg: {{ include "template.tpl" | indent 4 }}
 func include(
 	template string, templateData any,
-	templateContext myTemplate.Context, overrideRootData bool) string {
+	templateContext myTemplate.Context) string {
 	var output string
-	output, _ = mustInclude(template, templateData, templateContext, overrideRootData)
+	output, _ = mustInclude(template, templateData, templateContext)
 	return output
 }
 
 func mustInclude(template string, templateData any,
-	templateContext myTemplate.Context, overrideRootData bool) (string, error) {
+	templateContext myTemplate.Context) (string, error) {
 	var output string
 	var err error
-	if overrideRootData {
-		templateContext.RootData = templateData
-	}
-	output, err = templateContext.Render(template, templateData)
+
+	templateContext.Data = templateData
+	output, err = templateContext.Render(template)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

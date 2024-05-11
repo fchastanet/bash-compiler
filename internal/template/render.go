@@ -20,8 +20,8 @@ type Context struct {
 func NewTemplate(templateDir string, templateFile string,
 	funcMap template.FuncMap) (templateContext *Context, err error) {
 	files, err := files.MatchPatterns(
-		filepath.Join(templateDir, "**/*.tpl"),
-		filepath.Join(templateDir, "**.tpl"),
+		filepath.Join(templateDir, "**/*.gtpl"),
+		filepath.Join(templateDir, "**.gtpl"),
 	)
 	if err != nil {
 		return nil, err
@@ -40,12 +40,8 @@ func NewTemplate(templateDir string, templateFile string,
 	return templateContext, nil
 }
 
-func (templateContext Context) Render(template string, data any) (string, error) {
+func (templateContext Context) Render(template string) (string, error) {
 	var tplWriter bytes.Buffer
-	templateContext.Data = data
-	if templateContext.RootData == nil {
-		templateContext.RootData = data
-	}
 	slog.Debug("Render template", slog.String("template", template))
 	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, templateContext)
 	return tplWriter.String(), err

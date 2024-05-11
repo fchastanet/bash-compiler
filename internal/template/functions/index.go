@@ -9,9 +9,7 @@ func FuncMap() map[string]interface{} {
 		"indent":  indent,
 		"nindent": nindent,
 		// YAML functions
-		"fromYAMLFile": fromYAMLFile,
-		"fromYAML":     fromYAML,
-		"mustFromYAML": mustFromYAML,
+		"fromYAMLFile": FromYAMLFile,
 	}
 	return funcMap
 }

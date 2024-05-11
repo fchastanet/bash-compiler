@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "jinliming2.vscode-go-template",
+    "golang.go",
+    "premparihar.gotestexplorer",
+    "yzhang.markdown-all-in-one",
+    "jebbs.plantuml",
+    "timonwong.shellcheck"
+  ]
+}

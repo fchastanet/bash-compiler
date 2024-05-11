@@ -26,6 +26,8 @@ compile <fileToCompile>
     - `IMPLEMENT` directive
     - `REQUIRE` directive
     - `FEATURE` directive
+  - we need to evaluate templates twice because imported functions could have
+    for example IncludeFile instructions
   - generate mapping function name/file path
   - parse files
     - https://github.com/u-root/u-root
