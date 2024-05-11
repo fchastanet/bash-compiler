@@ -7,4 +7,5 @@ sarif
 Semgrep
 SEMGREP
 semgrep
+shellcheckrc
 signingkey

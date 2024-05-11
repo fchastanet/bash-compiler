@@ -12,11 +12,13 @@ goprintffuncname
 gosec
 gostub
 gotestfmt
+isatty
 ldflags
 maxprocs
 nakedret
 nestif
 nilerr
+nindent
 noctx
 nolint
 nolintlint
@@ -25,3 +27,4 @@ promlint
 runtimes
 unconvert
 unparam
+xerrors

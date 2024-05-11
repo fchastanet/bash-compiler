@@ -1,5 +1,8 @@
 buildx
 coverprofile
+exitcode
 golangci
 ldflags
+noargs
 pipefail
+posix
