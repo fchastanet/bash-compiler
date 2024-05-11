@@ -25,6 +25,7 @@ nolintlint
 prealloc
 promlint
 runtimes
+struct
 unconvert
 unparam
 xerrors
