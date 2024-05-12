@@ -28,9 +28,11 @@ command:
     -
       variableName: optionFormat
       functionName: optionFormatFunction
-      variableType: String
+      
       help: |
         define output format of this command
+      variableType: String
+      
       alts:
         - --format
         - -f      
@@ -60,10 +62,12 @@ command:
     -
       variableName: optionStaged
       functionName: optionStagedFunction
-      variableType: Boolean
+      
       help: |
         lint only staged git files(files added to file list to be committed)
         and which are beginning with a bash shebang.
+      variableType: Boolean
+      
       alts:
         - --staged      
       onValue: 1
@@ -74,9 +78,11 @@ command:
     -
       variableName: optionXargs
       functionName: optionXargsFunction
-      variableType: Boolean
+      
       help: |
         uses parallelization(using xargs command) only if tty format
+      variableType: Boolean
+      
       alts:
         - --xargs      
       onValue: 1
@@ -89,9 +95,21 @@ command:
     -
       variableName: argShellcheckFiles
       functionName: argShellcheckFilesFunction
-      variableType: Boolean
+      callbacks:
+        - argShellcheckFilesCallback
+      
       help: |
         files to validate with shellcheck (if not provided,
         all files from git repository which are beginning
         with a bash shebang, unless --staged option is provided
+      variableType: StringArray
+      helpValueName: argShellcheckFiles
+      
+      name: shellcheckFiles
+      
+      
+      
+      min: 1
+      max: -1
+    
   
