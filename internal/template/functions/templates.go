@@ -13,14 +13,14 @@ import (
 // Eg: {{ include "template.tpl" | indent 4 }}
 func include(
 	template string, templateData any,
-	templateContext *render.Context) string {
+	templateContext render.Context) string {
 	var output string
 	output, _ = mustInclude(template, templateData, templateContext)
 	return output
 }
 
 func mustInclude(templateName string, templateData any,
-	templateContext *render.Context) (output string, err error) {
+	templateContext render.Context) (output string, err error) {
 	slog.Info("mustInclude", "templateName", templateName, "templateData", templateData)
 	templateContext.Data = &templateData
 	output, err = templateContext.Render(templateName)

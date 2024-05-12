@@ -2,19 +2,30 @@
 package functions
 
 import (
-	"log"
+	"errors"
+	"log/slog"
 
 	sprig "github.com/Masterminds/sprig/v3"
 )
 
-func fatal(message string) string {
-	log.Fatalf("template error: %s", message)
-	return message
+var errorIfEmptyError = errors.New("Value cannot be empty")
+
+func errorIfEmpty(value string) (string, error) {
+	if value == "" {
+		return "", errorIfEmptyError
+	}
+	return value, nil
+}
+
+func logWarn(message string, args ...any) string {
+	slog.Warn(message, args...)
+	return ""
 }
 
 func FuncMap() map[string]interface{} {
 	funcMap := sprig.FuncMap()
-	funcMap["fatal"] = fatal
+	funcMap["errorIfEmpty"] = errorIfEmpty
+	funcMap["logWarn"] = logWarn
 	// templates functions
 	funcMap["include"] = include
 	// YAML functions

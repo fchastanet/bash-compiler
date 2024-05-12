@@ -4,7 +4,6 @@ command:
   commandName: "shellcheckLint"
   version: "1.0"
   help: Lint bash files using shellcheck.
-  helpType: string
   longDescription: |
     shellcheck wrapper that will:
     - install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically
@@ -25,7 +24,6 @@ command:
     - unknownOption
   options:
     - variableName: "optionFormat"
-      functionName: "optionFormatFunction" # is it still needed ?
       variableType: String
       help: "define output format of this command"
       alts:
@@ -42,7 +40,6 @@ command:
         - value: "tty"
     - variableName: "optionStaged"
       functionName: "optionStagedFunction" # is it still needed ?
-      variableType: Boolean
       help: |
         lint only staged git files(files added to file list to be committed)
         and which are beginning with a bash shebang.

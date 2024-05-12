@@ -16,6 +16,7 @@ gtpl
 isatty
 ldflags
 maxprocs
+missingkey
 nakedret
 nestif
 nilerr
