@@ -1,6 +1,7 @@
 ---
 command:
   functionName: "shellcheckLintCommand"
+  commandName: "shellcheckLint"
   version: "1.0"
   help: Lint bash files using shellcheck.
   helpType: string
@@ -61,11 +62,8 @@ command:
       name: "shellcheckFiles"
       callbacks:
         - "argShellcheckFilesCallback"
-      variableType: Boolean
       help: |
         files to validate with shellcheck (if not provided,
         all files from git repository which are beginning
         with a bash shebang, unless --staged option is provided
       helpType: string
-      alts:
-        - "--xargs"

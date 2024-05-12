@@ -1,130 +1,125 @@
 {{define "command.help"}}
-{{ if eq .Data.helpType "function" }}
-  Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}\" \
+{{ .Data.functionName }}Help() {
+  {{- if eq .Data.helpType "function" -}}
+  Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
     "$({{ .Data.help }})"
-{{ else }}
-  Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}\" \
+  {{ else }}
+  Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
     "{{ .Data.help }}"
-{{ end }}
-echo
-{{- /* ------------------------------------------ */ -}}
-{{- /* usage section                              */ -}}
-{{- /* ------------------------------------------ */ -}}
-args=($(printf '%s' "${commandName}"))
-((${#optionList[@]} > 0)) && args+=("[OPTIONS]")
-((${#argumentList[@]} > 0)) && args+=("[ARGUMENTS]")
+  {{ end -}}
+  echo
 
-%
-echo -e "$(Array::wrap2 " " 80 2 <%% echo '"${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}"' %><%% printf ' "%s"' "${args[@]}" %>)"
-%
-optionsAltList=()
-for option in "${optionList[@]}"; do
-  optionsAltList+=("$("${option}" "helpAlt")")
-done
-if ((${#optionList[@]} > 0)); then
-%
-echo -e "$(Array::wrap2 " " 80 2 <%% echo '"${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}"' %> \
-  <%% printf '"%s"' "${commandName}" %> \
-  <%% printf '"%s" ' "${optionsAltList[@]}" | sed -E 's/[ ]*$//' %>)"
-% fi
-%# ------------------------------------------
-%# arguments section
-%# ------------------------------------------
-%
-if ((${#argumentList[@]} > 0)); then
-  echo '    echo'
-  echo $'    echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"'
-  local arg
-  for arg in "${argumentList[@]}"; do
-    "${arg}" helpTpl | sed 's/^/    /'
-  done
-fi
-%
-%# ------------------------------------------
-%# options section
-%# ------------------------------------------
-%
-if ((${#optionList[@]} > 0)); then
-  local option
-  local previousGroupId=""
-  local groupId
-  for option in ${optionList[@]}; do
-    groupId="$("${option}" groupId)"
-    if [[ "${groupId}" != "${previousGroupId}" ]]; then
-      echo '    echo'
-      if [[ "${groupId}" = "__default" ]]; then
-        echo $'    echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"'
-      else
-        "${groupId}" helpTpl
-      fi
-    fi
-    "${option}" helpTpl | sed 's/^/    /'
-    previousGroupId="${groupId}"
-  done
-fi
-%
-%# ------------------------------------------
-%# longDescription section
-%# ------------------------------------------
-% if [[ -n "${longDescription}" ]]; then
-% if [[ $(type -t "${longDescription}") == "function" ]]; then
-Array::wrap2 ' ' 76 0 "$(<% ${longDescription} %>)"
-% else
-echo -e """<%% echo "${longDescription}" | sed -E -e '${/^$/d;}' %>"""
-% fi
-% fi
-%# ------------------------------------------
-%# version section
-%# ------------------------------------------
-%
-if [[ -n "${version}" ]]; then
-  echo '    echo'
-  echo $'    echo -n -e "${__HELP_TITLE_COLOR}VERSION: ${__RESET_COLOR}"'
-  echo "    echo '${version}'"
-fi
-%
-%# ------------------------------------------
-%# author section
-%# ------------------------------------------
-%
-if [[ -n "${author}" ]]; then
-  echo '    echo'
-  echo $'    echo -e "${__HELP_TITLE_COLOR}AUTHOR:${__RESET_COLOR}"'
-  echo "    echo '${author}'"
-fi
-%
-%# ------------------------------------------
-%# source file section
-%# ------------------------------------------
-%
-if [[ -n "${sourceFile}" ]]; then
-  echo '    echo'
-  echo $'    echo -e "${__HELP_TITLE_COLOR}SOURCE FILE:${__RESET_COLOR}"'
-  echo "    echo '${sourceFile}'"
-fi
-%
-%# ------------------------------------------
-%# license section
-%# ------------------------------------------
-%
-if [[ -n "${license}" ]]; then
-  echo '    echo'
-  echo $'    echo -e "${__HELP_TITLE_COLOR}LICENSE:${__RESET_COLOR}"'
-  echo "    echo '${license}'"
-fi
-%
-%# ------------------------------------------
-%# copyright section
-%# ------------------------------------------
-%
-if [[ -n "${copyright}" ]]; then
-  echo '    echo'
-  if [[ $(type -t "${copyright}") == "function" ]]; then
-    echo "    Array::wrap2 ' ' 76 4 \"\$(<% ${copyright} %>)\""
-  else
-    echo "    echo '${copyright}'"
-  fi
-fi
-%
+  # ------------------------------------------
+  # usage section
+  # ------------------------------------------
+  Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" "{{- .Data.commandName }} {{/*
+    */}}{{- if .Data.options -}} [OPTIONS]{{- end }} {{/*
+    */}}{{- if .Data.arguments -}} [ARGUMENTS]{{- end -}}"
 
+  {{ if .Data.options -}}
+  # ------------------------------------------
+  # usage/options section
+  # ------------------------------------------
+  {{ $context := . -}}
+  optionsAltList=({{ range $index, $option := .Data.options }}
+    "{{ include "option.help.alts" $option $context }}"{{/*
+    */}}{{ end }}
+  )
+  Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
+    "{{ .Data.commandName }}" "${optionsAltList[@]}"
+  {{ end }}
+
+  {{ if .Data.arguments -}}
+  # ------------------------------------------
+  # usage/arguments section
+  # ------------------------------------------
+  echo
+  echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
+  {{ $context := . -}}
+  {{ range $index, $arg := .Data.args }}
+    echo -e "{{ include "arg.help" $arg $context }}"{{/*
+  */}}{{ end }}
+  {{ end }}
+
+  {{ if .Data.options -}}
+  # ------------------------------------------
+  # options section
+  # ------------------------------------------
+  {{ $context := . -}}
+  {{ $previousGroupId := "" -}}
+  {{ range $index, $option := .Data.options -}}
+  {{ $groupId := default "__default" $option.groupId -}}
+  {{ if ne $groupId $previousGroupId -}}
+  echo
+  {{- if eq $groupId "__default" }}
+  echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"{{ end -}}
+  {{ else -}}
+  echo -e "${__HELP_TITLE_COLOR}{{ .title }}${__RESET_COLOR}"
+  {{ if .help }}echo "{{ .help }}"{{ end -}}
+  {{ end }}
+  echo -e "{{- include "option.help" $option $context -}}"
+  {{ $previousGroupId := $groupId }}
+  {{ end -}}
+  {{ end -}}
+
+  {{ if .Data.longDescription -}}
+  # ------------------------------------------
+  # longDescription section
+  # ------------------------------------------
+  {{ if eq .Data.longDescriptionType "function" -}}
+  Array::wrap2 ' ' 76 0 "$({{ .Data.longDescription }})"
+  {{ else -}}
+  Array::wrap2 ' ' 76 0 "$(cat <<EOF
+{{ .Data.longDescription }}
+EOF
+)"{{ end -}}
+  {{ end }}
+
+  {{ if .Data.version -}}
+  # ------------------------------------------
+  # version section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}VERSION: ${__RESET_COLOR}"
+  echo '{{ .Data.version }}'
+  {{ end -}}
+
+  {{ if .Data.author -}}
+  # ------------------------------------------
+  # author section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}AUTHOR: ${__RESET_COLOR}"
+  echo '{{ .Data.author }}'
+  {{ end -}}
+
+  {{ if .Data.sourceFile -}}
+  # ------------------------------------------
+  # sourceFile section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}SOURCE FILE: ${__RESET_COLOR}"
+  echo '{{ .Data.sourceFile }}'
+  {{ end -}}
+
+  {{ if .Data.license -}}
+  # ------------------------------------------
+  # license section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}LICENSE: ${__RESET_COLOR}"
+  echo '{{ .Data.license }}'
+  {{ end -}}
+
+  {{ if .Data.copyright -}}
+  # ------------------------------------------
+  # copyright section
+  # ------------------------------------------
+  {{ if eq .Data.copyrightType "function" }}
+  Array::wrap2 ' ' 76 0 "$({{ .Data.copyright }})"
+  {{ else -}}
+  Array::wrap2 ' ' 76 0 """{{ .Data.copyright }}"""
+  {{ end -}}
+  {{ end }}
+}
 {{end}}
