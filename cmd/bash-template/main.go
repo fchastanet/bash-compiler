@@ -42,7 +42,8 @@ func main() {
 		panic(err)
 	}
 
-	templateContext.Data = functions.FromYAMLFile("templates-examples/shellcheckLint.yaml")
+	yamlData := functions.FromYAMLFile("templates-examples/shellcheckLint.yaml")
+	templateContext.Data = &yamlData
 	templateContext.RootData = templateContext.Data
 	str, err = templateContext.Render(templateContext.Name)
 	if err != nil {
