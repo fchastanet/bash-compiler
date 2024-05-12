@@ -1,4 +1,4 @@
-{{define "command.dataModel.StringArray"}}
+{{define "dataModel.option.StringArray"}}
 {{ with .Data }}
 {{ $min := coalesce .min 0 }}
 {{ if .mandatory -}}

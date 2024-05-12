@@ -51,14 +51,14 @@ func main() {
 	yamlData := functions.FromYAMLFile("templates-examples/shellcheckLint.yaml")
 	templateContext.Data = &yamlData
 	templateContext.RootData = templateContext.Data
-	yamlDataTransformed, err := templateContext.Render("command.dataModel")
+	yamlDataTransformed, err := templateContext.Render("dataModel")
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("logs/main.transformed.yaml", []byte(yamlDataTransformed), UserReadWritePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/main.transformed.yaml", []byte(yamlDataTransformed), UserReadWritePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check logs/main.transformed.yaml")
+	slog.Info("Check templates-examples/testsData/main.transformed.yaml")
 
 	var yamlData2 interface{}
 	err = yaml.Unmarshal([]byte(yamlDataTransformed), &yamlData2)
@@ -69,10 +69,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("logs/main.marshalled.yaml", out, UserReadWritePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/main.marshalled.yaml", out, UserReadWritePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check logs/main.marshalled.yaml")
+	slog.Info("Check templates-examples/testsData/main.marshalled.yaml")
 
 	// render
 	var str string
@@ -82,8 +82,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("logs/main.sh", []byte(str), UserReadWriteExecutePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/main.sh", []byte(str), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check logs/main.marshalled.yaml")
+	slog.Info("Check templates-examples/testsData/main.marshalled.yaml")
 }

@@ -1,4 +1,4 @@
-{{define "command.dataModel.Boolean"}}
+{{define "dataModel.option.Boolean"}}
 onValue: {{ coalesce .Data.onValue 1 }}
 offValue: {{ coalesce .Data.offValue "0" }}
 min: 0

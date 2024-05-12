@@ -1,4 +1,4 @@
-{{define "command.dataModel.String" -}}
+{{define "dataModel.option.String" -}}
 {{- with .Data -}}
 {{ $min := int (coalesce .min 0) }}
 {{- if .mandatory -}}
