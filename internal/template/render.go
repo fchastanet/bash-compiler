@@ -30,7 +30,7 @@ func NewTemplate(templateDir string, templateFile string,
 	name := path.Base(templateFile)
 	slog.Info("Loaded template", name, files)
 
-	myTemplate := template.New(name).Funcs(funcMap)
+	myTemplate := template.New(name).Option("missingkey=zero").Funcs(funcMap)
 	_, err = myTemplate.ParseFiles(files...)
 	if err != nil {
 		return nil, err
@@ -40,9 +40,9 @@ func NewTemplate(templateDir string, templateFile string,
 	return templateContext, nil
 }
 
-func (templateContext *Context) Render(template string) (string, error) {
+func (templateContext Context) Render(template string) (string, error) {
 	var tplWriter bytes.Buffer
 	slog.Debug("Render template", slog.String("template", template))
-	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, &templateContext)
+	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, templateContext)
 	return tplWriter.String(), err
 }
