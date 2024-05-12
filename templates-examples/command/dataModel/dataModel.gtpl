@@ -24,20 +24,10 @@ command:
   {{- if .Data.command.options -}}
   options:
     {{ range .Data.command.options -}}
-    - variableName: {{ .variableName | errorIfEmpty }}
-      {{ if .functionName -}}
-      functionName: {{ .functionName -}}
-      {{- else -}}
-      functionName: {{ .variableName -}}Function
-      {{- end }}
-      {{ if not .variableType -}}
-      {{- logWarn "variable type set to Boolean by default" "variableName" .variableName -}}
-      {{- end }}
-      {{- $variableType := coalesce .variableType "Boolean" -}}
-      variableType: {{ $variableType }}
-      help: |
-        {{ .help | indent 8 | trim }}
-      {{ if .alts -}}
+    -
+      {{ include "dataModel.parameter" . $context | indent 6 | trim -}}
+      {{ $variableType := coalesce .variableType "Boolean" -}}
+      {{ if .alts }}
       alts:
         {{- range .alts }}
         - {{. }}
@@ -61,7 +51,9 @@ command:
   {{- if .Data.command.args -}}
   args:
     {{ range .Data.command.args -}}
-    - variableName: {{ .variableName }}
+    -
+      {{ include "dataModel.parameter" . $context | indent 6 | trim -}}
+      {{ $variableType := coalesce .variableType "Boolean" -}}
     {{ end }}
   {{ end }}
 {{end}}
