@@ -1,4 +1,4 @@
-{{define "command.dataModel.StringCommon"}}
+{{define "dataModel.option.StringCommon"}}
 {{- with .Data }}
 {{ if .helpValueName -}}
 helpValueName: {{ .helpValueName }}

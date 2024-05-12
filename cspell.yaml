@@ -33,6 +33,7 @@ ignorePaths:
   - commit-msg.md
   - ".mega-linter*.yml"
   - ".env"
+  - "go.sum"
 
 dictionaryDefinitions:
   - name: myBash
@@ -159,7 +160,6 @@ overrides:
 
   - filename:
       - "**/*.go"
-      - "go.sum"
       - "go.mod"
     languageId: go
 

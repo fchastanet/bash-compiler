@@ -1,4 +1,4 @@
-{{define "command.dataModel"}}
+{{define "dataModel"}}
 {{ $context := . -}}
 command:
   functionName: {{ .Data.command.functionName | errorIfEmpty }}
@@ -46,13 +46,13 @@ command:
       {{ fail (cat "you must provide alts property for option" .variableName) }}
       {{- end }}
       {{- if eq $variableType "Boolean" -}}
-      {{- include "command.dataModel.Boolean" . $context | indent 6 -}}
+      {{- include "dataModel.option.Boolean" . $context | indent 6 -}}
       {{- else if eq $variableType "String" -}}
-      {{- include "command.dataModel.StringCommon" . $context | indent 6 -}}
-      {{- include "command.dataModel.String" . $context | indent 6 -}}
+      {{- include "dataModel.option.StringCommon" . $context | indent 6 -}}
+      {{- include "dataModel.option.String" . $context | indent 6 -}}
       {{- else if eq $variableType "StringArray" -}}
-      {{- include "command.dataModel.StringCommon" . $context | indent 6 -}}
-      {{- include "command.dataModel.StringArray" . $context | indent 6 -}}
+      {{- include "dataModel.option.StringCommon" . $context | indent 6 -}}
+      {{- include "dataModel.option.StringArray" . $context | indent 6 -}}
       {{- else }}
       {{ fail (cat "invalid variable type" $variableType " for variable " .variableName) }}
       {{ end }}

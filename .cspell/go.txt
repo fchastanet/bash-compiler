@@ -1,3 +1,4 @@
+copystructure
 difflib
 errorlint
 exportloopref
@@ -12,10 +13,12 @@ goprintffuncname
 gosec
 gostub
 gotestfmt
+goutils
 gtpl
 isatty
 ldflags
 maxprocs
+mergo
 missingkey
 nakedret
 nestif
@@ -26,8 +29,11 @@ nolint
 nolintlint
 prealloc
 promlint
+reflectwalk
 runtimes
 struct
 unconvert
 unparam
+uuid
 xerrors
+xstrings
