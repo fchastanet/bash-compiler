@@ -25,8 +25,12 @@ command:
   options:
     {{ range .Data.command.options -}}
     -
-      {{ include "dataModel.parameter" . $context | indent 6 | trim -}}
-      {{ $variableType := coalesce .variableType "Boolean" -}}
+      {{ include "dataModel.parameter" . $context | indent 6 | trim }}
+      {{ if not .variableType -}}
+      {{- logWarn "variable type set to Boolean by default" "variableName" .variableName -}}
+      {{- end }}
+      {{- $variableType := coalesce .variableType "Boolean" -}}
+      variableType: {{ $variableType }}
       {{ if .alts }}
       alts:
         {{- range .alts }}
@@ -52,8 +56,8 @@ command:
   args:
     {{ range .Data.command.args -}}
     -
-      {{ include "dataModel.parameter" . $context | indent 6 | trim -}}
-      {{ $variableType := coalesce .variableType "Boolean" -}}
+      {{ include "dataModel.parameter" . $context | indent 6 | trim }}
+      {{ include "dataModel.arg.common" . $context | indent 6 | trim }}
     {{ end }}
   {{ end }}
 {{end}}

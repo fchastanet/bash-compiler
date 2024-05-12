@@ -6,11 +6,12 @@ functionName: {{ .functionName -}}
 {{- else -}}
 functionName: {{ .variableName -}}Function
 {{- end }}
-{{ if not .variableType -}}
-{{- logWarn "variable type set to Boolean by default" "variableName" .variableName -}}
-{{- end }}
-{{- $variableType := coalesce .variableType "Boolean" -}}
-variableType: {{ $variableType }}
+{{ if .callbacks -}}
+callbacks:
+  {{ range .callbacks -}}
+  - {{ . -}}
+  {{end}}
+{{end}}
 help: |
   {{ .help | indent 2 | trim }}
 {{ end }}
