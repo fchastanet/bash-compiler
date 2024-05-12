@@ -1,6 +1,12 @@
 command:
     args:
-        - variableName: argShellcheckFiles
+        - functionName: argShellcheckFilesFunction
+          help: |
+            files to validate with shellcheck (if not provided,
+            all files from git repository which are beginning
+            with a bash shebang, unless --staged option is provided
+          variableName: argShellcheckFiles
+          variableType: Boolean
     callbacks:
         - shellcheckLintParseCallback
     commandName: shellcheckLint
