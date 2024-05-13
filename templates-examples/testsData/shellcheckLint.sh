@@ -8,6 +8,9 @@
 shellcheckLintCommandParse() {
   Log::displayDebug "Command ${SCRIPT_NAME} - parse arguments: ${BASH_FRAMEWORK_ARGV[*]}"
   Log::displayDebug "Command ${SCRIPT_NAME} - parse filtered arguments: ${BASH_FRAMEWORK_ARGV_FILTERED[*]}"
+  optionHelp="0"
+  local -i options_parse_optionParsedCountOptionHelp
+  ((options_parse_optionParsedCountOptionHelp = 0)) || true
   optionFormat="tty"
   local -i options_parse_optionParsedCountOptionFormat
   ((options_parse_optionParsedCountOptionFormat = 0)) || true
@@ -29,7 +32,25 @@ shellcheckLintCommandParse() {
     local options_parse_arg="$1"
     local argOptDefaultBehavior=0
     case "${options_parse_arg}" in
-      # Option 1/3
+      # Option 1/4
+      # optionHelp alts --help|-h
+      # type: Boolean min 0 max 1
+      --help | -h)
+        
+        # shellcheck disable=SC2034
+        optionHelp="1"
+        
+        
+        if ((options_parse_optionParsedCountOptionHelp >= 1 )); then
+          Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
+          return 1
+        fi
+        
+        ((++options_parse_optionParsedCountOptionHelp))
+        
+        
+        ;;
+      # Option 2/4
       # optionFormat alts --format|-f
       # type: String min 0 max 1
       # authorizedValues:
@@ -54,7 +75,7 @@ shellcheckLintCommandParse() {
         
         
         ;;
-      # Option 2/3
+      # Option 3/4
       # optionStaged alts --staged
       # type: Boolean min 0 max 1
       --staged)
@@ -72,7 +93,7 @@ shellcheckLintCommandParse() {
         
         
         ;;
-      # Option 3/3
+      # Option 4/4
       # optionXargs alts --xargs
       # type: Boolean min 0 max 1
       --xargs)
@@ -134,6 +155,7 @@ shellcheckLintCommandParse() {
   
   
   
+  
   if ((options_parse_argParsedCountArgShellcheckFiles < 1 )); then
     Log::displayError "Command ${SCRIPT_NAME} - Argument 'shellcheckFiles' should be provided at least 1 time(s)"
     return 1
@@ -173,6 +195,7 @@ shellcheckLintCommandHelp() {
   # usage/options section
   # ------------------------------------------
   optionsAltList=(
+    "--help|-h"
     "[--format|-f <optionFormat>]"
     "--staged"
     "--xargs"
@@ -182,6 +205,10 @@ shellcheckLintCommandHelp() {
   # ------------------------------------------
   # options section
   # ------------------------------------------
+  echo
+  echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
+  echo -e "${__HELP_OPTION_COLOR}--help${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-h${__HELP_NORMAL} {single}"
+  
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "${__HELP_OPTION_COLOR}--format${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-f optionFormat${__HELP_NORMAL} {single}"

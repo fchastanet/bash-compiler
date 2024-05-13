@@ -27,15 +27,19 @@ compile <fileToCompile>
       - template property to specify the template to use
     - `IMPLEMENT` directive should be transformed as special command arg
       - arg
-        - sub-command:
-            - value: scriptName
-              help: ...
-            - value: helpDescription
-            - ...
+        type: subCommand
+        subCommands:
+          - command: scriptName (targets a command that exists in yaml file)
+            help: ...
+          - command: helpDescription
+          - ...
     - `REQUIRE` directive
     - `FEATURE` directive
     - `INCLUDE` directive (new directive to replace bash-tpl .INCLUDE directive)
       - `(_- include "${dir}/file"  -_)`
+  - dataModel
+    - if a property value is a single word ended with Callback consider it as
+      function type
   - we need to evaluate templates twice because imported functions could have
     for example IncludeFile instructions
   - generate mapping function name/file path

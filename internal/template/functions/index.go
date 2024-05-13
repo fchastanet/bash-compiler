@@ -53,6 +53,7 @@ func FuncMap() map[string]interface{} {
 	funcMap["include"] = include
 	// YAML functions
 	funcMap["fromYAMLFile"] = FromYAMLFile
+	funcMap["toYAML"] = ToYAML
 
 	return funcMap
 }
