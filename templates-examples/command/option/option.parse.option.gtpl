@@ -3,7 +3,7 @@
 {{- with .Data -}}
 {{- $Data := . -}}
 {{ .alts | join " | " }})
-  {{ if eq .variableType "Boolean" }}
+  {{ if eq .type "Boolean" }}
   # shellcheck disable=SC2034
   {{ .variableName }}="{{ .onValue }}"
   {{ else }}
@@ -26,21 +26,21 @@
   fi
   {{ end }}
   ((++options_parse_optionParsedCount{{ .variableName | title }}))
-  {{ if eq .variableType "String" -}}
+  {{ if eq .type "String" -}}
   # shellcheck disable=SC2034
   {{ .variableName }}="$1"
-  {{ else if eq .variableType "StringArray" -}}
+  {{ else if eq .type "StringArray" -}}
   {{ .variableName }}+=("$1")
   {{ end }}
   {{ range .callbacks }}
-  {{ if eq $Data.variableType "StringArray" -}}
+  {{ if eq $Data.type "StringArray" -}}
     {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}[@]}"
   {{ else -}}
     {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}}"
   {{ end }}
   {{ end }}
   {{ range .everyOptionCallbacks }}
-  {{ if eq $Data.variableType "StringArray" -}}
+  {{ if eq $Data.type "StringArray" -}}
     {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}[@]}"
   {{ else -}}
     {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}}"

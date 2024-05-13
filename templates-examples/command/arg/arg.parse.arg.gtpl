@@ -22,7 +22,7 @@ fi
 {{ end }}
 ((++options_parse_argParsedCount{{ .variableName | title }}))
 # shellcheck disable=SC2034
-{{ if eq .variableType "String" }}
+{{ if eq .type "String" }}
 {{ .variableName }}="${options_parse_arg}"
 {{ range .callbacks }}
 {{ . }} "{{ "${" }}{{ $Data.variableName }}{{ "}" }}" -- "${@:2}"

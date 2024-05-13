@@ -1,6 +1,6 @@
 {{define "option.help.alts" -}}
-  {{- $variableType := coalesce .Data.variableType "Boolean" -}}
-  {{- if eq $variableType "Boolean" -}}
+  {{- $type := coalesce .Data.type "Boolean" -}}
+  {{- if eq $type "Boolean" -}}
     {{ .Data.alts | join "|" }}
   {{- else -}}
     {{- if eq .Data.min 0 -}}[{{ end -}}{{/*

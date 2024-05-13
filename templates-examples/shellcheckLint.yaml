@@ -25,7 +25,7 @@ binFile:
         - unknownOption
       options:
         - variableName: "optionFormat"
-          variableType: String
+          type: String
           help: "define output format of this command"
           alts:
             - "--format"
@@ -48,7 +48,7 @@ binFile:
             - "--staged"
         - variableName: "optionXargs"
           functionName: "optionXargsFunction" # is it still needed ?
-          variableType: Boolean
+          type: Boolean
           help: "uses parallelization(using xargs command) only if tty format"
           alts:
             - "--xargs"

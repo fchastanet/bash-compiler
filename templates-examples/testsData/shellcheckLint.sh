@@ -31,7 +31,7 @@ shellcheckLintCommandParse() {
     case "${options_parse_arg}" in
       # Option 1/3
       # optionFormat alts --format|-f
-      # variableType: String min 0 max 1
+      # type: String min 0 max 1
       # authorizedValues:
       --format | -f)
         
@@ -56,7 +56,7 @@ shellcheckLintCommandParse() {
         ;;
       # Option 2/3
       # optionStaged alts --staged
-      # variableType: Boolean min 0 max 1
+      # type: Boolean min 0 max 1
       --staged)
         
         # shellcheck disable=SC2034
@@ -74,7 +74,7 @@ shellcheckLintCommandParse() {
         ;;
       # Option 3/3
       # optionXargs alts --xargs
-      # variableType: Boolean min 0 max 1
+      # type: Boolean min 0 max 1
       --xargs)
         
         # shellcheck disable=SC2034
