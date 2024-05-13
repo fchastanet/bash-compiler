@@ -36,6 +36,14 @@ authorizedValues:
     help: {{ coalesce .help "\"\"" }}
   {{- end -}}
   {{- end -}}
+authorizedValuesList:
+  {{- range .authorizedValues }}
+  {{- if eq (kindOf .) "string" -}}
+  - {{ . }}
+  {{ else }}
+  - {{ .value }}
+  {{ end }}
+  {{ end }}
 {{end}}{{/* if .authorizedValues */}}
 min: {{ $min }}
 max: {{ $max }}

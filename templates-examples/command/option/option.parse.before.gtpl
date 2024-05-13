@@ -1,20 +1,13 @@
-{{define "option.parse.before" -}}
-{{/*
-{{- $variableType := coalesce .Data.variableType "Boolean" -}}
-{{- if eq $variableType "Boolean" -}}
-  {{- $offValue := coalesce .Data.offValue "0" -}}
-  {{- $min := 0 -}}
-  {{- $max := 1 -}}
-  {{- .Data.variableName }="{{ coalesce .Data.offValue ""}}"
-{{- else if eq $variableType "String" -}}
-{{ else }}
-{{ .Data.variableName }="{{ coalesce .Data.defaultValue "" }}"
+{{- define "option.parse.before" -}}
+{{- with .Data -}}
+{{- if eq .variableType "Boolean" -}}
+{{ .variableName }}="{{ .offValue }}"
+{{- else if eq .variableType "String" -}}
+{{ .variableName }}="{{ .defaultValue }}"
+{{- end -}}
+{{- if or (gt .min 0) (gt .max 0) }}
+local -i options_parse_optionParsedCount{{ .variableName | title}}
+((options_parse_optionParsedCount{{ .variableName | title}} = 0)) || true
 {{ end }}
-{{- $min := coalesce .Data.min "Boolean" -}}
-{{- $max := coalesce .Data.max "Boolean" -}}
-{{ if ((min > 0 || max > 0)); then
-local -i options_parse_optionParsedCount<% ${variableName^} %>
-((options_parse_optionParsedCount<% ${variableName^} %> = 0)) || true
-% fi
- */}}
+{{ end }}
 {{ end }}
