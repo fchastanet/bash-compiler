@@ -17,10 +17,6 @@ const (
 	UserReadWriteExecutePerm os.FileMode = 0700
 )
 
-type TemplateData struct {
-	Name string
-}
-
 func initLogger() {
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
@@ -55,13 +51,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("templates-examples/testsData/main.transformed.yaml", []byte(yamlDataTransformed), UserReadWritePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.dataModel.yaml", []byte(yamlDataTransformed), UserReadWritePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check templates-examples/testsData/main.transformed.yaml")
+	slog.Info("Check templates-examples/testsData/shellcheckLint.dataModel.yaml")
 
 	var yamlData2 interface{}
 	err = yaml.Unmarshal([]byte(yamlDataTransformed), &yamlData2)
+
 	if err != nil {
 		panic(err)
 	}
@@ -69,21 +66,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("templates-examples/testsData/main.marshalled.yaml", out, UserReadWritePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.dataModelMarshalled.yaml", out, UserReadWritePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check templates-examples/testsData/main.marshalled.yaml")
+	slog.Info("Check templates-examples/testsData/shellcheckLint.dataModelMarshalled.yaml")
 
 	// render
 	var str string
 	templateContext.Data = &yamlData2
 	templateContext.RootData = templateContext.Data
-	str, err = templateContext.Render(templateContext.Name)
+	str, err = templateContext.Render("commands")
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("templates-examples/testsData/main.sh", []byte(str), UserReadWriteExecutePerm); err != nil {
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.sh", []byte(str), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check templates-examples/testsData/main.marshalled.yaml")
+	slog.Info("Check templates-examples/testsData/shellcheckLint.sh")
 }
