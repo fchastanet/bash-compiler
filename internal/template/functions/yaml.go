@@ -2,7 +2,9 @@
 package functions
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/goccy/go-yaml"
@@ -31,4 +33,12 @@ func MustFromYAML(data []byte) (interface{}, error) {
 		log.Fatalf("error: %v", err)
 	}
 	return output, err
+}
+
+// ToYAML decodes YAML into a structured value, ignoring errors.
+func ToYAML(data []interface{}) string {
+	output, _ := yaml.MarshalWithOptions(data, yaml.Indent(2), yaml.IndentSequence(true))
+	slog.Info("-------------------------------------------------------------")
+	fmt.Printf("%s\n", string(output[:]))
+	return string(output[:])
 }

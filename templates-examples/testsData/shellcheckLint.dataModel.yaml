@@ -1,5 +1,15 @@
 
+
 binFile:
+  optionGroups:
+    
+    
+    -
+      title: "GLOBAL OPTIONS:"
+      functionName: "zzzGroupGlobalOptionsFunction"
+    
+    
+  
   commands:
   
     -
@@ -28,6 +38,25 @@ binFile:
       unknownOptionCallbacks:
         - unknownOption
       options:
+        
+        -
+          variableName: optionHelp
+          functionName: optionHelpFunction
+          
+          help: |
+            Display this command help
+          type: Boolean
+          
+          alts:
+            - --help
+            - -h          
+          onValue: 1
+          offValue: 0
+          min: 0
+          max: 1
+          
+        
+        
         -
           variableName: optionFormat
           functionName: optionFormatFunction
@@ -62,6 +91,8 @@ binFile:
           max: 1
           
           
+        
+        
         -
           variableName: optionStaged
           functionName: optionStagedFunction
@@ -78,6 +109,8 @@ binFile:
           min: 0
           max: 1
           
+        
+        
         -
           variableName: optionXargs
           functionName: optionXargsFunction
@@ -93,6 +126,7 @@ binFile:
           min: 0
           max: 1
           
+        
         
       args:
         -
@@ -116,5 +150,6 @@ binFile:
           max: -1
         
       
+  
   
   

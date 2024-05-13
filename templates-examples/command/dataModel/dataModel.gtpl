@@ -1,8 +1,22 @@
 {{define "dataModel"}}
 {{ $context := . -}}
+{{ with .Data.binFile }}
 binFile:
+  {{ if .optionGroups -}}
+  optionGroups:
+    {{ range .optionGroups }}
+    {{ if index . "include" }}
+    {{ $data := fromYAMLFile .include }}
+    {{ $data.options.optionGroups | toYAML | indent 2 | trim }}
+    {{ else }}
+    -
+      title: "{{ .title }}"
+      functionName: "{{ .functionName }}"
+    {{ end }}
+    {{ end }}
+  {{ end }}{{/* end if .optionsGroups */}}
   commands:
-  {{ range .Data.binFile.commands }}
+  {{ range .commands }}
     -
       functionName: {{ .functionName | errorIfEmpty }}
       commandName: {{ .commandName }}
@@ -27,6 +41,10 @@ binFile:
       {{- if .options -}}
       options:
         {{ range .options -}}
+        {{ if index . "include" }}
+        {{ $data := fromYAMLFile .include }}
+        {{ $data.options.options | toYAML | indent 6 | trim }}
+        {{ else }}
         -
           {{ include "dataModel.parameter" . $context | indent 10 | trim }}
           {{ if not .type -}}
@@ -54,6 +72,7 @@ binFile:
           {{ fail (cat "invalid variable type" $type " for variable " .variableName) }}
           {{ end }}
         {{ end }}
+        {{ end }}
       {{ end }}
       {{- if .args -}}
       args:
@@ -63,5 +82,6 @@ binFile:
           {{ include "dataModel.arg.common" . $context | indent 10 | trim }}
         {{ end }}
       {{ end }}
+  {{end}}
   {{end}}
   {{end}}

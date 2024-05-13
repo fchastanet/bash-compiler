@@ -9,7 +9,7 @@ import (
 	myTemplate "github.com/fchastanet/bash-compiler/internal/template"
 	"github.com/fchastanet/bash-compiler/internal/template/functions"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/template/functions"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 const (
@@ -44,10 +44,25 @@ func main() {
 	}
 
 	// load an transform yaml data
-	yamlData := functions.FromYAMLFile("templates-examples/shellcheckLint.yaml")
+	filePath := "templates-examples/shellcheckLint.yaml"
+	yamlData := functions.FromYAMLFile(filePath)
 	templateContext.Data = &yamlData
 	templateContext.RootData = templateContext.Data
 	yamlDataTransformed, err := templateContext.Render("dataModel")
+	slog.Info("Data Model transformed", "filePath", filePath)
+	if err != nil {
+		panic(err)
+	}
+	var yamlData1 interface{}
+	err = yaml.Unmarshal([]byte(yamlDataTransformed), &yamlData1)
+	if err != nil {
+		panic(err)
+	}
+	// we have to transform twice to take the value included into account
+	templateContext.Data = &yamlData1
+	templateContext.RootData = templateContext.Data
+	yamlDataTransformed, err = templateContext.Render("dataModel")
+	slog.Info("Data Model transformed pass 2", "filePath", filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -58,11 +73,10 @@ func main() {
 
 	var yamlData2 interface{}
 	err = yaml.Unmarshal([]byte(yamlDataTransformed), &yamlData2)
-
 	if err != nil {
 		panic(err)
 	}
-	out, err := yaml.Marshal(yamlData2)
+	out, err := yaml.MarshalWithOptions(yamlData2, yaml.Indent(2), yaml.IndentSequence(true))
 	if err != nil {
 		panic(err)
 	}

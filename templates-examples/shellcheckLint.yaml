@@ -1,5 +1,7 @@
 ---
 binFile:
+  optionGroups:
+    - include: "templates-examples/default.options.yaml"
   commands:
     - functionName: "shellcheckLintCommand"
       commandName: "shellcheckLint"
@@ -19,11 +21,19 @@ binFile:
         ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
 
         @@@SHELLCHECK_HELP@@@
+      author: |
+        [François Chastanet](https://github.com/fchastanet)
+      sourceFile: "${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}"
+      license: "MIT License"
+      copyright: copyrightCallback
       callbacks:
         - shellcheckLintParseCallback
       unknownOptionCallbacks:
         - unknownOption
+      test:
+        <<: *default_options
       options:
+        - include: "templates-examples/default.options.yaml"
         - variableName: "optionFormat"
           type: String
           help: "define output format of this command"
