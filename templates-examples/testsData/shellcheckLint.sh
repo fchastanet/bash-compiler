@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+
+# ------------------------------------------
+# Command shellcheckLintCommand
+# ------------------------------------------
+# @description parse command options and arguments for shellcheckLintCommand
 shellcheckLintCommandParse() {
   Log::displayDebug "Command ${SCRIPT_NAME} - parse arguments: ${BASH_FRAMEWORK_ARGV[*]}"
   Log::displayDebug "Command ${SCRIPT_NAME} - parse filtered arguments: ${BASH_FRAMEWORK_ARGV_FILTERED[*]}"
@@ -151,6 +157,7 @@ ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
 
 EOF
 )"
+# @description display command options and arguments help for shellcheckLintCommand
 shellcheckLintCommandHelp() {
   Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
     "Lint bash files using shellcheck.
