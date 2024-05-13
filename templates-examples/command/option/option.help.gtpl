@@ -1,8 +1,8 @@
 {{define "option.help" -}}
 ${__HELP_OPTION_COLOR}{{/*
 */}}{{ .Data.alts | join "${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}" -}}{{/*
-*/}}{{- $variableType := coalesce .Data.variableType "Boolean" -}}{{/*
-*/}}{{ if ne $variableType "Boolean" }} {{ .Data.helpValueName }}{{end -}}{{/*
+*/}}{{- $type := coalesce .Data.type "Boolean" -}}{{/*
+*/}}{{ if ne $type "Boolean" }} {{ .Data.helpValueName }}{{end -}}{{/*
 */}}${__HELP_NORMAL}{{/*
 */}}{{ if eq .Data.max 1 }} {single}{{ if eq .Data.min 1 }} (mandatory){{ end -}}{{/*
 */}}{{ else }}{{/*

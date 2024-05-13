@@ -2,11 +2,11 @@
 {{ with .Data }}
 {{ $min := coalesce .min 1 }}
 {{ $max := coalesce .max 1 }}
-{{ $variableType := "StringArray" }}
+{{ $type := "StringArray" }}
 {{ if and (eq $max 1) (le $min 1) }}
-{{ $variableType := "String" }}
+{{ $type := "String" }}
 {{ end }}
-variableType: {{ $variableType }}
+type: {{ $type }}
 {{ if .helpValueName -}}
 helpValueName: {{ .helpValueName }}
 {{ else -}}

@@ -1,8 +1,8 @@
 {{- define "option.parse.before" -}}
 {{- with .Data -}}
-{{- if eq .variableType "Boolean" -}}
+{{- if eq .type "Boolean" -}}
 {{ .variableName }}="{{ .offValue }}"
-{{- else if eq .variableType "String" -}}
+{{- else if eq .type "String" -}}
 {{ .variableName }}="{{ .defaultValue }}"
 {{- end -}}
 {{- if or (gt .min 0) (gt .max 0) }}

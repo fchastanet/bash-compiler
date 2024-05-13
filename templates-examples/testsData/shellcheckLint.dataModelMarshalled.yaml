@@ -12,8 +12,8 @@ binFile:
               max: -1
               min: 1
               name: shellcheckFiles
+              type: StringArray
               variableName: argShellcheckFiles
-              variableType: StringArray
           callbacks:
             - shellcheckLintParseCallback
           commandName: shellcheckLint
@@ -61,8 +61,8 @@ binFile:
               helpValueName: optionFormat
               max: 1
               min: 0
+              type: String
               variableName: optionFormat
-              variableType: String
             - alts:
                 - --staged
               functionName: optionStagedFunction
@@ -73,8 +73,8 @@ binFile:
               min: 0
               offValue: 0
               onValue: 1
+              type: Boolean
               variableName: optionStaged
-              variableType: Boolean
             - alts:
                 - --xargs
               functionName: optionXargsFunction
@@ -84,8 +84,8 @@ binFile:
               min: 0
               offValue: 0
               onValue: 1
+              type: Boolean
               variableName: optionXargs
-              variableType: Boolean
           unknownOptionCallbacks:
             - unknownOption
           version: "1.0"

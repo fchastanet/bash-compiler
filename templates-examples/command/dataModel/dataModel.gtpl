@@ -29,11 +29,11 @@ binFile:
         {{ range .options -}}
         -
           {{ include "dataModel.parameter" . $context | indent 10 | trim }}
-          {{ if not .variableType -}}
+          {{ if not .type -}}
           {{- logWarn "variable type set to Boolean by default" "variableName" .variableName -}}
           {{- end }}
-          {{- $variableType := coalesce .variableType "Boolean" -}}
-          variableType: {{ $variableType }}
+          {{- $type := coalesce .type "Boolean" -}}
+          type: {{ $type }}
           {{ if .alts }}
           alts:
             {{- range .alts }}
@@ -42,16 +42,16 @@ binFile:
           {{ else -}}
           {{ fail (cat "you must provide alts property for option" .variableName) }}
           {{- end }}
-          {{- if eq $variableType "Boolean" -}}
+          {{- if eq $type "Boolean" -}}
           {{- include "dataModel.option.Boolean" . $context | indent 10 -}}
-          {{- else if eq $variableType "String" -}}
+          {{- else if eq $type "String" -}}
           {{- include "dataModel.option.StringCommon" . $context | indent 10 -}}
           {{- include "dataModel.option.String" . $context | indent 10 -}}
-          {{- else if eq $variableType "StringArray" -}}
+          {{- else if eq $type "StringArray" -}}
           {{- include "dataModel.option.StringCommon" . $context | indent 10 -}}
           {{- include "dataModel.option.StringArray" . $context | indent 10 -}}
           {{- else }}
-          {{ fail (cat "invalid variable type" $variableType " for variable " .variableName) }}
+          {{ fail (cat "invalid variable type" $type " for variable " .variableName) }}
           {{ end }}
         {{ end }}
       {{ end }}

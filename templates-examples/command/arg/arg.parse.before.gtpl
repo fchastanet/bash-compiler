@@ -1,6 +1,6 @@
 {{- define "arg.parse.before" -}}
 {{- with .Data -}}
-{{- if eq .variableType "StringArray" -}}
+{{- if eq .type "StringArray" -}}
 {{ .variableName }}=()
 {{- else -}}
 {{ .variableName }}=""

@@ -1,7 +1,7 @@
 {{- define "option.oneLineHelp" -}}
 {{- with .Data -}}
 # {{ .variableName }} alts {{ .alts | join "|" }}
-# variableType: {{ .variableType }} min {{ .min }} max {{ .max }}
+# type: {{ .type }} min {{ .min }} max {{ .max }}
 {{ if .authorizedValues -}}
 # authorizedValues: {{ .authorizedValuesList | join "|" }}
 {{ end }}
