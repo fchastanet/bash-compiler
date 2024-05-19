@@ -17,13 +17,21 @@ type Context struct {
 	Data     *any
 }
 
-func NewTemplate(templateDir string, templateFile string,
+func NewTemplate(templateDirs []string, templateFile string,
 	funcMap template.FuncMap) (templateContext *Context, err error) {
-	files, err := files.MatchPatterns(
-		filepath.Join(templateDir, "**/**/*.gtpl"),
-		filepath.Join(templateDir, "**/*.gtpl"),
-		filepath.Join(templateDir, "**.gtpl"),
-	)
+
+	var patterns = [3]string{
+		"**/**/*.gtpl",
+		"**/*.gtpl",
+		"**.gtpl",
+	}
+	templateDirPatterns := make([]string, len(templateDirs)*len(patterns))
+	for _, templateDir := range templateDirs {
+		for _, pattern := range patterns {
+			templateDirPatterns = append(templateDirPatterns, filepath.Join(templateDir, pattern))
+		}
+	}
+	files, err := files.MatchPatterns(templateDirPatterns...)
 	if err != nil {
 		return nil, err
 	}

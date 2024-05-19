@@ -2,7 +2,6 @@
 package compiler
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/fchastanet/bash-compiler/internal/model"
@@ -16,36 +15,24 @@ const (
 )
 
 // GenerateCode generates code from given model
-func GenerateCode(binaryModelFilePath string) {
-	// load command yaml data model
-	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
-	binaryModel, err := model.LoadBinaryModel(binaryModelFilePath)
-	if err != nil {
-		panic(err)
-	}
-
+func GenerateCode(binaryModel *model.BinaryModel) (code string, err error) {
 	// load template system
 	templateContext, err := myTemplate.NewTemplate(
-		binaryModel.BinFile.TemplateDir,
+		binaryModel.BinFile.TemplateDirs,
 		binaryModel.BinFile.TemplateFile,
 		myTemplateFunctions.FuncMap(),
 	)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	// render
-	var str string
 	templateContext.Data = &binaryModel.BinData
 	templateContext.RootData = templateContext.Data
-	str, err = templateContext.Render("commands")
+	code, err = templateContext.Render("commands")
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	// Save resulting file
-	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.sh", []byte(str), UserReadWriteExecutePerm); err != nil {
-		panic(err)
-	}
-	slog.Info("Check templates-examples/testsData/shellcheckLint.sh")
+	return code, err
 }

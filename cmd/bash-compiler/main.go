@@ -4,11 +4,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/log"
+	"github.com/fchastanet/bash-compiler/internal/model"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -59,5 +61,34 @@ func main() {
 			Summary: true,
 		}))
 
-	compiler.GenerateCode(string(cli.YamlFile))
+	// load command yaml data model
+	binaryModelFilePath := string(cli.YamlFile)
+	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
+	binaryModel, err := model.LoadBinaryModel(binaryModelFilePath)
+	if err != nil {
+		panic(err)
+	}
+
+	code, err := compiler.GenerateCode(binaryModel)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save resulting file
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.beforeCompile.sh", []byte(code), UserReadWriteExecutePerm); err != nil {
+		panic(err)
+	}
+	slog.Info("Check templates-examples/testsData/shellcheckLint.beforeCompile.sh")
+
+	// Compile
+	codeCompiled, err := compiler.Compile(code, binaryModel)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save resulting file
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.beforeCompile.sh", []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
+		panic(err)
+	}
+	slog.Info("Check templates-examples/testsData/shellcheckLint.sh")
 }
