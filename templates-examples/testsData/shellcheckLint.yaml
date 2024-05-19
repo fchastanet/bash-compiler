@@ -1,7 +1,10 @@
 binFile:
   targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint'
-  templateDir: 'templates-examples'
-  templateFile: templates-examples/command/commands.gtpl
+  templateFile: "command/commands.gtpl"
+  srcDirs:
+    - "${FRAMEWORK_SRC_DIR}"
+  templateDirs:
+    - "templates-examples"
 binData:
   commands:
     -

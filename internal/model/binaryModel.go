@@ -8,9 +8,10 @@ import (
 )
 
 type BinFileModel struct {
-	TargetFile   string `yaml:"targetFile"`
-	TemplateDir  string `yaml:"templateDir"`
-	TemplateFile string `yaml:"templateFile"`
+	TargetFile   string   `yaml:"targetFile"`
+	TemplateFile string   `yaml:"templateFile"`
+	TemplateDirs []string `yaml:"templateDirs"`
+	SrcDirs      []string `yaml:"srcDirs"`
 }
 type BinaryModel struct {
 	BinFile BinFileModel `yaml:"binFile"`
