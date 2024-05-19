@@ -13,7 +13,7 @@
     return 1
   fi
   {{ if .authorizedValuesList }}
-  if [[ ! "$1" =~ {{ .authorizedValuesList }} ]]; then
+  if [[ ! "$1" =~ {{ .authorizedValuesList | join "|" }} ]]; then
     Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values({{ .authorizedValuesList }})"
     return 1
   fi

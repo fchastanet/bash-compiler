@@ -29,14 +29,15 @@ func bashVariableRef(variableName string) string {
 	return fmt.Sprintf("${%s}", variableName)
 }
 
-func len(list interface{}) (int, error) {
+func stringLength(list interface{}) (int, error) {
 	tp := reflect.TypeOf(list).Kind()
+	//nolint:exhaustive
 	switch tp {
 	case reflect.Slice, reflect.Array:
 		l2 := reflect.ValueOf(list)
 		return l2.Len(), nil
 	case reflect.String:
-		return len(list.(string))
+		return stringLength(list.(string))
 	default:
 		return 0, errorNotSupportedType
 	}
@@ -47,7 +48,7 @@ func FuncMap() map[string]interface{} {
 	funcMap["errorIfEmpty"] = errorIfEmpty
 	funcMap["logWarn"] = logWarn
 	// string functions
-	funcMap["len"] = len
+	funcMap["len"] = stringLength
 	funcMap["bashVariableRef"] = bashVariableRef
 	// templates functions
 	funcMap["include"] = include

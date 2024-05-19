@@ -3,8 +3,8 @@
 {{- with .Data -}}
 {{- $Data := . -}}
 {{ if .authorizedValuesList }}
-if [[ ! "${options_parse_arg}" =~ {{ .authorizedValuesList }} ]]; then
-  Log::displayError "Command ${SCRIPT_NAME} - Argument {{ .name }} - value '${options_parse_arg}' is not part of authorized values({{ .authorizedValuesList }})"
+if [[ ! "${options_parse_arg}" =~ {{ .authorizedValuesList | join "|" }} ]]; then
+  Log::displayError "Command ${SCRIPT_NAME} - Argument {{ .name }} - value '${options_parse_arg}' is not part of authorized values({{ .authorizedValuesList | join ", " }})"
   return 1
 fi
 {{ end }}

@@ -10,6 +10,8 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
+const IndentSize = 2
+
 // FromYAMLFile loads yaml file and decodes it
 func FromYAMLFile(filePath string) interface{} {
 	yamlFile, err := os.ReadFile(filePath)
@@ -37,8 +39,8 @@ func MustFromYAML(data []byte) (interface{}, error) {
 
 // ToYAML decodes YAML into a structured value, ignoring errors.
 func ToYAML(data []interface{}) string {
-	output, _ := yaml.MarshalWithOptions(data, yaml.Indent(2), yaml.IndentSequence(true))
+	output, _ := yaml.MarshalWithOptions(data, yaml.Indent(IndentSize), yaml.IndentSequence(true))
 	slog.Info("-------------------------------------------------------------")
-	fmt.Printf("%s\n", string(output[:]))
-	return string(output[:])
+	fmt.Printf("%s\n", string(output))
+	return string(output)
 }
