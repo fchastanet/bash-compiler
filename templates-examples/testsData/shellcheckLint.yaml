@@ -1,4 +1,8 @@
 binFile:
+  targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint'
+  templateDir: 'templates-examples'
+  templateFile: templates-examples/command/commands.gtpl
+binData:
   commands:
     -
       author: '[François Chastanet](https://github.com/fchastanet)'

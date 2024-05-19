@@ -1,7 +1,7 @@
 {{- define "commands" -}}
 #!/usr/bin/env bash
 {{ $context := . }}
-{{ range .Data.binFile.commands }}
+{{ range .Data.commands }}
 # ------------------------------------------
 # Command {{ .functionName }}
 # ------------------------------------------
