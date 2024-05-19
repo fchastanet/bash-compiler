@@ -2,28 +2,17 @@
 package log
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"log/slog"
+	"os"
 )
 
-// NewAtLevel Initializes logger with provided level
-func NewAtLevel(levelStr string) (*zap.Logger, error) {
-	logLevel := zapcore.InfoLevel
-	if levelStr != "" {
-		var err error
-		logLevel, err = zapcore.ParseLevel(levelStr)
-		if err != nil {
-			return nil, err
-		}
+// InitLogger initializes the logger in slog instance
+func InitLogger() {
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
 	}
+	handler := slog.NewTextHandler(os.Stderr, opts)
 
-	logConf := zap.NewProductionConfig()
-	logConf.Level = zap.NewAtomicLevelAt(logLevel)
-
-	logger, err := logConf.Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return logger, nil
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
 }

@@ -3,7 +3,6 @@ package functions
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 
@@ -14,17 +13,20 @@ const IndentSize = 2
 
 // FromYAMLFile loads yaml file and decodes it
 func FromYAMLFile(filePath string) interface{} {
-	yamlFile, err := os.ReadFile(filePath)
+	model, err := MustFromYAMLFile(filePath)
 	if err != nil {
-		log.Printf("FromYAMLFile %s err #%v ", filePath, err)
+		slog.Error(fmt.Sprintf("FromYAMLFile %s err #%v ", filePath, err))
 	}
-	return fromYAML(yamlFile)
+	return model
 }
 
-// fromYAML decodes YAML into a structured value, ignoring errors.
-func fromYAML(data []byte) interface{} {
-	output, _ := MustFromYAML(data)
-	return output
+// FromYAMLFile loads yaml file and decodes it
+func MustFromYAMLFile(filePath string) (interface{}, error) {
+	yamlFileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	return MustFromYAML(yamlFileContent)
 }
 
 // mustFromYAML decodes JSON into a structured value, returning errors.
@@ -32,7 +34,7 @@ func MustFromYAML(data []byte) (interface{}, error) {
 	var output interface{}
 	err := yaml.Unmarshal(data, &output)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		slog.Error("error during Unmarshalling", "error", err)
 	}
 	return output, err
 }

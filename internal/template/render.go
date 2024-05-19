@@ -28,7 +28,7 @@ func NewTemplate(templateDir string, templateFile string,
 		return nil, err
 	}
 	name := path.Base(templateFile)
-	slog.Info("Loaded template", name, files)
+	slog.Info("Loaded template", "Name", name, "AvailableFile", files)
 
 	myTemplate := template.New(name).Option("missingkey=zero").Funcs(funcMap)
 	_, err = myTemplate.ParseFiles(files...)

@@ -14,6 +14,7 @@ Gofmt
 golint
 Hadolint
 koanf
+kong
 linux
 mdformat
 megalinter
