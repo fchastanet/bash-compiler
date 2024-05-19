@@ -5,7 +5,6 @@
 {{- range $index, $option := .options -}}
 {{include "option.parse.before" $option $context | trim}}
 {{ end -}}
-
 {{ range $index, $arg := .args }}
 {{include "arg.parse.before" $arg $context | trim}}
 {{ end }}

@@ -22,8 +22,6 @@ shellcheckLintCommandParse() {
   ((options_parse_optionParsedCountOptionXargs = 0)) || true
   
   argShellcheckFiles=()
-  local -i options_parse_argParsedCountArgShellcheckFiles
-  ((options_parse_argParsedCountArgShellcheckFiles = 0)) || true
   
   
   # shellcheck disable=SC2034
@@ -53,12 +51,17 @@ shellcheckLintCommandParse() {
       # Option 2/4
       # optionFormat alts --format|-f
       # type: String min 0 max 1
-      # authorizedValues:
+      # authorizedValues: checkstyle|diff|gcc|json|json1|quiet|tty
       --format | -f)
         
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
+          return 1
+        fi
+        
+        if [[ ! "$1" =~ checkstyle|diff|gcc|json|json1|quiet|tty ]]; then
+          Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([checkstyle diff gcc json json1 quiet tty])"
           return 1
         fi
         
@@ -124,7 +127,7 @@ shellcheckLintCommandParse() {
           :
         
         # Argument 1/1
-        # argShellcheckFiles min 1 max -1
+        # argShellcheckFiles min 0 max -1
         
         
         elif (( options_parse_parsedArgIndex >= 0 )); then
@@ -152,14 +155,6 @@ shellcheckLintCommandParse() {
     esac
     shift || true
   done
-  
-  
-  
-  
-  if ((options_parse_argParsedCountArgShellcheckFiles < 1 )); then
-    Log::displayError "Command ${SCRIPT_NAME} - Argument 'shellcheckFiles' should be provided at least 1 time(s)"
-    return 1
-  fi
 }
 
 shellcheckLintCommandLongDescription="$(cat <<'EOF'
@@ -182,8 +177,7 @@ EOF
 # @description display command options and arguments help for shellcheckLintCommand
 shellcheckLintCommandHelp() {
   Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
-    "Lint bash files using shellcheck.
-  "
+    "Lint bash files using shellcheck."
   echo
   
   # ------------------------------------------
@@ -196,7 +190,7 @@ shellcheckLintCommandHelp() {
   # ------------------------------------------
   optionsAltList=(
     "--help|-h"
-    "[--format|-f <optionFormat>]"
+    "[--format|-f <format>]"
     "--staged"
     "--xargs"
   )
@@ -211,7 +205,7 @@ shellcheckLintCommandHelp() {
   
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
-  echo -e "${__HELP_OPTION_COLOR}--format${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-f optionFormat${__HELP_NORMAL} {single}"
+  echo -e "${__HELP_OPTION_COLOR}--format${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-f format${__HELP_NORMAL} {single}"
   
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
@@ -232,5 +226,27 @@ shellcheckLintCommandHelp() {
   echo
   echo -n -e "${__HELP_TITLE_COLOR}VERSION: ${__RESET_COLOR}"
   echo '1.0'
+  # ------------------------------------------
+  # author section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}AUTHOR: ${__RESET_COLOR}"
+  echo '[François Chastanet](https://github.com/fchastanet)'
+  # ------------------------------------------
+  # sourceFile section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}SOURCE FILE: ${__RESET_COLOR}"
+  echo '${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}'
+  # ------------------------------------------
+  # license section
+  # ------------------------------------------
+  echo
+  echo -n -e "${__HELP_TITLE_COLOR}LICENSE: ${__RESET_COLOR}"
+  echo 'MIT License'
+  # ------------------------------------------
+  # copyright section
+  # ------------------------------------------
+  Array::wrap2 ' ' 76 0 """copyrightCallback"""
 }
 
