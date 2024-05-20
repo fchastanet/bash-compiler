@@ -12,12 +12,14 @@ gitleaks
 gofmt
 Gofmt
 golint
+gzip
 Hadolint
 koanf
 kong
 linux
 mdformat
 megalinter
+mysqldump
 Parens
 plantuml
 podman
