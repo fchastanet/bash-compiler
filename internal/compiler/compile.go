@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/fchastanet/bash-compiler/internal/model"
@@ -105,6 +106,7 @@ func injectFunctionCode(code string, functionsCode string) (newCode string, err 
 
 func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code string, err error) {
 	var functionNames []string = utils.MapKeys(functionsMap)
+	sort.Strings(functionNames) // ensure to generate functions always in the same order
 	var bufferFirst bytes.Buffer
 	var bufferMiddle bytes.Buffer
 	var bufferLast bytes.Buffer

@@ -85,111 +85,6 @@ export __VERBOSE_LEVEL_DEBUG=2
 # @description verbose level info
 export __VERBOSE_LEVEL_TRACE=3
 
-declare -g FIRST_LOG_DATE LOG_LAST_LOG_DATE LOG_LAST_LOG_DATE_INIT LOG_LAST_DURATION_STR
-FIRST_LOG_DATE="${EPOCHREALTIME/[^0-9]/}"
-LOG_LAST_LOG_DATE="${FIRST_LOG_DATE}"
-LOG_LAST_LOG_DATE_INIT=1
-LOG_LAST_DURATION_STR=""
-
-# @description compute duration since last call to this function
-# the result is set in following env variables.
-# in ss.sss (seconds followed by milliseconds precision 3 decimals)
-# @noargs
-# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
-# @set LOG_LAST_LOG_DATE_INIT int (default 1) set to 0 at first call, allows to detect reference log
-# @set LOG_LAST_DURATION_STR String the last duration displayed
-# @set LOG_LAST_LOG_DATE String the last log date that will be used to compute next diff
-Log::computeDuration() {
-  if ((${DISPLAY_DURATION:-0} == 1)); then
-    local -i duration=0
-    local -i delta=0
-    local -i currentLogDate
-    currentLogDate="${EPOCHREALTIME/[^0-9]/}"
-    if ((LOG_LAST_LOG_DATE_INIT == 1)); then
-      LOG_LAST_LOG_DATE_INIT=0
-      LOG_LAST_DURATION_STR="Ref"
-    else
-      duration=$(((currentLogDate - FIRST_LOG_DATE) / 1000000))
-      delta=$(((currentLogDate - LOG_LAST_LOG_DATE) / 1000000))
-      LOG_LAST_DURATION_STR="${duration}s/+${delta}s"
-    fi
-    LOG_LAST_LOG_DATE="${currentLogDate}"
-    # shellcheck disable=SC2034
-    local microSeconds="${EPOCHREALTIME#*.}"
-    LOG_LAST_DURATION_STR="$(printf '%(%T)T.%03.0f\n' "${EPOCHSECONDS}" "${microSeconds:0:3}")(${LOG_LAST_DURATION_STR}) - "
-  else
-    # shellcheck disable=SC2034
-    LOG_LAST_DURATION_STR=""
-  fi
-}
-
-# @description log message to file
-# @arg $1 message:String the message to display
-Log::logError() {
-  if ((BASH_FRAMEWORK_LOG_LEVEL >= __LEVEL_ERROR)); then
-    Log::logMessage "${2:-ERROR}" "$1"
-  fi
-}
-
-# @description log message to file
-# @arg $1 message:String the message to display
-Log::logDebug() {
-  if ((BASH_FRAMEWORK_LOG_LEVEL >= __LEVEL_DEBUG)); then
-    Log::logMessage "${2:-DEBUG}" "$1"
-  fi
-}
-
-# @description Internal: common log message
-# @example text
-#   [date]|[levelMsg]|message
-#
-# @example text
-#   2020-01-19 19:20:21|ERROR  |log error
-#   2020-01-19 19:20:21|SKIPPED|log skipped
-#
-# @arg $1 levelMsg:String message's level description (eg: STATUS, ERROR, ...)
-# @arg $2 msg:String the message to display
-# @env BASH_FRAMEWORK_LOG_FILE String log file to use, do nothing if empty
-# @env BASH_FRAMEWORK_LOG_LEVEL int log level log only if > OFF or fatal messages
-# @stderr diagnostics information is displayed
-# @require Env::requireLoad
-# @require Log::requireLoad
-Log::logMessage() {
-  local levelMsg="$1"
-  local msg="$2"
-  local date
-
-  if [[ -n "${BASH_FRAMEWORK_LOG_FILE}" ]] && ((BASH_FRAMEWORK_LOG_LEVEL > __LEVEL_OFF)); then
-    date="$(date '+%Y-%m-%d %H:%M:%S')"
-    touch "${BASH_FRAMEWORK_LOG_FILE}"
-    printf "%s|%7s|%s\n" "${date}" "${levelMsg}" "${msg}" >>"${BASH_FRAMEWORK_LOG_FILE}"
-  fi
-}
-
-# @description Display message using debug color (gray)
-# @arg $1 message:String the message to display
-# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
-# @env LOG_CONTEXT String allows to contextualize the log
-Log::displayDebug() {
-  if ((BASH_FRAMEWORK_DISPLAY_LEVEL >= __LEVEL_DEBUG)); then
-    Log::computeDuration
-    echo -e "${__DEBUG_COLOR}DEBUG   - ${LOG_CONTEXT:-}${LOG_LAST_DURATION_STR:-}${1}${__RESET_COLOR}" >&2
-  fi
-  Log::logDebug "$1"
-}
-
-# @description Display message using error color (red)
-# @arg $1 message:String the message to display
-# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
-# @env LOG_CONTEXT String allows to contextualize the log
-Log::displayError() {
-  if ((BASH_FRAMEWORK_DISPLAY_LEVEL >= __LEVEL_ERROR)); then
-    Log::computeDuration
-    echo -e "${__ERROR_COLOR}ERROR   - ${LOG_CONTEXT:-}${LOG_LAST_DURATION_STR:-}${1}${__RESET_COLOR}" >&2
-  fi
-  Log::logError "$1"
-}
-
 # @description concatenate each element of an array with a separator
 # but wrapping text when line length is more than provided argument
 # The algorithm will try not to cut the array element if it can.
@@ -316,6 +211,111 @@ Array::wrap2() {
       printCurrentLine
     fi
   ) | sed -E -e 's/[[:blank:]]+$//'
+}
+
+declare -g FIRST_LOG_DATE LOG_LAST_LOG_DATE LOG_LAST_LOG_DATE_INIT LOG_LAST_DURATION_STR
+FIRST_LOG_DATE="${EPOCHREALTIME/[^0-9]/}"
+LOG_LAST_LOG_DATE="${FIRST_LOG_DATE}"
+LOG_LAST_LOG_DATE_INIT=1
+LOG_LAST_DURATION_STR=""
+
+# @description compute duration since last call to this function
+# the result is set in following env variables.
+# in ss.sss (seconds followed by milliseconds precision 3 decimals)
+# @noargs
+# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
+# @set LOG_LAST_LOG_DATE_INIT int (default 1) set to 0 at first call, allows to detect reference log
+# @set LOG_LAST_DURATION_STR String the last duration displayed
+# @set LOG_LAST_LOG_DATE String the last log date that will be used to compute next diff
+Log::computeDuration() {
+  if ((${DISPLAY_DURATION:-0} == 1)); then
+    local -i duration=0
+    local -i delta=0
+    local -i currentLogDate
+    currentLogDate="${EPOCHREALTIME/[^0-9]/}"
+    if ((LOG_LAST_LOG_DATE_INIT == 1)); then
+      LOG_LAST_LOG_DATE_INIT=0
+      LOG_LAST_DURATION_STR="Ref"
+    else
+      duration=$(((currentLogDate - FIRST_LOG_DATE) / 1000000))
+      delta=$(((currentLogDate - LOG_LAST_LOG_DATE) / 1000000))
+      LOG_LAST_DURATION_STR="${duration}s/+${delta}s"
+    fi
+    LOG_LAST_LOG_DATE="${currentLogDate}"
+    # shellcheck disable=SC2034
+    local microSeconds="${EPOCHREALTIME#*.}"
+    LOG_LAST_DURATION_STR="$(printf '%(%T)T.%03.0f\n' "${EPOCHSECONDS}" "${microSeconds:0:3}")(${LOG_LAST_DURATION_STR}) - "
+  else
+    # shellcheck disable=SC2034
+    LOG_LAST_DURATION_STR=""
+  fi
+}
+
+# @description Display message using debug color (gray)
+# @arg $1 message:String the message to display
+# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
+# @env LOG_CONTEXT String allows to contextualize the log
+Log::displayDebug() {
+  if ((BASH_FRAMEWORK_DISPLAY_LEVEL >= __LEVEL_DEBUG)); then
+    Log::computeDuration
+    echo -e "${__DEBUG_COLOR}DEBUG   - ${LOG_CONTEXT:-}${LOG_LAST_DURATION_STR:-}${1}${__RESET_COLOR}" >&2
+  fi
+  Log::logDebug "$1"
+}
+
+# @description Display message using error color (red)
+# @arg $1 message:String the message to display
+# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
+# @env LOG_CONTEXT String allows to contextualize the log
+Log::displayError() {
+  if ((BASH_FRAMEWORK_DISPLAY_LEVEL >= __LEVEL_ERROR)); then
+    Log::computeDuration
+    echo -e "${__ERROR_COLOR}ERROR   - ${LOG_CONTEXT:-}${LOG_LAST_DURATION_STR:-}${1}${__RESET_COLOR}" >&2
+  fi
+  Log::logError "$1"
+}
+
+# @description log message to file
+# @arg $1 message:String the message to display
+Log::logDebug() {
+  if ((BASH_FRAMEWORK_LOG_LEVEL >= __LEVEL_DEBUG)); then
+    Log::logMessage "${2:-DEBUG}" "$1"
+  fi
+}
+
+# @description log message to file
+# @arg $1 message:String the message to display
+Log::logError() {
+  if ((BASH_FRAMEWORK_LOG_LEVEL >= __LEVEL_ERROR)); then
+    Log::logMessage "${2:-ERROR}" "$1"
+  fi
+}
+
+# @description Internal: common log message
+# @example text
+#   [date]|[levelMsg]|message
+#
+# @example text
+#   2020-01-19 19:20:21|ERROR  |log error
+#   2020-01-19 19:20:21|SKIPPED|log skipped
+#
+# @arg $1 levelMsg:String message's level description (eg: STATUS, ERROR, ...)
+# @arg $2 msg:String the message to display
+# @env BASH_FRAMEWORK_LOG_FILE String log file to use, do nothing if empty
+# @env BASH_FRAMEWORK_LOG_LEVEL int log level log only if > OFF or fatal messages
+# @stderr diagnostics information is displayed
+# @require Env::requireLoad
+# @require Log::requireLoad
+Log::logMessage() {
+  local levelMsg="$1"
+  local msg="$2"
+  local date
+
+  if [[ -n "${BASH_FRAMEWORK_LOG_FILE}" ]] && ((BASH_FRAMEWORK_LOG_LEVEL > __LEVEL_OFF)); then
+    date="$(date '+%Y-%m-%d %H:%M:%S')"
+    touch "${BASH_FRAMEWORK_LOG_FILE}"
+    printf "%s|%7s|%s\n" "${date}" "${levelMsg}" "${msg}" >>"${BASH_FRAMEWORK_LOG_FILE}"
+  fi
 }
 # FUNCTIONS
 
