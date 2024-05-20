@@ -77,7 +77,6 @@ func main() {
 	}
 
 	// Save resulting file
-	codeCompiled = code // TODO remove
 	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.sh", []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}

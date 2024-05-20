@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	shebangRegexp               = regexp.MustCompile(`^(#!.*)?$`)
 	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
 	bashFrameworkFunctionRegexp = regexp.MustCompile(
 		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)
@@ -49,19 +50,24 @@ func ErrFunctionNotFound(functionName string, srcDirs []string) error {
 func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, err error) {
 	functionsMap := make(map[string]functionInfoStruct)
 	extractUniqueFrameworkFunctions(functionsMap, code)
-	err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
+	_, err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
 	if err != nil {
 		return "", err
 	}
 	newFunctionAdded := true
 	for newFunctionAdded {
-		newFunctionAdded, err = retrieveAllFunctionsContent(functionsMap)
+		newFunctionAdded, err = retrieveAllFunctionsContent(functionsMap, binaryModel)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return "", nil
+	generatedCode, err := generateFunctionCode(functionsMap)
+	if err != nil {
+		return "", err
+	}
+
+	return generatedCode, nil
 }
 
 func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code string, err error) {
@@ -71,61 +77,94 @@ func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code stri
 	var bufferLast bytes.Buffer
 	for _, functionName := range functionNames {
 		functionInfo := functionsMap[functionName]
-		if functionInfo.SourceCodeLoaded {
+		if !functionInfo.SourceCodeLoaded {
+			slog.Warn("Function source code not loaded", "functionName", functionName)
 			continue
 		}
-		var buffer *bytes.Buffer
+		slog.Debug("Append ", "SourceCodeLen", len(functionInfo.SourceCode), "InsertPosition", functionInfo.InsertPosition)
 		switch functionInfo.InsertPosition {
 		case InsertPositionFirst:
-			buffer = &bufferFirst
+			_, err = bufferFirst.Write([]byte(functionInfo.SourceCode))
 		case InsertPositionMiddle:
-			buffer = &bufferMiddle
+			_, err = bufferMiddle.Write([]byte(functionInfo.SourceCode))
 		case InsertPositionLast:
-			buffer = &bufferLast
+			_, err = bufferLast.Write([]byte(functionInfo.SourceCode))
 		}
-		_, err = buffer.Write([]byte(functionInfo.SourceCode))
 		if err != nil {
 			return "", err
 		}
 	}
 	var finalBuffer bytes.Buffer
-	_, err = finalBuffer.Write(bufferFirst.AvailableBuffer())
+	slog.Debug("Append ", "bufferFirstLen", bufferFirst.Len())
+	_, err = finalBuffer.Write(bufferFirst.Bytes())
 	if err != nil {
 		return "", err
 	}
-	_, err = finalBuffer.Write(bufferMiddle.AvailableBuffer())
+	slog.Debug("Append ", "bufferMiddleLen", bufferMiddle.Len())
+	_, err = finalBuffer.Write(bufferMiddle.Bytes())
 	if err != nil {
 		return "", err
 	}
-	_, err = finalBuffer.Write(bufferLast.AvailableBuffer())
+	slog.Debug("Append ", "bufferLastLen", bufferLast.Len())
+	_, err = finalBuffer.Write(bufferLast.Bytes())
 	if err != nil {
 		return "", err
 	}
+	slog.Debug("Final Buffer ", "finalBufferLen", finalBuffer.Len())
 	return finalBuffer.String(), nil
 }
 
-func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct) (
+func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, binaryModel *model.BinaryModel) (
 	newFunctionAdded bool, err error,
 ) {
 	var functionNames []string = utils.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := functionsMap[functionName]
+		slog.Debug("retrieveAllFunctionsContent", "functionName", functionName, "SourceCodeLoaded", functionInfo.SourceCodeLoaded)
 		if functionInfo.SourceCodeLoaded {
+			slog.Debug("Function source code loaded", "functionName", functionName)
 			continue
 		}
+		slog.Debug("Loading Function source code", "functionName", functionName, "SrcFile", functionInfo.SrcFile)
 		fileContent, err := os.ReadFile(functionInfo.SrcFile)
 		if err != nil {
 			return false, err
 		}
-		functionInfo.SourceCode = string(fileContent)
+		functionInfo.SourceCode = cleanSourceCode(string(fileContent))
 		functionInfo.SourceCodeLoaded = true
-
-		newFunctionAdded = extractUniqueFrameworkFunctions(functionsMap, functionInfo.SourceCode)
+		functionsMap[functionName] = functionInfo
+		newFunctionExtracted := extractUniqueFrameworkFunctions(functionsMap, functionInfo.SourceCode)
+		addedFiles, err := retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
+		newFunctionAdded = newFunctionAdded || addedFiles || newFunctionExtracted
+		if err != nil {
+			return newFunctionAdded, err
+		}
 	}
 	return newFunctionAdded, nil
 }
 
-func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDirs []string) (err error) {
+// cleanSourceCode cleans the code by removing shebang line
+func cleanSourceCode(code string) (newCode string) {
+	var rewrittenCode bytes.Buffer
+	scanner := bufio.NewScanner(strings.NewReader(code))
+	lineCount := 0
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		lineCount++
+		if lineCount == 1 && shebangRegexp.Match(line) {
+			continue
+		}
+
+		rewrittenCode.Write(line)
+		rewrittenCode.WriteByte(byte('\n'))
+	}
+
+	return rewrittenCode.String()
+}
+
+func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDirs []string) (
+	addedFiles bool, err error) {
+	addedFiles = false
 	var functionNames []string = utils.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := functionsMap[functionName]
@@ -135,7 +174,7 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 		functionRelativePath := convertFunctionNameToPath(functionName)
 		filePath, _, found := findFileInSrcDirs(functionRelativePath, srcDirs)
 		if !found {
-			return ErrFunctionNotFound(functionName, srcDirs)
+			return addedFiles, ErrFunctionNotFound(functionName, srcDirs)
 		}
 		functionInfo.SrcFile = filePath
 		functionsMap[functionName] = functionInfo
@@ -149,6 +188,7 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 		if found {
 			if _, ok := functionsMap[filePath]; !ok {
 				slog.Debug("Adding file", "file", filePath)
+				addedFiles = true
 				functionsMap[filePath] = functionInfoStruct{
 					FunctionName:     filePath,
 					SrcFile:          filePath,
@@ -165,6 +205,7 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 		filePath, _, found = findFileInSrcDirs(zzzShFile, srcDirs)
 		if found {
 			if _, ok := functionsMap[filePath]; !ok {
+				addedFiles = true
 				slog.Debug("Adding file", "file", filePath)
 				functionsMap[filePath] = functionInfoStruct{
 					FunctionName:     filePath,
@@ -179,16 +220,18 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 	}
 
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
-	slog.Info("Found these", "bashFrameworkFunctionsSrc", functionsMap)
-	return nil
+	slog.Info("Found these", "bashFrameworkFunctions", utils.MapKeys(functionsMap))
+	return addedFiles, nil
 }
 
 func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct, code string) (newFunctionAdded bool) {
+	var rewrittenCode bytes.Buffer
 	newFunctionAdded = false
 	funcNameGroupIndex := bashFrameworkFunctionRegexp.SubexpIndex("funcName")
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	for scanner.Scan() {
 		line := scanner.Bytes()
+		rewrittenCode.Write(line)
 		if commentRegexp.Match(line) {
 			continue
 		}
@@ -198,11 +241,12 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 			if _, keyExists := functionsMap[funcName]; !keyExists {
 				slog.Debug("Found new", "bashFrameworkFunction", funcName)
 				functionsMap[funcName] = functionInfoStruct{
-					FunctionName:   funcName,
-					SrcFile:        "",
-					Inserted:       false,
-					InsertPosition: InsertPositionMiddle,
-					SourceCode:     "",
+					FunctionName:     funcName,
+					SrcFile:          "",
+					Inserted:         false,
+					InsertPosition:   InsertPositionMiddle,
+					SourceCode:       "",
+					SourceCodeLoaded: false,
 				}
 				newFunctionAdded = true
 			}
