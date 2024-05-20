@@ -53,12 +53,13 @@ func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, 
 	if err != nil {
 		return "", err
 	}
-	err = retrieveAllFunctionsContent(functionsMap)
-	if err != nil {
-		return "", err
+	newFunctionAdded := true
+	for newFunctionAdded {
+		newFunctionAdded, err = retrieveAllFunctionsContent(functionsMap)
+		if err != nil {
+			return "", err
+		}
 	}
-
-	// TODO deduce from sourceCode new function to inject
 
 	return "", nil
 }
@@ -103,7 +104,9 @@ func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code stri
 	return finalBuffer.String(), nil
 }
 
-func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct) (err error) {
+func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct) (
+	newFunctionAdded bool, err error,
+) {
 	var functionNames []string = utils.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := functionsMap[functionName]
@@ -112,12 +115,14 @@ func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct) (er
 		}
 		fileContent, err := os.ReadFile(functionInfo.SrcFile)
 		if err != nil {
-			return err
+			return false, err
 		}
 		functionInfo.SourceCode = string(fileContent)
 		functionInfo.SourceCodeLoaded = true
+
+		newFunctionAdded = extractUniqueFrameworkFunctions(functionsMap, functionInfo.SourceCode)
 	}
-	return nil
+	return newFunctionAdded, nil
 }
 
 func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDirs []string) (err error) {
@@ -178,7 +183,8 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 	return nil
 }
 
-func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct, code string) {
+func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct, code string) (newFunctionAdded bool) {
+	newFunctionAdded = false
 	funcNameGroupIndex := bashFrameworkFunctionRegexp.SubexpIndex("funcName")
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	for scanner.Scan() {
@@ -190,6 +196,7 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 		if matches != nil {
 			funcName := string(matches[funcNameGroupIndex])
 			if _, keyExists := functionsMap[funcName]; !keyExists {
+				slog.Debug("Found new", "bashFrameworkFunction", funcName)
 				functionsMap[funcName] = functionInfoStruct{
 					FunctionName:   funcName,
 					SrcFile:        "",
@@ -197,11 +204,12 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 					InsertPosition: InsertPositionMiddle,
 					SourceCode:     "",
 				}
+				newFunctionAdded = true
 			}
 		}
 	}
 
-	slog.Info("Found these", "bashFrameworkFunctions", functionsMap)
+	return newFunctionAdded
 }
 
 //nolint:unparam
