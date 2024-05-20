@@ -47,6 +47,10 @@ repos:
           )
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
+        exclude: |
+          (?x)(
+            \.gtpl$
+          )
       - id: check-xml
       - id: check-merge-conflict
       - id: detect-private-key
@@ -149,7 +153,6 @@ repos:
   - repo: https://github.com/fchastanet/bash-tools-framework
     rev: 4.0.0
     hooks:
-      - id: fixShebangExecutionBit
       - id: awkLint
       - id: shellcheckLint
       - id: shellcheckLintGithubAction

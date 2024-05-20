@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+###############################################################################
+# GENERATED FROM ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
+# DO NOT EDIT IT
+# @generated
+###############################################################################
+# shellcheck disable=SC2288,SC2034
 
 #!/usr/bin/env bash
 
@@ -55,6 +61,47 @@ interruptManagement() {
   kill -s INT "$$"
 }
 trap interruptManagement INT
+
+################################################
+# Temp dir management
+################################################
+
+KEEP_TEMP_FILES="${KEEP_TEMP_FILES:-0}"
+export KEEP_TEMP_FILES
+
+# PERSISTENT_TMPDIR is not deleted by traps
+PERSISTENT_TMPDIR="${TMPDIR:-/tmp}/bash-framework"
+export PERSISTENT_TMPDIR
+if [[ ! -d "${PERSISTENT_TMPDIR}" ]]; then
+  mkdir -p "${PERSISTENT_TMPDIR}"
+fi
+
+# shellcheck disable=SC2034
+TMPDIR="$(mktemp -d -p "${PERSISTENT_TMPDIR:-/tmp}" -t bash-framework-$$-XXXXXX)"
+export TMPDIR
+
+# temp dir cleaning
+# shellcheck disable=SC2317
+cleanOnExit() {
+  local rc=$?
+  if [[ "${KEEP_TEMP_FILES:-0}" = "1" ]]; then
+    Log::displayInfo "KEEP_TEMP_FILES=1 temp files kept here '${TMPDIR}'"
+  elif [[ -n "${TMPDIR+xxx}" ]]; then
+    Log::displayDebug "KEEP_TEMP_FILES=0 removing temp files '${TMPDIR}'"
+    rm -Rf "${TMPDIR:-/tmp/fake}" >/dev/null 2>&1
+  fi
+  exit "${rc}"
+}
+trap cleanOnExit EXIT HUP QUIT ABRT TERM
+#!/usr/bin/env bash
+
+SCRIPT_NAME=${0##*/}
+REAL_SCRIPT_FILE="$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")"
+if [[ -n "${EMBED_CURRENT_DIR}" ]]; then
+  CURRENT_DIR="${EMBED_CURRENT_DIR}"
+else
+  CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
+fi
 # FUNCTIONS
 
 # ------------------------------------------
@@ -306,3 +353,22 @@ shellcheckLintCommandHelp() {
   Array::wrap2 ' ' 76 0 """copyrightCallback"""
 }
 
+MAIN_FUNCTION_NAME="main"
+main() {
+  #!/usr/bin/env bash
+  
+  SCRIPT_NAME=${0##*/}
+  REAL_SCRIPT_FILE="$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")"
+  if [[ -n "${EMBED_CURRENT_DIR}" ]]; then
+    CURRENT_DIR="${EMBED_CURRENT_DIR}"
+  else
+    CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
+  fi
+  shellcheckLintCommandParse "$@"
+}
+
+# if file is sourced avoid calling main function
+# shellcheck disable=SC2178
+BASH_SOURCE=".$0" # cannot be changed in bash
+# shellcheck disable=SC2128
+test ".$0" != ".${BASH_SOURCE}" || main "$@"

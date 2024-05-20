@@ -51,5 +51,8 @@ func (templateContext Context) Render(template string) (string, error) {
 	var tplWriter bytes.Buffer
 	slog.Debug("Render template", slog.String("template", template))
 	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, templateContext)
+	if err != nil {
+		return "", err
+	}
 	return tplWriter.String(), err
 }

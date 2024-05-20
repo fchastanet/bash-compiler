@@ -8,6 +8,7 @@ gitleaks
 gitmodules
 golangci
 GRYPE
+gtpl
 logrus
 sbom
 shellcheckrc
