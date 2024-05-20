@@ -10,6 +10,7 @@ import (
 type BinFileModel struct {
 	TargetFile   string   `yaml:"targetFile"`
 	TemplateFile string   `yaml:"templateFile"`
+	TemplateName string   `yaml:"templateName"`
 	TemplateDirs []string `yaml:"templateDirs"`
 	SrcDirs      []string `yaml:"srcDirs"`
 }

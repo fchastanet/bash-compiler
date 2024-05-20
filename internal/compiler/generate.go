@@ -29,7 +29,8 @@ func GenerateCode(binaryModel *model.BinaryModel) (code string, err error) {
 	// render
 	templateContext.Data = &binaryModel.BinData
 	templateContext.RootData = templateContext.Data
-	code, err = templateContext.Render("commands")
+
+	code, err = templateContext.Render(binaryModel.BinFile.TemplateName)
 	if err != nil {
 		return "", err
 	}

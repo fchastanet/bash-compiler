@@ -2,8 +2,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -11,6 +9,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/log"
 	"github.com/fchastanet/bash-compiler/internal/model"
+	"github.com/fchastanet/bash-compiler/internal/utils"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -24,18 +23,9 @@ type cli struct {
 }
 type YamlFile string
 
-var errFileMissing = errors.New("File does not exist")
-
-func ErrFileMissing(file string) error {
-	return fmt.Errorf("%w: %s", errFileMissing, file)
-}
-
 func (yamlFile *YamlFile) Validate() error {
 	yamlFilePath := string(*yamlFile)
-	if _, err := os.Stat(yamlFilePath); errors.Is(err, os.ErrNotExist) {
-		return ErrFileMissing(yamlFilePath)
-	}
-	return nil
+	return utils.FileExists(yamlFilePath)
 }
 
 func main() {
@@ -87,7 +77,8 @@ func main() {
 	}
 
 	// Save resulting file
-	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.beforeCompile.sh", []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
+	codeCompiled = code // TODO remove
+	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.sh", []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}
 	slog.Info("Check templates-examples/testsData/shellcheckLint.sh")
