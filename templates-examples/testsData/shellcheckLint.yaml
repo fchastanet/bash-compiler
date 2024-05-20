@@ -1,8 +1,9 @@
 binFile:
   targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint'
-  templateFile: "command/commands.gtpl"
+  templateFile: "binFile.gtpl"
+  templateName: "binFile"
   srcDirs:
-    - "${FRAMEWORK_SRC_DIR}"
+    - "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src"
   templateDirs:
     - "templates-examples"
 binData:
