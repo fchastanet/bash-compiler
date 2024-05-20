@@ -20,9 +20,9 @@ type Context struct {
 func NewTemplate(templateDirs []string, templateFile string,
 	funcMap template.FuncMap) (templateContext *Context, err error) {
 	var patterns = [3]string{
-		"**/**/*.gtpl",
-		"**/*.gtpl",
-		"**.gtpl",
+		"**/**/*.*",
+		"**/*.*",
+		"*.*",
 	}
 	templateDirPatterns := make([]string, len(templateDirs)*len(patterns))
 	for _, templateDir := range templateDirs {

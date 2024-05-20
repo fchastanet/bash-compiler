@@ -1,8 +1,13 @@
 buildx
 coverprofile
+DEBCONF
 exitcode
 golangci
+lastpipe
 ldflags
 noargs
+noninteractive
+NONINTERACTIVE
+nullglob
 pipefail
 posix
