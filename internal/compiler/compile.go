@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
 	shebangRegexp               = regexp.MustCompile(`^(#!.*)?$`)
 	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
 	bashFrameworkFunctionRegexp = regexp.MustCompile(
@@ -46,6 +47,12 @@ func ErrFunctionNotFound(functionName string, srcDirs []string) error {
 	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
 }
 
+var errDuplicatedFunctionsDirective = errors.New("Duplicated FUNCTIONS directive")
+
+func ErrDuplicatedFunctionsDirective() error {
+	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
+}
+
 // Compile generates code from given model
 func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, err error) {
 	functionsMap := make(map[string]functionInfoStruct)
@@ -62,12 +69,38 @@ func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, 
 		}
 	}
 
-	generatedCode, err := generateFunctionCode(functionsMap)
+	functionsCode, err := generateFunctionCode(functionsMap)
+	if err != nil {
+		return "", err
+	}
+
+	generatedCode, err := injectFunctionCode(code, functionsCode)
 	if err != nil {
 		return "", err
 	}
 
 	return generatedCode, nil
+}
+
+func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
+	var rewrittenCode bytes.Buffer
+	scanner := bufio.NewScanner(strings.NewReader(code))
+	slog.Debug("debugCode", "code", code)
+	functionDirectiveFound := false
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if functionsDirectiveRegexp.Match(line) {
+			if functionDirectiveFound {
+				return "", ErrDuplicatedFunctionsDirective()
+			}
+			rewrittenCode.Write([]byte(functionsCode))
+			functionDirectiveFound = true
+		}
+
+		rewrittenCode.Write(line)
+		rewrittenCode.WriteByte(byte('\n'))
+	}
+	return rewrittenCode.String(), nil
 }
 
 func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code string, err error) {
