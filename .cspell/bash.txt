@@ -1,3 +1,4 @@
+ABRT
 buildx
 coverprofile
 DEBCONF
@@ -5,9 +6,12 @@ exitcode
 golangci
 lastpipe
 ldflags
+mktemp
 noargs
 noninteractive
 NONINTERACTIVE
 nullglob
 pipefail
 posix
+realpath
+TMPDIR

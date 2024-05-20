@@ -7,6 +7,8 @@ binFile:
   templateDirs:
     - "templates-examples"
 binData:
+  vars:
+    MAIN_FUNCTION_NAME: main # TODO
   commands:
     -
       author: '[François Chastanet](https://github.com/fchastanet)'

@@ -1,50 +1,42 @@
 #!/usr/bin/env bash
-
-#!/usr/bin/env bash
-
+###############################################################################
+# GENERATED FROM ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
+# DO NOT EDIT IT
+# @generated
+###############################################################################
+# shellcheck disable=SC2288,SC2034
 # ensure that no user aliases could interfere with
 # commands used in this script
 unalias -a || true
 shopt -u expand_aliases
-
 # shellcheck disable=SC2034
 ((failures = 0)) || true
-
 # Bash will remember & return the highest exit code in a chain of pipes.
 # This way you can catch the error inside pipes, e.g. mysqldump | gzip
 set -o pipefail
 set -o errexit
-
 # Command Substitution can inherit errexit option since bash v4.4
 shopt -s inherit_errexit || true
-
 # if set, and job control is not active, the shell runs the last command
 # of a pipeline not executed in the background in the current shell
 # environment.
 shopt -s lastpipe
-
 # a log is generated when a command fails
 set -o errtrace
-
 # use nullglob so that (file*.php) will return an empty array if no file
 # matches the wildcard
 shopt -s nullglob
-
 # ensure regexp are interpreted without accentuated characters
 export LC_ALL=POSIX
-
 export TERM=xterm-256color
-
 # avoid interactive install
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true
-
 # store command arguments for later usage
 # shellcheck disable=SC2034
 declare -a BASH_FRAMEWORK_ARGV=("$@")
 # shellcheck disable=SC2034
 declare -a ORIGINAL_BASH_FRAMEWORK_ARGV=("$@")
-
 # @see https://unix.stackexchange.com/a/386856
 # shellcheck disable=SC2317
 interruptManagement() {
@@ -55,6 +47,40 @@ interruptManagement() {
   kill -s INT "$$"
 }
 trap interruptManagement INT
+################################################
+# Temp dir management
+################################################
+KEEP_TEMP_FILES="${KEEP_TEMP_FILES:-0}"
+export KEEP_TEMP_FILES
+# PERSISTENT_TMPDIR is not deleted by traps
+PERSISTENT_TMPDIR="${TMPDIR:-/tmp}/bash-framework"
+export PERSISTENT_TMPDIR
+if [[ ! -d "${PERSISTENT_TMPDIR}" ]]; then
+  mkdir -p "${PERSISTENT_TMPDIR}"
+fi
+# shellcheck disable=SC2034
+TMPDIR="$(mktemp -d -p "${PERSISTENT_TMPDIR:-/tmp}" -t bash-framework-$$-XXXXXX)"
+export TMPDIR
+# temp dir cleaning
+# shellcheck disable=SC2317
+cleanOnExit() {
+  local rc=$?
+  if [[ "${KEEP_TEMP_FILES:-0}" = "1" ]]; then
+    Log::displayInfo "KEEP_TEMP_FILES=1 temp files kept here '${TMPDIR}'"
+  elif [[ -n "${TMPDIR+xxx}" ]]; then
+    Log::displayDebug "KEEP_TEMP_FILES=0 removing temp files '${TMPDIR}'"
+    rm -Rf "${TMPDIR:-/tmp/fake}" >/dev/null 2>&1
+  fi
+  exit "${rc}"
+}
+trap cleanOnExit EXIT HUP QUIT ABRT TERM
+SCRIPT_NAME=${0##*/}
+REAL_SCRIPT_FILE="$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")"
+if [[ -n "${EMBED_CURRENT_DIR}" ]]; then
+  CURRENT_DIR="${EMBED_CURRENT_DIR}"
+else
+  CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
+fi
 # @description Log namespace provides 2 kind of functions
 # - Log::display* allows to display given message with
 #   given display level
@@ -62,7 +88,6 @@ trap interruptManagement INT
 #   given log level
 # Log::display* functions automatically log the message too
 # @see Env::requireLoad to load the display and log level from .env file
-
 # @description log level off
 export __LEVEL_OFF=0
 # @description log level error
@@ -75,7 +100,6 @@ export __LEVEL_INFO=3
 export __LEVEL_SUCCESS=3
 # @description log level debug
 export __LEVEL_DEBUG=4
-
 # @description verbose level off
 export __VERBOSE_LEVEL_OFF=0
 # @description verbose level info
@@ -84,7 +108,6 @@ export __VERBOSE_LEVEL_INFO=1
 export __VERBOSE_LEVEL_DEBUG=2
 # @description verbose level info
 export __VERBOSE_LEVEL_TRACE=3
-
 # @description concatenate each element of an array with a separator
 # but wrapping text when line length is more than provided argument
 # The algorithm will try not to cut the array element if it can.
@@ -114,7 +137,6 @@ Array::wrap2() {
   if (($# == 0)); then
     return 0
   fi
-
   printCurrentLine() {
     if ((isNewline == 0)) || ((previousLineEmpty == 1)); then
       echo
@@ -136,18 +158,15 @@ Array::wrap2() {
       echo -en "${text%%+([[:blank:]])}"
     fi
   }
-
   (
     local currentLine
     local -i currentLineLength=0 isNewline=1 argLength=0
     local -a additionalLines
     local -i previousLineEmpty=0
     local arg=""
-
     while (($# > 0)); do
       arg="$1"
       shift || true
-
       # replace tab by 2 spaces
       arg="${arg//$'\t'/  }"
       # remove trailing spaces
@@ -168,9 +187,7 @@ Array::wrap2() {
         set -- "${additionalLines[@]}" "$@"
         continue
       fi
-
       ((argLength = ${#arg})) || true
-
       # empty arg
       if ((argLength == 0)); then
         if ((isNewline == 0)); then
@@ -179,7 +196,6 @@ Array::wrap2() {
         fi
         continue
       fi
-
       if ((isNewline == 0)); then
         glueLength="${#glue}"
       else
@@ -196,7 +212,6 @@ Array::wrap2() {
           arg="${arg:${remainingLineLength}}"
           # remove leading spaces
           arg="${arg##[[:blank:]]}"
-
           set -- "${arg}" "$@"
         else
           # the arg can fit on next line
@@ -212,13 +227,11 @@ Array::wrap2() {
     fi
   ) | sed -E -e 's/[[:blank:]]+$//'
 }
-
 declare -g FIRST_LOG_DATE LOG_LAST_LOG_DATE LOG_LAST_LOG_DATE_INIT LOG_LAST_DURATION_STR
 FIRST_LOG_DATE="${EPOCHREALTIME/[^0-9]/}"
 LOG_LAST_LOG_DATE="${FIRST_LOG_DATE}"
 LOG_LAST_LOG_DATE_INIT=1
 LOG_LAST_DURATION_STR=""
-
 # @description compute duration since last call to this function
 # the result is set in following env variables.
 # in ss.sss (seconds followed by milliseconds precision 3 decimals)
@@ -250,7 +263,6 @@ Log::computeDuration() {
     LOG_LAST_DURATION_STR=""
   fi
 }
-
 # @description Display message using debug color (gray)
 # @arg $1 message:String the message to display
 # @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
@@ -262,7 +274,6 @@ Log::displayDebug() {
   fi
   Log::logDebug "$1"
 }
-
 # @description Display message using error color (red)
 # @arg $1 message:String the message to display
 # @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
@@ -274,7 +285,18 @@ Log::displayError() {
   fi
   Log::logError "$1"
 }
-
+# @description Display message using info color (bg light blue/fg white)
+# @arg $1 message:String the message to display
+# @env DISPLAY_DURATION int (default 0) if 1 display elapsed time information between 2 info logs
+# @env LOG_CONTEXT String allows to contextualize the log
+Log::displayInfo() {
+  local type="${2:-INFO}"
+  if ((BASH_FRAMEWORK_DISPLAY_LEVEL >= __LEVEL_INFO)); then
+    Log::computeDuration
+    echo -e "${__INFO_COLOR}${type}    - ${LOG_CONTEXT:-}${LOG_LAST_DURATION_STR:-}${1}${__RESET_COLOR}" >&2
+  fi
+  Log::logInfo "$1" "${type}"
+}
 # @description log message to file
 # @arg $1 message:String the message to display
 Log::logDebug() {
@@ -282,7 +304,6 @@ Log::logDebug() {
     Log::logMessage "${2:-DEBUG}" "$1"
   fi
 }
-
 # @description log message to file
 # @arg $1 message:String the message to display
 Log::logError() {
@@ -290,7 +311,13 @@ Log::logError() {
     Log::logMessage "${2:-ERROR}" "$1"
   fi
 }
-
+# @description log message to file
+# @arg $1 message:String the message to display
+Log::logInfo() {
+  if ((BASH_FRAMEWORK_LOG_LEVEL >= __LEVEL_INFO)); then
+    Log::logMessage "${2:-INFO}" "$1"
+  fi
+}
 # @description Internal: common log message
 # @example text
 #   [date]|[levelMsg]|message
@@ -310,7 +337,6 @@ Log::logMessage() {
   local levelMsg="$1"
   local msg="$2"
   local date
-
   if [[ -n "${BASH_FRAMEWORK_LOG_FILE}" ]] && ((BASH_FRAMEWORK_LOG_LEVEL > __LEVEL_OFF)); then
     date="$(date '+%Y-%m-%d %H:%M:%S')"
     touch "${BASH_FRAMEWORK_LOG_FILE}"
@@ -318,7 +344,6 @@ Log::logMessage() {
   fi
 }
 # FUNCTIONS
-
 # ------------------------------------------
 # Command shellcheckLintCommand
 # ------------------------------------------
@@ -338,10 +363,7 @@ shellcheckLintCommandParse() {
   optionXargs="0"
   local -i options_parse_optionParsedCountOptionXargs
   ((options_parse_optionParsedCountOptionXargs = 0)) || true
-  
   argShellcheckFiles=()
-  
-  
   # shellcheck disable=SC2034
   local -i options_parse_parsedArgIndex=0
   while (($# > 0)); do
@@ -352,144 +374,99 @@ shellcheckLintCommandParse() {
       # optionHelp alts --help|-h
       # type: Boolean min 0 max 1
       --help | -h)
-        
         # shellcheck disable=SC2034
         optionHelp="1"
-        
-        
         if ((options_parse_optionParsedCountOptionHelp >= 1 )); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
         ((++options_parse_optionParsedCountOptionHelp))
-        
-        
         ;;
       # Option 2/4
       # optionFormat alts --format|-f
       # type: String min 0 max 1
       # authorizedValues: checkstyle|diff|gcc|json|json1|quiet|tty
       --format | -f)
-        
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
         if [[ ! "$1" =~ checkstyle|diff|gcc|json|json1|quiet|tty ]]; then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([checkstyle diff gcc json json1 quiet tty])"
           return 1
         fi
-        
-        
-        
         if ((options_parse_optionParsedCountOptionFormat >= 1 )); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
         ((++options_parse_optionParsedCountOptionFormat))
         # shellcheck disable=SC2034
         optionFormat="$1"
-        
-        
         ;;
       # Option 3/4
       # optionStaged alts --staged
       # type: Boolean min 0 max 1
       --staged)
-        
         # shellcheck disable=SC2034
         optionStaged="1"
-        
-        
         if ((options_parse_optionParsedCountOptionStaged >= 1 )); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
         ((++options_parse_optionParsedCountOptionStaged))
-        
-        
         ;;
       # Option 4/4
       # optionXargs alts --xargs
       # type: Boolean min 0 max 1
       --xargs)
-        
         # shellcheck disable=SC2034
         optionXargs="1"
-        
-        
         if ((options_parse_optionParsedCountOptionXargs >= 1 )); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
         ((++options_parse_optionParsedCountOptionXargs))
-        
-        
         ;;
-      
       -*)
-        
-        
         unknownOption "" "${options_parse_arg}" || argOptDefaultBehavior=$?
-        
         ;;
       *)
         if ((0)); then
           # Technical if - never reached
           :
-        
         # Argument 1/1
         # argShellcheckFiles min 0 max -1
-        
-        
         elif (( options_parse_parsedArgIndex >= 0 )); then
-        
           ((++options_parse_argParsedCountArgShellcheckFiles))
           # shellcheck disable=SC2034
-          
           # shellcheck disable=SC2034
           argShellcheckFiles+=("${options_parse_arg}")
-          
           argShellcheckFilesCallback "${argShellcheckFiles[@]}" -- "${@:2}"
-          
-        
         # else too much args
         else
-          
           if [[ "${argOptDefaultBehavior}" = "0" ]]; then
             # too much args and no unknownArgumentCallbacks configured
             Log::displayError "Command ${SCRIPT_NAME} - Argument - too much arguments provided: $*"
             return 1
           fi
-          
         fi
         ;;
     esac
     shift || true
   done
 }
-
 shellcheckLintCommandLongDescription="$(cat <<'EOF'
 shellcheck wrapper that will:
 - install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically
 - by default, lint all git files of this project which are beginning with a bash shebang
   except if the option --staged is passed
-
 ${__HELP_TITLE}Special configuration .shellcheckrc:${__HELP_NORMAL}
 use the following line in your .shellcheckrc file to exclude
 some files from being checked (use grep -E syntax)
 exclude=^bin/bash-tpl$
-
 ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
-
 @@@SHELLCHECK_HELP@@@
-
 EOF
 )"
 # @description display command options and arguments help for shellcheckLintCommand
@@ -497,12 +474,10 @@ shellcheckLintCommandHelp() {
   Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
     "Lint bash files using shellcheck."
   echo
-  
   # ------------------------------------------
   # usage section
   # ------------------------------------------
   Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" "shellcheckLint [OPTIONS] "
-  
   # ------------------------------------------
   # usage/options section
   # ------------------------------------------
@@ -520,24 +495,19 @@ shellcheckLintCommandHelp() {
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "${__HELP_OPTION_COLOR}--help${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-h${__HELP_NORMAL} {single}"
-  
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "${__HELP_OPTION_COLOR}--format${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-f format${__HELP_NORMAL} {single}"
-  
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "${__HELP_OPTION_COLOR}--staged${__HELP_NORMAL} {single}"
-  
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "${__HELP_OPTION_COLOR}--xargs${__HELP_NORMAL} {single}"
-  
   # ------------------------------------------
   # longDescription section
   # ------------------------------------------
   Array::wrap2 ' ' 76 0 "${shellcheckLintCommandLongDescription}"
-  
   # ------------------------------------------
   # version section
   # ------------------------------------------
@@ -567,4 +537,19 @@ shellcheckLintCommandHelp() {
   # ------------------------------------------
   Array::wrap2 ' ' 76 0 """copyrightCallback"""
 }
-
+MAIN_FUNCTION_NAME="main"
+main() {
+  SCRIPT_NAME=${0##*/}
+  REAL_SCRIPT_FILE="$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")"
+  if [[ -n "${EMBED_CURRENT_DIR}" ]]; then
+    CURRENT_DIR="${EMBED_CURRENT_DIR}"
+  else
+    CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
+  fi
+  shellcheckLintCommandParse "$@"
+}
+# if file is sourced avoid calling main function
+# shellcheck disable=SC2178
+BASH_SOURCE=".$0" # cannot be changed in bash
+# shellcheck disable=SC2128
+test ".$0" != ".${BASH_SOURCE}" || main "$@"

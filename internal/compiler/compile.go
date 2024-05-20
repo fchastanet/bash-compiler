@@ -19,7 +19,7 @@ import (
 
 var (
 	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
-	shebangRegexp               = regexp.MustCompile(`^(#!.*)?$`)
+	shebangRegexp               = regexp.MustCompile(`^[ \t]*(#!.*)?$`)
 	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
 	bashFrameworkFunctionRegexp = regexp.MustCompile(
 		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)
@@ -80,7 +80,7 @@ func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, 
 		return "", err
 	}
 
-	return generatedCode, nil
+	return cleanSourceCode(generatedCode), nil
 }
 
 func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
@@ -165,7 +165,7 @@ func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, bin
 		if err != nil {
 			return false, err
 		}
-		functionInfo.SourceCode = cleanSourceCode(string(fileContent))
+		functionInfo.SourceCode = string(fileContent)
 		functionInfo.SourceCodeLoaded = true
 		functionsMap[functionName] = functionInfo
 		newFunctionExtracted := extractUniqueFrameworkFunctions(functionsMap, functionInfo.SourceCode)
@@ -186,7 +186,7 @@ func cleanSourceCode(code string) (newCode string) {
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		lineCount++
-		if lineCount == 1 && shebangRegexp.Match(line) {
+		if lineCount > 1 && shebangRegexp.Match(line) {
 			continue
 		}
 
