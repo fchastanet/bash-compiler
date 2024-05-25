@@ -6,6 +6,7 @@ codespell
 cyclonedx
 dbnavigator
 dotnet
+ecmascript
 fchastanet
 github
 gitleaks

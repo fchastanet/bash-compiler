@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 ###############################################################################
 # GENERATED FROM ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
 # DO NOT EDIT IT
@@ -148,6 +149,9 @@ shellcheckLintCommandParse() {
         fi
         
         ((++options_parse_optionParsedCountOptionHelp))
+        
+        
+        optionHelpCallback "${options_parse_arg}" "${optionHelp}"
         
         
         ;;
@@ -364,7 +368,13 @@ main() {
   else
     CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
   fi
+  FRAMEWORK_ROOT_DIR="$(cd "${CURRENT_DIR}/.." && pwd -P)"
+  FRAMEWORK_SRC_DIR="${FRAMEWORK_ROOT_DIR}/src"
+  FRAMEWORK_BIN_DIR="${FRAMEWORK_ROOT_DIR}/bin"
+  FRAMEWORK_VENDOR_DIR="${FRAMEWORK_ROOT_DIR}/vendor"
+  FRAMEWORK_VENDOR_BIN_DIR="${FRAMEWORK_ROOT_DIR}/vendor/bin"
   shellcheckLintCommandParse "$@"
+  
 }
 
 # if file is sourced avoid calling main function

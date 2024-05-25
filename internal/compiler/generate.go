@@ -15,7 +15,7 @@ const (
 )
 
 // GenerateCode generates code from given model
-func GenerateCode(binaryModel *model.BinaryModel) (code string, err error) {
+func GenerateCode(binaryModel model.BinaryModel) (code string, err error) {
 	// load template system
 	templateContext, err := myTemplate.NewTemplate(
 		binaryModel.BinFile.TemplateDirs,
@@ -27,7 +27,12 @@ func GenerateCode(binaryModel *model.BinaryModel) (code string, err error) {
 	}
 
 	// render
-	templateContext.Data = &binaryModel.BinData
+	data := make(map[string]interface{})
+	data["binData"] = binaryModel.BinData
+	data["binFile"] = binaryModel.BinFile
+	data["vars"] = binaryModel.Vars
+
+	templateContext.Data = data
 	templateContext.RootData = templateContext.Data
 
 	code, err = templateContext.Render(binaryModel.BinFile.TemplateName)

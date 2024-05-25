@@ -55,7 +55,7 @@ func ErrDuplicatedFunctionsDirective() error {
 }
 
 // Compile generates code from given model
-func Compile(code string, binaryModel *model.BinaryModel) (codeCompiled string, err error) {
+func Compile(code string, binaryModel model.BinaryModel) (codeCompiled string, err error) {
 	functionsMap := make(map[string]functionInfoStruct)
 	extractUniqueFrameworkFunctions(functionsMap, code)
 	_, err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
@@ -149,7 +149,7 @@ func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code stri
 	return finalBuffer.String(), nil
 }
 
-func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, binaryModel *model.BinaryModel) (
+func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, binaryModel model.BinaryModel) (
 	newFunctionAdded bool, err error,
 ) {
 	var functionNames []string = utils.MapKeys(functionsMap)

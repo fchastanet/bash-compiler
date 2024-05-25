@@ -29,6 +29,7 @@
     - [3.2.3. Coverage](#323-coverage)
     - [3.2.4. run the binary](#324-run-the-binary)
     - [3.2.5. Clean](#325-clean)
+- [4. Alternatives](#4-alternatives)
 
 ## 1. Excerpt
 
@@ -146,3 +147,8 @@ build/run.sh
 ```bash
 build/clean.sh
 ```
+
+## 4. Alternatives
+
+- Convert ecmascript to bash
+  - <https://github.com/Ph0enixKM/Amber> alpha version - 2024-05-25
