@@ -13,8 +13,8 @@ import (
 type Context struct {
 	Template *template.Template
 	Name     string
-	RootData *any
-	Data     *any
+	RootData interface{}
+	Data     interface{}
 }
 
 func NewTemplate(templateDirs []string, templateFile string,

@@ -1,14 +1,15 @@
 binFile:
   targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint'
-  templateFile: "binFile.gtpl"
-  templateName: "binFile"
+  relativeRootDirBasedOnTargetDir: ..
+  templateFile: binFile.gtpl
+  templateName: binFile
   srcDirs:
-    - "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src"
+    - /home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src
   templateDirs:
-    - "templates-examples"
+    - templates-examples
+vars:
+  MAIN_FUNCTION_NAME: main
 binData:
-  vars:
-    MAIN_FUNCTION_NAME: main # TODO
   commands:
     -
       author: '[François Chastanet](https://github.com/fchastanet)'
@@ -55,11 +56,14 @@ binData:
           alts:
             - '--help'
             - '-h'
-          callback: optionHelpCallback
+          callbacks:
+            - optionHelpCallback
           functionName: optionHelpFunction
           min: 0
           max: 1
-          callbacks: []
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
           onValue: 1
           offValue: 0
           defaultValue: 0
@@ -98,6 +102,8 @@ binData:
           min: 0
           max: 1
           callbacks: []
+          onValue: null
+          offValue: null
           regexp: null
           authorizedValuesList:
             - checkstyle
@@ -118,6 +124,9 @@ binData:
           min: 0
           max: 1
           callbacks: []
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
           onValue: 1
           offValue: 0
           defaultValue: 0
@@ -132,6 +141,9 @@ binData:
           min: 0
           max: 1
           callbacks: []
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
           onValue: 1
           offValue: 0
           defaultValue: 0
@@ -150,7 +162,7 @@ binData:
             all files from git repository which are beginning
             with a bash shebang, unless --staged option is provided.
           type: StringArray
-          defaultValue: []
+          defaultValue: null
           regexp: null
           authorizedValues: null
           authorizedValuesList: null

@@ -34,16 +34,16 @@
   {{ end }}
   {{ range .callbacks }}
   {{ if eq $Data.type "StringArray" -}}
-    {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}[@]}"
+    {{ . }} "${options_parse_arg}" "${ {{- $Data.variableName }}[@]}"
   {{ else -}}
-    {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}}"
+    {{ . }} "${options_parse_arg}" "${ {{- $Data.variableName }}}"
   {{ end }}
   {{ end }}
   {{ range .everyOptionCallbacks }}
   {{ if eq $Data.type "StringArray" -}}
-    {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}[@]}"
+    {{ . }} "${options_parse_arg}" "${ {{- $Data.variableName }}[@]}"
   {{ else -}}
-    {{ . }} "${options_parse_arg}" "${ {{ $Data.variableName }}}"
+    {{ . }} "${options_parse_arg}" "${ {{- $Data.variableName }}}"
   {{ end -}}
   {{ end -}}
   ;;

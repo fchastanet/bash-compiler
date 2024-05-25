@@ -381,6 +381,7 @@ shellcheckLintCommandParse() {
           return 1
         fi
         ((++options_parse_optionParsedCountOptionHelp))
+        optionHelpCallback "${options_parse_arg}" "${optionHelp}"
         ;;
       # Option 2/4
       # optionFormat alts --format|-f
@@ -546,6 +547,11 @@ main() {
   else
     CURRENT_DIR="${REAL_SCRIPT_FILE%/*}"
   fi
+  FRAMEWORK_ROOT_DIR="$(cd "${CURRENT_DIR}/.." && pwd -P)"
+  FRAMEWORK_SRC_DIR="${FRAMEWORK_ROOT_DIR}/src"
+  FRAMEWORK_BIN_DIR="${FRAMEWORK_ROOT_DIR}/bin"
+  FRAMEWORK_VENDOR_DIR="${FRAMEWORK_ROOT_DIR}/vendor"
+  FRAMEWORK_VENDOR_BIN_DIR="${FRAMEWORK_ROOT_DIR}/vendor/bin"
   shellcheckLintCommandParse "$@"
 }
 # if file is sourced avoid calling main function
