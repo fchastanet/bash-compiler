@@ -1,10 +1,13 @@
 binFile:
-  targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint'
+  commandDefinitionFiles:
+    - '${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/defaultOptions.sh'
+    - '${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh'
+  targetFile: '${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint2'
   relativeRootDirBasedOnTargetDir: ..
   templateFile: binFile.gtpl
   templateName: binFile
   srcDirs:
-    - /home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src
+    - '${FRAMEWORK_ROOT_DIR}/src'
   templateDirs:
     - templates-examples
 vars:
@@ -13,18 +16,19 @@ binData:
   commands:
     -
       author: '[François Chastanet](https://github.com/fchastanet)'
-      sourceFile: '${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}'
+      sourceFile: 'https://github.com/fchastanetbash-compiler/tree/master/templates-examples/testsData/shellcheckLint.yaml'
       license: 'MIT License'
       copyright: copyrightCallback
       optionGroups:
-        -
+        zzzGroupGlobalOptionsGroup:
           title: 'GLOBAL OPTIONS:'
-          functionName: zzzGroupGlobalOptionsFunction
-        -
+        shellcheckLintOptionGroup:
           title: 'OPTIONS:'
-          functionName: shellcheckLintOptionsFunction
-      includes:
-        default.options.tpl: true
+        __default:
+          title: 'DEFAULT OPTIONS:'
+      callbacks:
+        - commandOptionParseFinished
+        - shellcheckLintParseCallback
       functionName: shellcheckLintCommand
       commandName: shellcheckLint
       version: '1.0'
@@ -32,8 +36,9 @@ binData:
       longDescription: |
         shellcheck wrapper that will:
         - install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically
+        $'\r'
         - by default, lint all git files of this project which are beginning with a bash shebang
-          except if the option --staged is passed
+        except if the option --staged is passed
 
         ${__HELP_TITLE}Special configuration .shellcheckrc:${__HELP_NORMAL}
         use the following line in your .shellcheckrc file to exclude
@@ -43,30 +48,9 @@ binData:
         ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
 
         @@@SHELLCHECK_HELP@@@
-      callbacks:
-        - shellcheckLintParseCallback
       unknownOptionCallbacks:
         - unknownOption
       options:
-        -
-          variableName: optionHelp
-          group: zzzGroupGlobalOptionsFunction
-          type: Boolean
-          help: 'Display this command help'
-          alts:
-            - '--help'
-            - '-h'
-          callbacks:
-            - optionHelpCallback
-          functionName: optionHelpFunction
-          min: 0
-          max: 1
-          regexp: null
-          authorizedValues: null
-          authorizedValuesList: null
-          onValue: 1
-          offValue: 0
-          defaultValue: 0
         -
           variableName: optionFormat
           type: String
@@ -74,7 +58,7 @@ binData:
           alts:
             - '--format'
             - '-f'
-          group: shellcheckLintOptionsFunction
+          group: shellcheckLintOptionGroup
           defaultValue: tty
           authorizedValues:
             -
@@ -117,6 +101,7 @@ binData:
         -
           variableName: optionStaged
           functionName: optionStagedFunction
+          group: shellcheckLintOptionGroup
           help: 'lint only staged git files(files added to file list to be committed) and which are beginning with a bash shebang.'
           alts:
             - '--staged'
@@ -130,11 +115,11 @@ binData:
           onValue: 1
           offValue: 0
           defaultValue: 0
-          group: shellcheckLintOptionsFunction
         -
           variableName: optionXargs
           functionName: optionXargsFunction
           type: Boolean
+          group: shellcheckLintOptionGroup
           help: 'uses parallelization(using xargs command) only if tty format'
           alts:
             - '--xargs'
@@ -147,7 +132,352 @@ binData:
           onValue: 1
           offValue: 0
           defaultValue: 0
-          group: shellcheckLintOptionsFunction
+        -
+          variableName: optionHelp
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Displays this command help'
+          alts:
+            - '--help'
+            - '-h'
+          callbacks:
+            - optionHelpCallback
+          functionName: optionHelpFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionConfig
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Displays configuration'
+          alts:
+            - '--config'
+          functionName: optionConfigFunction
+          min: 0
+          max: 1
+          callbacks: []
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionBashFrameworkConfig
+          group: zzzGroupGlobalOptionsGroup
+          type: String
+          help: 'Use alternate bash framework configuration.'
+          alts:
+            - '--bash-framework-config'
+          callbacks:
+            - optionBashFrameworkConfigCallback
+          functionName: optionBashFrameworkConfigFunction
+          min: 0
+          max: 1
+          defaultValue: ''
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          helpValueName: bash-framework-config
+        -
+          variableName: optionInfoVerbose
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Info level verbose mode (alias of --display-level INFO)'
+          alts:
+            - '--verbose'
+            - '-v'
+          callbacks:
+            - optionInfoVerboseCallback
+            - updateArgListInfoVerboseCallback
+          functionName: optionInfoVerboseFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionDebugVerbose
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Debug level verbose mode (alias of --display-level DEBUG)'
+          alts:
+            - '-vv'
+          callbacks:
+            - optionDebugVerboseCallback
+            - updateArgListDebugVerboseCallback
+          functionName: optionDebugVerboseFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionTraceVerbose
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Trace level verbose mode (alias of --display-level TRACE)'
+          alts:
+            - '-vvv'
+          callbacks:
+            - optionTraceVerboseCallback
+            - updateArgListTraceVerboseCallback
+          functionName: optionTraceVerboseFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionEnvFiles
+          group: zzzGroupGlobalOptionsGroup
+          type: StringArray
+          help: 'Load the specified env file (deprecated, please use --bash-framework-config option instead)'
+          alts:
+            - '--env-file'
+          max: -1
+          callbacks:
+            - optionEnvFileCallback
+            - updateArgListEnvFileCallback
+          functionName: optionEnvFilesFunction
+          min: 0
+          defaultValue: null
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          helpValueName: env-file
+        -
+          variableName: optionLogLevel
+          group: zzzGroupGlobalOptionsGroup
+          type: String
+          help: 'Set log level'
+          alts:
+            - '--log-level'
+          authorizedValues:
+            -
+              value: 'OFF'
+              help: 'OFF'
+            -
+              value: ERR
+              help: ERR
+            -
+              value: ERROR
+              help: ERROR
+            -
+              value: WARN
+              help: WARN
+            -
+              value: WARNING
+              help: WARNING
+            -
+              value: INFO
+              help: INFO
+            -
+              value: DEBUG
+              help: DEBUG
+            -
+              value: TRACE
+              help: TRACE
+          callbacks:
+            - optionLogLevelCallback
+            - updateArgListLogLevelCallback
+          functionName: optionLogLevelFunction
+          min: 0
+          max: 1
+          defaultValue: ''
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValuesList:
+            - 'OFF'
+            - ERR
+            - ERROR
+            - WARN
+            - WARNING
+            - INFO
+            - DEBUG
+            - TRACE
+          helpValueName: log-level
+        -
+          variableName: optionLogFile
+          group: zzzGroupGlobalOptionsGroup
+          type: String
+          help: 'Set log file'
+          alts:
+            - '--log-file'
+          callbacks:
+            - optionLogFileCallback
+            - updateArgListLogFileCallback
+          functionName: optionLogFileFunction
+          min: 0
+          max: 1
+          defaultValue: ''
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          helpValueName: log-file
+        -
+          variableName: optionDisplayLevel
+          group: zzzGroupGlobalOptionsGroup
+          type: String
+          help: 'Set display level'
+          alts:
+            - '--display-level'
+          authorizedValues:
+            -
+              value: 'OFF'
+              help: 'OFF'
+            -
+              value: ERR
+              help: ERR
+            -
+              value: ERROR
+              help: ERROR
+            -
+              value: WARN
+              help: WARN
+            -
+              value: WARNING
+              help: WARNING
+            -
+              value: INFO
+              help: INFO
+            -
+              value: DEBUG
+              help: DEBUG
+            -
+              value: TRACE
+              help: TRACE
+          callbacks:
+            - optionDisplayLevelCallback
+            - updateArgListDisplayLevelCallback
+          functionName: optionDisplayLevelFunction
+          min: 0
+          max: 1
+          defaultValue: ''
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValuesList:
+            - 'OFF'
+            - ERR
+            - ERROR
+            - WARN
+            - WARNING
+            - INFO
+            - DEBUG
+            - TRACE
+          helpValueName: display-level
+        -
+          variableName: optionNoColor
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Produce monochrome output. alias of --theme noColor.'
+          alts:
+            - '--no-color'
+          callbacks:
+            - optionNoColorCallback
+            - updateArgListNoColorCallback
+          functionName: optionNoColorFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionTheme
+          group: zzzGroupGlobalOptionsGroup
+          type: String
+          help: 'Choose color theme - default-force means colors will be produced even if command is piped.'
+          alts:
+            - '--theme'
+          defaultValue: default
+          authorizedValues:
+            -
+              value: default
+              help: default
+            -
+              value: default-force
+              help: default-force
+            -
+              value: noColor
+              help: noColor
+          callbacks:
+            - optionThemeCallback
+            - updateArgListThemeCallback
+          functionName: optionThemeFunction
+          min: 0
+          max: 1
+          onValue: null
+          offValue: null
+          regexp: null
+          authorizedValuesList:
+            - default
+            - default-force
+            - noColor
+          helpValueName: theme
+        -
+          variableName: optionVersion
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Print version information and quit.'
+          alts:
+            - '--version'
+          callbacks:
+            - optionVersionCallback
+          functionName: optionVersionFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+        -
+          variableName: optionQuiet
+          group: zzzGroupGlobalOptionsGroup
+          type: Boolean
+          help: 'Quiet mode, doesn''t display any output.'
+          alts:
+            - '--quiet'
+            - '-q'
+          callbacks:
+            - optionQuietCallback
+            - updateArgListQuietCallback
+          functionName: optionQuietFunction
+          min: 0
+          max: 1
+          regexp: null
+          authorizedValues: null
+          authorizedValuesList: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
       args:
         -
           variableName: argShellcheckFiles

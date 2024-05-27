@@ -15,8 +15,8 @@ echo
 # ------------------------------------------
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" "{{- .commandName }} {{/*
   */}}{{- if .options -}} [OPTIONS]{{- end }} {{/*
-  */}}{{- if .arguments -}} [ARGUMENTS]{{- end -}}"
-
+  */}}{{- if .arguments -}} [ARGUMENTS]{{- end }}"
+echo
 {{ if .options -}}
 # ------------------------------------------
 # usage/options section
@@ -27,7 +27,7 @@ optionsAltList=({{ range $index, $option := .options }}
 )
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
   "{{ .commandName }}" "${optionsAltList[@]}"
-{{ end -}}
+{{ end }}
 
 {{ if .arguments -}}
 # ------------------------------------------
@@ -45,18 +45,19 @@ echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 # options section
 # ------------------------------------------
 {{ $previousGroupId := "" -}}
+{{ $command := . }}
 {{ range $index, $option := .options -}}
-{{ $groupId := default "__default" $option.groupId -}}
-{{ if ne $groupId $previousGroupId -}}
+{{ $groupId := default "__default" $option.group -}}
+{{ if ne $groupId $previousGroupId }}
 echo
-{{- if eq $groupId "__default" }}
-echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"{{ end -}}
-{{ else -}}
-echo -e "${__HELP_TITLE_COLOR}{{ .title }}${__RESET_COLOR}"
-{{ if .help }}echo "{{ .help }}"{{ end -}}
+echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }}${__RESET_COLOR}"
+{{ end -}}
+echo -e "  {{ include "option.help" $option $context -}}"
+{{ if $option.help -}}
+Array::wrap2 ' ' 76 4 "    {{ $option.help }}"
+echo
 {{ end }}
-echo -e "{{- include "option.help" $option $context -}}"
-{{ $previousGroupId := $groupId }}
+{{ $previousGroupId = $groupId }}
 {{ end -}}
 {{ end -}}
 
@@ -64,11 +65,23 @@ echo -e "{{- include "option.help" $option $context -}}"
 # ------------------------------------------
 # longDescription section
 # ------------------------------------------
-{{ if eq .longDescriptionType "function" -}}
-Array::wrap2 ' ' 76 0 "$({{ .longDescription }})"
+echo
+{{ if hasSuffix "Function" .longDescription -}}
+{{ .longDescription }}
 {{ else -}}
-Array::wrap2 ' ' 76 0 "{{ print .functionName "LongDescription" | bashVariableRef }}"
+declare -a {{ .functionName }}LongDescription=(
+{{ $longDescriptionList := splitList "\n" .longDescription }}
+{{ range $line := $longDescriptionList }}
+{{ if hasPrefix "$" $line }}
+{{ $line }}
+{{ else }}
+{{ quote $line }}
 {{ end }}
+{{ end }}
+)
+Array::wrap2 ' ' 76 0 "{{ list "${" .functionName  "LongDescription[@]}" | join "" }}"
+echo
+{{ end -}}
 {{ end -}}
 
 {{ if .version -}}
