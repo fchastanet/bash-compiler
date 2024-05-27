@@ -18,8 +18,8 @@ import (
 )
 
 var (
+	// shebangRegexp            = regexp.MustCompile(`^[ \t]*(#!.*)?$`)
 	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
-	shebangRegexp               = regexp.MustCompile(`^[ \t]*(#!.*)?$`)
 	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
 	bashFrameworkFunctionRegexp = regexp.MustCompile(
 		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)

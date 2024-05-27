@@ -14,3 +14,6 @@ FRAMEWORK_BIN_DIR="${FRAMEWORK_ROOT_DIR}/bin"
 FRAMEWORK_VENDOR_DIR="${FRAMEWORK_ROOT_DIR}/vendor"
 FRAMEWORK_VENDOR_BIN_DIR="${FRAMEWORK_ROOT_DIR}/vendor/bin"
 {{ end -}}
+Env::requireLoad
+UI::requireTheme
+Log::requireLoad
