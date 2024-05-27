@@ -16,7 +16,9 @@
 {{ include "binFile.initDirs.gtpl" .Data.binData . -}}
 
 # FUNCTIONS
-
+{{ range $file := .Data.binFile.CommandDefinitionFiles }}
+{{- includeFile $file }}
+{{ end }}
 {{- include "commands" .Data.binData.commands . -}}
 
 {{ $mainFunction := .Data.vars.MAIN_FUNCTION_NAME | default "main" -}}

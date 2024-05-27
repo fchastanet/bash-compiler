@@ -52,6 +52,7 @@ func FuncMap() map[string]interface{} {
 	funcMap["bashVariableRef"] = bashVariableRef
 	// templates functions
 	funcMap["include"] = include
+	funcMap["includeFile"] = includeFile
 	// YAML functions
 	funcMap["fromYAMLFile"] = FromYAMLFile
 	funcMap["toYAML"] = ToYAML
