@@ -297,10 +297,11 @@ func findFileInSrcDirs(relativeFilePath string, srcDirs []string) (
 ) {
 	for _, srcDir := range srcDirs {
 		srcFile := filepath.Join(srcDir, relativeFilePath)
-		slog.Debug("Check if file exists", "file", srcFile)
-		err := utils.FileExists(srcFile)
+		srcFileExpanded := os.ExpandEnv(srcFile)
+		slog.Debug("Check if file exists", "srcDir", srcDir, "file", srcFile, "fileExpanded", srcFileExpanded)
+		err := utils.FileExists(srcFileExpanded)
 		if err == nil {
-			return srcFile, srcDir, true
+			return srcFileExpanded, srcDir, true
 		}
 	}
 	return "", "", false
