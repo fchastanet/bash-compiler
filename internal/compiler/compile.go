@@ -80,7 +80,7 @@ func Compile(code string, binaryModel model.BinaryModel) (codeCompiled string, e
 		return "", err
 	}
 
-	return cleanSourceCode(generatedCode), nil
+	return generatedCode, nil
 }
 
 func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
@@ -176,25 +176,6 @@ func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, bin
 		}
 	}
 	return newFunctionAdded, nil
-}
-
-// cleanSourceCode cleans the code by removing shebang line
-func cleanSourceCode(code string) (newCode string) {
-	var rewrittenCode bytes.Buffer
-	scanner := bufio.NewScanner(strings.NewReader(code))
-	lineCount := 0
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		lineCount++
-		if lineCount > 1 && shebangRegexp.Match(line) {
-			continue
-		}
-
-		rewrittenCode.Write(line)
-		rewrittenCode.WriteByte(byte('\n'))
-	}
-
-	return rewrittenCode.String()
 }
 
 func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDirs []string) (
