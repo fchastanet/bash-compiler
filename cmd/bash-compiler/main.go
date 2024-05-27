@@ -77,8 +77,10 @@ func main() {
 	}
 
 	// Save resulting file
-	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.sh", []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
+	targetFile := os.ExpandEnv(binaryModel.BinFile.TargetFile)
+
+	if err := os.WriteFile(targetFile, []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check templates-examples/testsData/shellcheckLint.sh")
+	slog.Info("Check", "file", targetFile)
 }
