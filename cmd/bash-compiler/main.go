@@ -59,7 +59,11 @@ func main() {
 		panic(err)
 	}
 
-	code, err := compiler.GenerateCode(binaryModel)
+	templateContext, err := compiler.InitTemplateContext(binaryModel)
+	if err != nil {
+		panic(err)
+	}
+	code, err := compiler.RenderFromTemplateName(templateContext, binaryModel.BinFile.TemplateName)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +75,7 @@ func main() {
 	slog.Info("Check templates-examples/testsData/shellcheckLint.beforeCompile.sh")
 
 	// Compile
-	codeCompiled, err := compiler.Compile(code, binaryModel)
+	codeCompiled, err := compiler.Compile(code, templateContext, binaryModel)
 	if err != nil {
 		panic(err)
 	}

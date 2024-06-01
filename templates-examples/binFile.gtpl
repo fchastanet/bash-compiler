@@ -1,6 +1,6 @@
 {{- define "binFile" -}}
 #!/usr/bin/env bash
-
+{{ $context := . -}}
 ###############################################################################
 {{ if (index .Data.binData.commands 0).sourceFile -}}
 # GENERATED FROM {{ (index .Data.binData.commands 0).sourceFile }}
@@ -12,14 +12,14 @@
 ###############################################################################
 # shellcheck disable=SC2288,SC2034
 
-{{ include "binFile.headers.sh" .Data.binData . -}}
-{{ include "binFile.initDirs.gtpl" .Data.binData . -}}
+{{ include "binFile.headers.sh" .Data.binData $context -}}
+{{ include "binFile.initDirs.gtpl" .Data.binData $context -}}
 
 # FUNCTIONS
 {{ range $file := .Data.binFile.CommandDefinitionFiles }}
-{{- includeFile $file }}
+{{- includeFileAsTemplate $file $context }}
 {{ end }}
-{{- include "commands" .Data.binData.commands . -}}
+{{- include "commands" .Data.binData.commands $context -}}
 
 {{ $mainFunction := .Data.vars.MAIN_FUNCTION_NAME | default "main" -}}
 MAIN_FUNCTION_NAME="{{ $mainFunction -}}"

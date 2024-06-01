@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 ###############################################################################
 # GENERATED FROM https://github.com/fchastanetbash-compiler/tree/master/templates-examples/testsData/shellcheckLint.yaml
 # DO NOT EDIT IT
@@ -143,13 +142,13 @@ updateArgListQuietCallback() { :; }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionHelpCallback() {
-  <% ${commandFunctionName} %> help
+  Log::displayError "optionHelpCallback needs to be overridden"
   exit 0
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionVersionCallback() {
-  echo "${SCRIPT_NAME} version <% ${versionNumber} %>"
+  echo "${SCRIPT_NAME} version ${versionNumber}"
   exit 0
 }
 
@@ -167,21 +166,21 @@ optionEnvFileCallback() {
 optionInfoVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='--verbose'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_INFO}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_INFO}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_INFO}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionDebugVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='-vv'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_DEBUG}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionTraceVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='-vvv'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_TRACE}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >>"${overrideEnvFile}"
 }
 
 getLevel() {
@@ -205,6 +204,7 @@ getLevel() {
     *)
       Log::displayError "Command ${SCRIPT_NAME} - Invalid level ${level}"
       return 1
+      ;;
   esac
 }
 
@@ -226,6 +226,7 @@ getVerboseLevel() {
     *)
       Log::displayError "Command ${SCRIPT_NAME} - Invalid level ${level}"
       return 1
+      ;;
   esac
 }
 
@@ -236,7 +237,7 @@ optionDisplayLevelCallback() {
   logLevel="$(getLevel "${level}")"
   verboseLevel="$(getVerboseLevel "${level}")"
   BASH_FRAMEWORK_ARGS_VERBOSE=${verboseLevel}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${logLevel}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${logLevel}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
@@ -246,18 +247,18 @@ optionLogLevelCallback() {
   logLevel="$(getLevel "${level}")"
   verboseLevel="$(getVerboseLevel "${level}")"
   BASH_FRAMEWORK_ARGS_VERBOSE=${verboseLevel}
-  echo "BASH_FRAMEWORK_LOG_LEVEL=${logLevel}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_LOG_LEVEL=${logLevel}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionLogFileCallback() {
   local logFile="$2"
-  echo "BASH_FRAMEWORK_LOG_FILE='${logFile}'" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_LOG_FILE='${logFile}'" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionQuietCallback() {
-  echo "BASH_FRAMEWORK_QUIET_MODE=1" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_QUIET_MODE=1" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
@@ -288,7 +289,41 @@ optionBashFrameworkConfigCallback() {
 
 defaultFrameworkConfig="$(
   cat <<'EOF'
-.INCLUDE "${ORIGINAL_TEMPLATE_DIR}/_includes/.framework-config.default"
+#!/usr/bin/env bash
+# copied from src/_includes/.framework-config.default
+# shellcheck disable=SC2034
+
+REAL_SCRIPT_FILE="${REAL_SCRIPT_FILE:-$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")}"
+FRAMEWORK_ROOT_DIR="${FRAMEWORK_ROOT_DIR:-${REAL_SCRIPT_FILE%/*/*}}"
+FRAMEWORK_SRC_DIR="${FRAMEWORK_SRC_DIR:-${FRAMEWORK_ROOT_DIR}/src}"
+FRAMEWORK_BIN_DIR="${FRAMEWORK_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/bin}"
+FRAMEWORK_VENDOR_DIR="${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}"
+FRAMEWORK_VENDOR_BIN_DIR="${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}"
+
+# describe the functions that will be skipped from being imported
+FRAMEWORK_FUNCTIONS_IGNORE_REGEXP="${FRAMEWORK_FUNCTIONS_IGNORE_REGEXP:-^(Namespace::functions|Functions::myFunction|Namespace::requireSomething|Acquire::ForceIPv4)$}"
+# describe the files that do not contain function to be imported
+NON_FRAMEWORK_FILES_REGEXP="${NON_FRAMEWORK_FILES_REGEXP:-(^bin/|.framework-config|.bats$|/testsData/|^manualTests/|/_.sh$|/ZZZ.sh$|/__all.sh$|^src/_binaries|^src/_includes|^src/batsHeaders.sh$|^src/_standalone)}"
+# describe the files that are allowed to not have an associated bats file
+BATS_FILE_NOT_NEEDED_REGEXP="${BATS_FILE_NOT_NEEDED_REGEXP:-(^bin/|.framework-config|.bats$|/testsData/|^manualTests/|/_.sh$|/ZZZ.sh$|/__all.sh$|^src/batsHeaders.sh$|^src/_includes)}"
+# describe the files that are allowed to not have a function matching the filename
+FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP="${FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP:-^bin/|^\.framework-config$|\.tpl$|/testsData/|^manualTests/|\.bats$}"
+# Source directories
+if [[ ! -v FRAMEWORK_SRC_DIRS ]]; then
+  FRAMEWORK_SRC_DIRS=(
+    "${FRAMEWORK_ROOT_DIR}/src"
+  )
+fi
+
+# export here all the variables that will be used in your templates
+export REPOSITORY_URL="${REPOSITORY_URL:-https://github.com/fchastanet/bash-tools-framework}"
+
+BASH_FRAMEWORK_THEME="${BASH_FRAMEWORK_THEME:-default}"
+BASH_FRAMEWORK_LOG_LEVEL="${BASH_FRAMEWORK_LOG_LEVEL:-0}"
+BASH_FRAMEWORK_DISPLAY_LEVEL="${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}"
+BASH_FRAMEWORK_LOG_FILE="${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}"
+BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION="${BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION:-5}"
+
 EOF
 )"
 
@@ -297,7 +332,7 @@ overrideEnvFile="$(Framework::createTempFile "overrideEnvFile")"
 commandOptionParseFinished() {
   # load default template framework config
   defaultEnvFile="${PERSISTENT_TMPDIR}/.framework-config"
-  echo "${defaultFrameworkConfig}" > "${defaultEnvFile}"
+  echo "${defaultFrameworkConfig}" >"${defaultEnvFile}"
   local -a files=("${defaultEnvFile}")
   if [[ -f "${envFile}" ]]; then
     files+=("${envFile}")
@@ -353,11 +388,11 @@ optionHelpCallback() {
   local shellcheckHelpFile
   shellcheckHelpFile="$(Framework::createTempFile "shellcheckHelp")"
   (
-  if [[ -x "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" ]]; then
-    "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" --help
-  else
-    Log::displayError "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck does not exist" 2>&1
-  fi
+    if [[ -x "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" ]]; then
+      "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" --help
+    else
+      Log::displayError "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck does not exist" 2>&1
+    fi
   ) >"${shellcheckHelpFile}" 2>&1
 
   shellcheckLintCommandHelp |
@@ -366,7 +401,6 @@ optionHelpCallback() {
       -e "/@@@SHELLCHECK_HELP@@@/d"
   exit 0
 }
-
 
 optionVersionCallback() {
   echo -e "${__HELP_TITLE_COLOR}${SCRIPT_NAME} version: ${__RESET_COLOR} ${versionNumber}"

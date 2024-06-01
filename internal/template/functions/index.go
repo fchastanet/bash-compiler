@@ -53,6 +53,8 @@ func FuncMap() map[string]interface{} {
 	// templates functions
 	funcMap["include"] = include
 	funcMap["includeFile"] = includeFile
+	funcMap["includeFileAsTemplate"] = includeFileAsTemplate
+	funcMap["dynamicFile"] = dynamicFile
 	// YAML functions
 	funcMap["fromYAMLFile"] = FromYAMLFile
 	funcMap["toYAML"] = ToYAML
