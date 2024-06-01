@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/fchastanet/bash-compiler/internal/model"
+	"github.com/fchastanet/bash-compiler/internal/template"
+	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/template/functions"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
@@ -34,12 +36,13 @@ const (
 )
 
 type functionInfoStruct struct {
-	FunctionName     string
-	SrcFile          string // "" if not computed yet
-	Inserted         bool
-	InsertPosition   InsertPosition
-	SourceCode       string // the src file content
-	SourceCodeLoaded bool
+	FunctionName         string
+	SrcFile              string // "" if not computed yet
+	Inserted             bool
+	InsertPosition       InsertPosition
+	SourceCode           string // the src file content
+	SourceCodeLoaded     bool
+	SourceCodeAsTemplate bool
 }
 
 var errFunctionNotFound = errors.New("Function not found")
@@ -55,7 +58,7 @@ func ErrDuplicatedFunctionsDirective() error {
 }
 
 // Compile generates code from given model
-func Compile(code string, binaryModel model.BinaryModel) (codeCompiled string, err error) {
+func Compile(code string, templateContext *template.Context, binaryModel model.BinaryModel) (codeCompiled string, err error) {
 	functionsMap := make(map[string]functionInfoStruct)
 	extractUniqueFrameworkFunctions(functionsMap, code)
 	_, err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
@@ -70,6 +73,11 @@ func Compile(code string, binaryModel model.BinaryModel) (codeCompiled string, e
 		}
 	}
 
+	err = renderEachFunctionAsTemplate(functionsMap, templateContext)
+	if err != nil {
+		return "", err
+	}
+
 	functionsCode, err := generateFunctionCode(functionsMap)
 	if err != nil {
 		return "", err
@@ -81,6 +89,31 @@ func Compile(code string, binaryModel model.BinaryModel) (codeCompiled string, e
 	}
 
 	return generatedCode, nil
+}
+
+func renderEachFunctionAsTemplate(
+	functionsMap map[string]functionInfoStruct,
+	templateContext *template.Context,
+) (err error) {
+	var functionNames []string = utils.MapKeys(functionsMap)
+	for _, functionName := range functionNames {
+		functionInfo := functionsMap[functionName]
+		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
+			continue
+		}
+		if functionInfo.SourceCode != "" {
+			slog.Info("renderEachFunctionAsTemplate", "functionName", functionName)
+			newCode, err := myTemplateFunctions.RenderFromTemplateContent(templateContext, functionInfo.SourceCode)
+			if err != nil {
+				return err
+			}
+			slog.Info("renderEachFunctionAsTemplate", "functionName", functionName, "code", newCode)
+			functionInfo.SourceCode = newCode
+		}
+		functionInfo.SourceCodeAsTemplate = true
+		functionsMap[functionName] = functionInfo
+	}
+	return nil
 }
 
 func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
@@ -206,12 +239,13 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 				slog.Debug("Adding file", "file", filePath)
 				addedFiles = true
 				functionsMap[filePath] = functionInfoStruct{
-					FunctionName:     filePath,
-					SrcFile:          filePath,
-					Inserted:         false,
-					InsertPosition:   InsertPositionFirst,
-					SourceCode:       "",
-					SourceCodeLoaded: false,
+					FunctionName:         filePath,
+					SrcFile:              filePath,
+					Inserted:             false,
+					InsertPosition:       InsertPositionFirst,
+					SourceCode:           "",
+					SourceCodeLoaded:     false,
+					SourceCodeAsTemplate: false,
 				}
 			}
 		}
@@ -224,12 +258,13 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 				addedFiles = true
 				slog.Debug("Adding file", "file", filePath)
 				functionsMap[filePath] = functionInfoStruct{
-					FunctionName:     filePath,
-					SrcFile:          filePath,
-					Inserted:         false,
-					InsertPosition:   InsertPositionLast,
-					SourceCode:       "",
-					SourceCodeLoaded: false,
+					FunctionName:         filePath,
+					SrcFile:              filePath,
+					Inserted:             false,
+					InsertPosition:       InsertPositionLast,
+					SourceCode:           "",
+					SourceCodeLoaded:     false,
+					SourceCodeAsTemplate: false,
 				}
 			}
 		}
@@ -257,12 +292,13 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 			if _, keyExists := functionsMap[funcName]; !keyExists {
 				slog.Debug("Found new", "bashFrameworkFunction", funcName)
 				functionsMap[funcName] = functionInfoStruct{
-					FunctionName:     funcName,
-					SrcFile:          "",
-					Inserted:         false,
-					InsertPosition:   InsertPositionMiddle,
-					SourceCode:       "",
-					SourceCodeLoaded: false,
+					FunctionName:         funcName,
+					SrcFile:              "",
+					Inserted:             false,
+					InsertPosition:       InsertPositionMiddle,
+					SourceCode:           "",
+					SourceCodeLoaded:     false,
+					SourceCodeAsTemplate: false,
 				}
 				newFunctionAdded = true
 			}
