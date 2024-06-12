@@ -2,8 +2,8 @@
 #!/usr/bin/env bash
 {{ $context := . -}}
 ###############################################################################
-{{ if (index .Data.binData.commands 0).sourceFile -}}
-# GENERATED FROM {{ (index .Data.binData.commands 0).sourceFile }}
+{{ if .Data.binData.commands.default.sourceFile -}}
+# GENERATED FROM {{ .Data.binData.commands.default.sourceFile }}
 {{ else -}}
 # GENERATED
 {{ end -}}

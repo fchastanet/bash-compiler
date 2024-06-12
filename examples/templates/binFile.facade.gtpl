@@ -1,4 +1,4 @@
-{{ $commandsCount := len .Data.commands }}
+{{ $commandsCount := .Data.commands | keys | len }}
 {{ if gt $commandsCount 1 }}
 local action="$1"
 shift || true
@@ -20,5 +20,5 @@ case "${action}" in
 esac
 exit 0
 {{ else }}
-{{ (index .Data.commands 0).functionName }}Parse "$@"
+{{ .Data.commands.default.functionName }}Parse "$@"
 {{ end }}

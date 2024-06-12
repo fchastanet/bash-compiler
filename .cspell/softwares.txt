@@ -1,5 +1,6 @@
 actionlint
 apdisk
+Chastanet
 checkstyle
 cobertura
 codespell
@@ -27,5 +28,6 @@ podman
 promlinter
 shellcheck
 SHELLCHECK
+shellcheckrc
 shfmt
 stylelint

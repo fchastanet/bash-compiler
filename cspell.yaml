@@ -164,6 +164,23 @@ overrides:
     languageId: go
 
   - filename:
+      - "**/*.gtpl"
+      - "examples/**/*.yaml"
+    dictionaries:
+      - golangYml
+      - go
+      - mySoftwares
+      - software
+      - bash
+      - myBash
+
+  - filename:
+      - "**/*.cue"
+    dictionaries:
+      - mySoftwares
+      - software
+
+  - filename:
       - ".golangci.yml"
     dictionaries:
       - golangYml

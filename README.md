@@ -29,7 +29,8 @@
     - [3.2.3. Coverage](#323-coverage)
     - [3.2.4. run the binary](#324-run-the-binary)
     - [3.2.5. Clean](#325-clean)
-- [4. Alternatives](#4-alternatives)
+- [4. Commands](#4-commands)
+- [5. Alternatives](#5-alternatives)
 
 ## 1. Excerpt
 
@@ -148,7 +149,27 @@ build/run.sh
 build/clean.sh
 ```
 
-## 4. Alternatives
+## 4. Commands
+
+Generate yaml file:
+
+```bash
+go run examples/config-tpl/merge.go >examples/config/shellcheckLint-generated.yaml
+```
+
+Transform and validate yaml file
+
+```bash
+cue export -l input: examples/config/shellcheckLint-generated.yaml examples/config/binFile.cue --out yaml -e output >examples/config/shellcheckLint-transformed.yaml
+```
+
+Compile bin file
+
+```bash
+FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler/main.go examples/config/shellcheckLint-transformed.yaml
+```
+
+## 5. Alternatives
 
 - Convert ecmascript to bash
   - <https://github.com/Ph0enixKM/Amber> alpha version - 2024-05-25
