@@ -1,0 +1,310 @@
+binData:
+  commands:
+    default:
+      args:
+        - callbacks:
+            - argShellcheckFilesCallback
+          help: |
+            files to validate with shellcheck. If not provided,
+            all files from git repository which are beginning
+            with a bash shebang, unless --staged option is provided.
+          max: -1
+          min: 0
+          name: shellcheckFiles
+          type: StringArray
+          variableName: argShellcheckFiles
+      author: "[François Chastanet](https://github.com/fchastanet)"
+      callbacks:
+        - commandOptionParseFinished
+      commandName: shellcheckLint
+      copyright: copyrightCallback
+      definitionFiles:
+        - ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/defaultOptions.sh
+        - ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh
+      functionName: shellcheckLintCommand
+      help: Lint bash files using shellcheck.
+      license: MIT License
+      longDescription:
+        "shellcheck wrapper that will:\n- install new shellcheck
+        version(${MIN_SHELLCHECK_VERSION}) automatically\n$'\\r'\n- by default,
+        lint all git files of this project which are beginning with a bash
+        shebang\n  except if the option --staged is
+        passed\n\n${__HELP_TITLE}Special configuration
+        .shellcheckrc:${__HELP_NORMAL}\nuse the following line in your
+        .shellcheckrc file to exclude\nsome files from being checked (use grep
+        -E syntax)\nexclude=^bin/bash-tpl$\n\n${__HELP_TITLE_COLOR}SHELLCHECK
+        HELP${__RESET_COLOR}\n\n@@@SHELLCHECK_HELP@@@\n"
+      optionGroups:
+        shellcheckLintOptionGroup:
+          title: "OPTIONS:"
+        zzzGroupGlobalOptionsGroup:
+          title: "GLOBAL OPTIONS:"
+      options:
+        - alts:
+            - --help
+            - -h
+          callbacks:
+            - optionHelpCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Displays this command help
+          type: Boolean
+          variableName: optionHelp
+        - alts:
+            - --config
+          group: zzzGroupGlobalOptionsGroup
+          help: Displays configuration
+          type: Boolean
+          variableName: optionConfig
+        - alts:
+            - --bash-framework-config
+          callbacks:
+            - optionBashFrameworkConfigCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Use alternate bash framework configuration.
+          type: String
+          variableName: optionBashFrameworkConfig
+        - alts:
+            - --verbose
+            - -v
+          callbacks:
+            - optionInfoVerboseCallback
+            - updateArgListInfoVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Info level verbose mode (alias of --display-level INFO)
+          type: Boolean
+          variableName: optionInfoVerbose
+        - alts:
+            - -vv
+          callbacks:
+            - optionDebugVerboseCallback
+            - updateArgListDebugVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Debug level verbose mode (alias of --display-level DEBUG)
+          type: Boolean
+          variableName: optionDebugVerbose
+        - alts:
+            - -vvv
+          callbacks:
+            - optionTraceVerboseCallback
+            - updateArgListTraceVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Trace level verbose mode (alias of --display-level TRACE)
+          type: Boolean
+          variableName: optionTraceVerbose
+        - alts:
+            - --env-file
+          callbacks:
+            - optionEnvFileCallback
+            - updateArgListEnvFileCallback
+          group: zzzGroupGlobalOptionsGroup
+          help:
+            Load the specified env file (deprecated, please use
+            --bash-framework-config option instead)
+          max: -1
+          type: StringArray
+          variableName: optionEnvFiles
+        - alts:
+            - --log-level
+          authorizedValuesList:
+            - "OFF"
+            - ERR
+            - ERROR
+            - WARN
+            - WARNING
+            - INFO
+            - DEBUG
+            - TRACE
+          callbacks:
+            - optionLogLevelCallback
+            - updateArgListLogLevelCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set log level
+          type: String
+          variableName: optionLogLevel
+        - alts:
+            - --log-file
+          callbacks:
+            - optionLogFileCallback
+            - updateArgListLogFileCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set log file
+          type: String
+          variableName: optionLogFile
+        - alts:
+            - --display-level
+          authorizedValuesList:
+            - "OFF"
+            - ERR
+            - ERROR
+            - WARN
+            - WARNING
+            - INFO
+            - DEBUG
+            - TRACE
+          callbacks:
+            - optionDisplayLevelCallback
+            - updateArgListDisplayLevelCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set display level
+          type: String
+          variableName: optionDisplayLevel
+        - alts:
+            - --no-color
+          callbacks:
+            - optionNoColorCallback
+            - updateArgListNoColorCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Produce monochrome output. alias of --theme noColor.
+          type: Boolean
+          variableName: optionNoColor
+        - alts:
+            - --theme
+          authorizedValuesList:
+            - default
+            - default-force
+            - noColor
+          callbacks:
+            - optionThemeCallback
+            - updateArgListThemeCallback
+          defaultValue: default
+          group: zzzGroupGlobalOptionsGroup
+          help:
+            Choose color theme - default-force means colors will be produced
+            even if command is piped.
+          type: String
+          variableName: optionTheme
+        - alts:
+            - --version
+          callbacks:
+            - optionVersionCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Print version information and quit.
+          type: Boolean
+          variableName: optionVersion
+        - alts:
+            - --quiet
+            - -q
+          callbacks:
+            - optionQuietCallback
+            - updateArgListQuietCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Quiet mode, doesn't display any output.
+          type: Boolean
+          variableName: optionQuiet
+        - alts:
+            - --format
+            - -f
+          authorizedValuesList:
+            - checkstyle
+            - diff
+            - gcc
+            - json
+            - json1
+            - quiet
+            - tty
+          callbacks:
+            - test
+          defaultValue: tty
+          group: shellcheckLintOptionGroup
+          help: define output format of this command
+          type: String
+          variableName: optionFormat
+        - alts:
+            - --staged
+          group: shellcheckLintOptionGroup
+          help:
+            lint only staged git files(files added to file list to be committed)
+            and which are beginning with a bash shebang.
+          min: 1
+          type: StringArray
+          variableName: optionStaged
+        - alts:
+            - --xargs
+          authorizedValuesList:
+            - checkstyle
+            - diff
+          group: shellcheckLintOptionGroup
+          help: uses parallelization(using xargs command) only if tty format
+          type: Boolean
+          variableName: optionXargs
+      sourceFile: ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
+      unknownOptionCallbacks:
+        - unknownOption
+      version: "1.0"
+binFile:
+  relativeRootDirBasedOnTargetDir: ..
+  srcDirs:
+    - ${FRAMEWORK_ROOT_DIR}/src
+  targetFile: ${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint
+  templateDirs:
+    - examples/templates
+  templateFile: binFile.gtpl
+  templateName: binFile
+compileConfig:
+  BASH_FRAMEWORK_DISPLAY_LEVEL: ${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}
+  BASH_FRAMEWORK_LOG_FILE: "${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}"
+  BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION: ${BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION:-5}
+  BASH_FRAMEWORK_LOG_LEVEL: ${BASH_FRAMEWORK_LOG_LEVEL:-0}
+  BASH_FRAMEWORK_THEME: ${BASH_FRAMEWORK_THEME:-default}
+  BATS_FILE_NOT_NEEDED_REGEXP:
+    - .bats$
+    - .framework-config
+    - /ZZZ.sh$
+    - /_.sh$
+    - /__all.sh$
+    - /testsData/
+    - ^.docker/
+    - ^.github/
+    - ^bin/
+    - ^manualTests/
+    - ^src/_includes
+    - ^src/batsHeaders.sh$
+  COMPILE_PARAMETERS:
+    binDir: ${FRAMEWORK_BIN_DIR}
+    rootDir: ${FRAMEWORK_ROOT_DIR}
+    srcDir: ${FRAMEWORK_SRC_DIR}
+    templateDir: ${FRAMEWORK_SRC_DIR}
+  DISPLAY_DURATION: ${DISPLAY_DURATION:-1}
+  FRAMEWORK_BIN_DIR: ${FRAMEWORK_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/bin}
+  FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP:
+    - /testsData/
+    - "\\.bats$"
+    - "\\.tpl$"
+    - ^.github/
+    - "^\\.framework-config$"
+    - ^bin/
+    - ^manualTests/
+    - src/Options/_bats.sh
+  FRAMEWORK_FUNCTIONS_IGNORE_REGEXP:
+    - Acquire::ForceIPv4
+    - Functions::myFunction
+    - IMPORT::dir::file
+    - Namespace::functions
+    - Namespace::requireSomething
+  FRAMEWORK_ROOT_DIR: ${FRAMEWORK_ROOT_DIR}
+  FRAMEWORK_SRC_DIR: ${FRAMEWORK_SRC_DIR:-${FRAMEWORK_ROOT_DIR}/src}
+  FRAMEWORK_SRC_DIRS:
+    - ${FRAMEWORK_ROOT_DIR}/src
+  FRAMEWORK_VENDOR_BIN_DIR: ${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}
+  FRAMEWORK_VENDOR_DIR: ${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}
+  NON_FRAMEWORK_FILES_REGEXP:
+    - .bats$
+    - .framework-config
+    - /ZZZ.sh$
+    - /_.sh$
+    - /__all.sh$
+    - /testsData/
+    - ^.docker/createUser.
+    - ^.github/
+    - ^bin/
+    - ^hooks/
+    - ^manualTests/
+    - ^preCommitTest.sh$
+    - ^src/_binaries
+    - ^src/_includes
+    - ^src/_standalone
+    - ^src/batsHeaders.sh$
+    - ^test.sh$
+vars:
+  MAIN_FUNCTION_NAME: main
+  REPOSITORY_URL: https://github.com/fchastanet/bash-tools-framework

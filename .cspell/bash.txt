@@ -2,6 +2,8 @@ ABRT
 buildx
 coverprofile
 DEBCONF
+EPOCHREALTIME
+EPOCHSECONDS
 exitcode
 golangci
 lastpipe

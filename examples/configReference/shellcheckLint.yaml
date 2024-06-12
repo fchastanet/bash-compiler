@@ -1,0 +1,148 @@
+binFile:
+  relativeRootDirBasedOnTargetDir: ..
+  templateFile: binFile.gtpl
+  targetFile: "${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint"
+  templateName: binFile
+  srcDirs:
+    - ${FRAMEWORK_ROOT_DIR}/src
+  templateDirs:
+    - examples/templates
+compileConfig:
+  BASH_FRAMEWORK_DISPLAY_LEVEL: ${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}
+  BASH_FRAMEWORK_LOG_FILE: "${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}"
+  BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION: ${BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION:-5}
+  BASH_FRAMEWORK_LOG_LEVEL: ${BASH_FRAMEWORK_LOG_LEVEL:-0}
+  BASH_FRAMEWORK_THEME: ${BASH_FRAMEWORK_THEME:-default}
+  BATS_FILE_NOT_NEEDED_REGEXP:
+    - ^bin/
+    - .framework-config
+    - ^.docker/
+    - ^.github/
+    - .bats$
+    - /testsData/
+    - ^manualTests/
+    - /_.sh$
+    - /ZZZ.sh$
+    - /__all.sh$
+    - ^src/batsHeaders.sh$
+    - ^src/_includes
+  COMPILE_PARAMETERS:
+    binDir: ${FRAMEWORK_BIN_DIR}
+    rootDir: ${FRAMEWORK_ROOT_DIR}
+    srcDir: ${FRAMEWORK_SRC_DIR}
+    templateDir: ${FRAMEWORK_SRC_DIR}
+  DISPLAY_DURATION: ${DISPLAY_DURATION:-1}
+  FRAMEWORK_BIN_DIR: ${FRAMEWORK_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/bin}
+  FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP:
+    - ^bin/
+    - ^.github/
+    - "^\\.framework-config$"
+    - "\\.tpl$"
+    - /testsData/
+    - ^manualTests/
+    - "\\.bats$"
+    - src/Options/_bats.sh
+  FRAMEWORK_FUNCTIONS_IGNORE_REGEXP:
+    - Namespace::functions
+    - Functions::myFunction
+    - Namespace::requireSomething
+    - IMPORT::dir::file
+    - Acquire::ForceIPv4
+  FRAMEWORK_ROOT_DIR: ${FRAMEWORK_ROOT_DIR}
+  FRAMEWORK_SRC_DIR: ${FRAMEWORK_SRC_DIR:-${FRAMEWORK_ROOT_DIR}/src}
+  FRAMEWORK_SRC_DIRS:
+    - ${FRAMEWORK_ROOT_DIR}/src
+  FRAMEWORK_VENDOR_BIN_DIR: ${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}
+  FRAMEWORK_VENDOR_DIR: ${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}
+  NON_FRAMEWORK_FILES_REGEXP:
+    - ^bin/
+    - ^hooks/
+    - ^test.sh$
+    - ^preCommitTest.sh$
+    - ^.github/
+    - ^.docker/createUser.
+    - .framework-config
+    - .bats$
+    - /testsData/
+    - ^manualTests/
+    - /_.sh$
+    - /ZZZ.sh$
+    - /__all.sh$
+    - ^src/_binaries
+    - ^src/_includes
+    - ^src/batsHeaders.sh$
+    - ^src/_standalone
+binData:
+  commands:
+    default:
+      functionName: shellcheckLintCommand
+      unknownOptionCallbacks:
+        - unknownOption
+      version: "1.0"
+      commandName: shellcheckLint
+      definitionFiles:
+        - ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh
+      help: Lint bash files using shellcheck.
+      longDescription:
+        "shellcheck wrapper that will:\n- install new shellcheck
+        version(${MIN_SHELLCHECK_VERSION}) automatically\n$'\\r'\n- by default,
+        lint all git files of this project which are beginning with a bash
+        shebang\n  except if the option --staged is
+        passed\n\n${__HELP_TITLE}Special configuration
+        .shellcheckrc:${__HELP_NORMAL}\nuse the following line in your
+        .shellcheckrc file to exclude\nsome files from being checked (use grep
+        -E syntax)\nexclude=^bin/bash-tpl$\n\n${__HELP_TITLE_COLOR}SHELLCHECK
+        HELP${__RESET_COLOR}\n\n@@@SHELLCHECK_HELP@@@\n"
+      args:
+        - callbacks:
+            - argShellcheckFilesCallback
+          help: |
+            files to validate with shellcheck. If not provided,
+            all files from git repository which are beginning
+            with a bash shebang, unless --staged option is provided.
+          type: StringArray
+          max: -1
+          min: 0
+          name: shellcheckFiles
+          variableName: argShellcheckFiles
+      optionGroups:
+        shellcheckLintOptionGroup:
+          title: "OPTIONS:"
+      options:
+        - alts:
+            - --format
+            - -f
+          authorizedValuesList:
+            - checkstyle
+            - diff
+            - gcc
+            - json
+            - json1
+            - quiet
+            - tty
+          defaultValue: tty
+          group: shellcheckLintOptionGroup
+          help: define output format of this command
+          type: String
+          variableName: optionFormat
+          callbacks:
+            - test
+        - alts:
+            - --staged
+          group: shellcheckLintOptionGroup
+          help:
+            lint only staged git files(files added to file list to be committed)
+            and which are beginning with a bash shebang.
+          variableName: optionStaged
+          type: StringArray
+          min: 1
+
+        - alts:
+            - --xargs
+          authorizedValuesList:
+            - checkstyle
+            - diff
+          group: shellcheckLintOptionGroup
+          help: uses parallelization(using xargs command) only if tty format
+          type: Boolean
+          variableName: optionXargs

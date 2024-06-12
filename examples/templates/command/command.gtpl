@@ -1,6 +1,6 @@
-{{- define "commands" -}}
+{{- define "command" -}}
 {{ $context := . }}
-{{ range .Data }}
+{{ with .Data }}
 # ------------------------------------------
 # Command {{ .functionName }}
 # ------------------------------------------

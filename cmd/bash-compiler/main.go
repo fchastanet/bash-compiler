@@ -69,10 +69,10 @@ func main() {
 	}
 
 	// Save resulting file
-	if err := os.WriteFile("templates-examples/testsData/shellcheckLint.beforeCompile.sh", []byte(code), UserReadWriteExecutePerm); err != nil {
+	if err := os.WriteFile("examples/binaries/shellcheckLint.beforeCompile.sh", []byte(code), UserReadWriteExecutePerm); err != nil {
 		panic(err)
 	}
-	slog.Info("Check templates-examples/testsData/shellcheckLint.beforeCompile.sh")
+	slog.Info("Check examples/binaries/shellcheckLint.beforeCompile.sh")
 
 	// Compile
 	codeCompiled, err := compiler.Compile(code, templateContext, binaryModel)

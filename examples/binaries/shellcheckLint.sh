@@ -703,7 +703,7 @@ updateArgListQuietCallback() { :; }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionHelpCallback() {
-  <% ${commandFunctionName} %> help
+  ${commandFunctionName} <% % >help
   exit 0
 }
 
@@ -727,21 +727,21 @@ optionEnvFileCallback() {
 optionInfoVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='--verbose'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_INFO}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_INFO}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_INFO}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionDebugVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='-vv'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_DEBUG}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionTraceVerboseCallback() {
   BASH_FRAMEWORK_ARGS_VERBOSE_OPTION='-vvv'
   BASH_FRAMEWORK_ARGS_VERBOSE=${__VERBOSE_LEVEL_TRACE}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${__LEVEL_DEBUG}" >>"${overrideEnvFile}"
 }
 
 getLevel() {
@@ -765,6 +765,7 @@ getLevel() {
     *)
       Log::displayError "Command ${SCRIPT_NAME} - Invalid level ${level}"
       return 1
+      ;;
   esac
 }
 
@@ -786,6 +787,7 @@ getVerboseLevel() {
     *)
       Log::displayError "Command ${SCRIPT_NAME} - Invalid level ${level}"
       return 1
+      ;;
   esac
 }
 
@@ -796,7 +798,7 @@ optionDisplayLevelCallback() {
   logLevel="$(getLevel "${level}")"
   verboseLevel="$(getVerboseLevel "${level}")"
   BASH_FRAMEWORK_ARGS_VERBOSE=${verboseLevel}
-  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${logLevel}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_DISPLAY_LEVEL=${logLevel}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
@@ -806,18 +808,18 @@ optionLogLevelCallback() {
   logLevel="$(getLevel "${level}")"
   verboseLevel="$(getVerboseLevel "${level}")"
   BASH_FRAMEWORK_ARGS_VERBOSE=${verboseLevel}
-  echo "BASH_FRAMEWORK_LOG_LEVEL=${logLevel}" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_LOG_LEVEL=${logLevel}" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionLogFileCallback() {
   local logFile="$2"
-  echo "BASH_FRAMEWORK_LOG_FILE='${logFile}'" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_LOG_FILE='${logFile}'" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
 optionQuietCallback() {
-  echo "BASH_FRAMEWORK_QUIET_MODE=1" >> "${overrideEnvFile}"
+  echo "BASH_FRAMEWORK_QUIET_MODE=1" >>"${overrideEnvFile}"
 }
 
 # shellcheck disable=SC2317 # if function is overridden
@@ -857,7 +859,7 @@ overrideEnvFile="$(Framework::createTempFile "overrideEnvFile")"
 commandOptionParseFinished() {
   # load default template framework config
   defaultEnvFile="${PERSISTENT_TMPDIR}/.framework-config"
-  echo "${defaultFrameworkConfig}" > "${defaultEnvFile}"
+  echo "${defaultFrameworkConfig}" >"${defaultEnvFile}"
   local -a files=("${defaultEnvFile}")
   if [[ -f "${envFile}" ]]; then
     files+=("${envFile}")
@@ -913,11 +915,11 @@ optionHelpCallback() {
   local shellcheckHelpFile
   shellcheckHelpFile="$(Framework::createTempFile "shellcheckHelp")"
   (
-  if [[ -x "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" ]]; then
-    "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" --help
-  else
-    Log::displayError "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck does not exist" 2>&1
-  fi
+    if [[ -x "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" ]]; then
+      "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" --help
+    else
+      Log::displayError "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck does not exist" 2>&1
+    fi
   ) >"${shellcheckHelpFile}" 2>&1
 
   shellcheckLintCommandHelp |
@@ -927,15 +929,12 @@ optionHelpCallback() {
   exit 0
 }
 
-
 optionVersionCallback() {
   echo -e "${__HELP_TITLE_COLOR}${SCRIPT_NAME} version: ${__RESET_COLOR} ${versionNumber}"
   echo -e -n "${__HELP_TITLE_COLOR}shellcheck Version: ${__RESET_COLOR}"
   "${FRAMEWORK_VENDOR_BIN_DIR}/shellcheck" --version
   exit 0
 }
-
-
 
 # ------------------------------------------
 # Command shellcheckLintCommand
@@ -992,7 +991,7 @@ shellcheckLintCommandParse() {
   optionTraceVerbose="0"
   local -i options_parse_optionParsedCountOptionTraceVerbose
   ((options_parse_optionParsedCountOptionTraceVerbose = 0)) || true
-  
+
   optionLogLevel=""
   local -i options_parse_optionParsedCountOptionLogLevel
   ((options_parse_optionParsedCountOptionLogLevel = 0)) || true
@@ -1014,10 +1013,9 @@ shellcheckLintCommandParse() {
   optionQuiet="0"
   local -i options_parse_optionParsedCountOptionQuiet
   ((options_parse_optionParsedCountOptionQuiet = 0)) || true
-  
+
   argShellcheckFiles=()
-  
-  
+
   # shellcheck disable=SC2034
   local -i options_parse_parsedArgIndex=0
   while (($# > 0)); do
@@ -1029,472 +1027,405 @@ shellcheckLintCommandParse() {
       # type: String min 0 max 1
       # authorizedValues: checkstyle|diff|gcc|json|json1|quiet|tty
       --format | -f)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
+
         if [[ ! "$1" =~ checkstyle|diff|gcc|json|json1|quiet|tty ]]; then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([checkstyle diff gcc json json1 quiet tty])"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionFormat >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionFormat >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionFormat))
         # shellcheck disable=SC2034
         optionFormat="$1"
-        
-        
+
         ;;
       # Option 2/17
       # optionStaged alts --staged
       # type: Boolean min 0 max 1
       --staged)
-        
+
         # shellcheck disable=SC2034
         optionStaged="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionStaged >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionStaged >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionStaged))
-        
-        
+
         ;;
       # Option 3/17
       # optionXargs alts --xargs
       # type: Boolean min 0 max 1
       --xargs)
-        
+
         # shellcheck disable=SC2034
         optionXargs="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionXargs >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionXargs >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionXargs))
-        
-        
+
         ;;
       # Option 4/17
       # optionHelp alts --help|-h
       # type: Boolean min 0 max 1
       --help | -h)
-        
+
         # shellcheck disable=SC2034
         optionHelp="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionHelp >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionHelp >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionHelp))
-        
-        
+
         optionHelpCallback "${options_parse_arg}" "${optionHelp}"
-        
-        
+
         ;;
       # Option 5/17
       # optionConfig alts --config
       # type: Boolean min 0 max 1
       --config)
-        
+
         # shellcheck disable=SC2034
         optionConfig="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionConfig >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionConfig >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionConfig))
-        
-        
+
         ;;
       # Option 6/17
       # optionBashFrameworkConfig alts --bash-framework-config
       # type: String min 0 max 1
       --bash-framework-config)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionBashFrameworkConfig >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionBashFrameworkConfig >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionBashFrameworkConfig))
         # shellcheck disable=SC2034
         optionBashFrameworkConfig="$1"
-        
-        
+
         optionBashFrameworkConfigCallback "${options_parse_arg}" "${optionBashFrameworkConfig}"
-        
-        
+
         ;;
       # Option 7/17
       # optionInfoVerbose alts --verbose|-v
       # type: Boolean min 0 max 1
       --verbose | -v)
-        
+
         # shellcheck disable=SC2034
         optionInfoVerbose="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionInfoVerbose >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionInfoVerbose >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionInfoVerbose))
-        
-        
+
         optionInfoVerboseCallback "${options_parse_arg}" "${optionInfoVerbose}"
-        
-        
+
         updateArgListInfoVerboseCallback "${options_parse_arg}" "${optionInfoVerbose}"
-        
-        
+
         ;;
       # Option 8/17
       # optionDebugVerbose alts -vv
       # type: Boolean min 0 max 1
       -vv)
-        
+
         # shellcheck disable=SC2034
         optionDebugVerbose="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionDebugVerbose >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionDebugVerbose >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionDebugVerbose))
-        
-        
+
         optionDebugVerboseCallback "${options_parse_arg}" "${optionDebugVerbose}"
-        
-        
+
         updateArgListDebugVerboseCallback "${options_parse_arg}" "${optionDebugVerbose}"
-        
-        
+
         ;;
       # Option 9/17
       # optionTraceVerbose alts -vvv
       # type: Boolean min 0 max 1
       -vvv)
-        
+
         # shellcheck disable=SC2034
         optionTraceVerbose="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionTraceVerbose >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionTraceVerbose >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionTraceVerbose))
-        
-        
+
         optionTraceVerboseCallback "${options_parse_arg}" "${optionTraceVerbose}"
-        
-        
+
         updateArgListTraceVerboseCallback "${options_parse_arg}" "${optionTraceVerbose}"
-        
-        
+
         ;;
       # Option 10/17
       # optionEnvFiles alts --env-file
       # type: StringArray min 0 max -1
       --env-file)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
-        
-        
+
         ((++options_parse_optionParsedCountOptionEnvFiles))
         optionEnvFiles+=("$1")
-        
-        
+
         optionEnvFileCallback "${options_parse_arg}" "${optionEnvFiles[@]}"
-        
-        
+
         updateArgListEnvFileCallback "${options_parse_arg}" "${optionEnvFiles[@]}"
-        
-        
+
         ;;
       # Option 11/17
       # optionLogLevel alts --log-level
       # type: String min 0 max 1
       # authorizedValues: OFF|ERR|ERROR|WARN|WARNING|INFO|DEBUG|TRACE
       --log-level)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
+
         if [[ ! "$1" =~ OFF|ERR|ERROR|WARN|WARNING|INFO|DEBUG|TRACE ]]; then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([OFF ERR ERROR WARN WARNING INFO DEBUG TRACE])"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionLogLevel >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionLogLevel >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionLogLevel))
         # shellcheck disable=SC2034
         optionLogLevel="$1"
-        
-        
+
         optionLogLevelCallback "${options_parse_arg}" "${optionLogLevel}"
-        
-        
+
         updateArgListLogLevelCallback "${options_parse_arg}" "${optionLogLevel}"
-        
-        
+
         ;;
       # Option 12/17
       # optionLogFile alts --log-file
       # type: String min 0 max 1
       --log-file)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionLogFile >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionLogFile >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionLogFile))
         # shellcheck disable=SC2034
         optionLogFile="$1"
-        
-        
+
         optionLogFileCallback "${options_parse_arg}" "${optionLogFile}"
-        
-        
+
         updateArgListLogFileCallback "${options_parse_arg}" "${optionLogFile}"
-        
-        
+
         ;;
       # Option 13/17
       # optionDisplayLevel alts --display-level
       # type: String min 0 max 1
       # authorizedValues: OFF|ERR|ERROR|WARN|WARNING|INFO|DEBUG|TRACE
       --display-level)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
+
         if [[ ! "$1" =~ OFF|ERR|ERROR|WARN|WARNING|INFO|DEBUG|TRACE ]]; then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([OFF ERR ERROR WARN WARNING INFO DEBUG TRACE])"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionDisplayLevel >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionDisplayLevel >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionDisplayLevel))
         # shellcheck disable=SC2034
         optionDisplayLevel="$1"
-        
-        
+
         optionDisplayLevelCallback "${options_parse_arg}" "${optionDisplayLevel}"
-        
-        
+
         updateArgListDisplayLevelCallback "${options_parse_arg}" "${optionDisplayLevel}"
-        
-        
+
         ;;
       # Option 14/17
       # optionNoColor alts --no-color
       # type: Boolean min 0 max 1
       --no-color)
-        
+
         # shellcheck disable=SC2034
         optionNoColor="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionNoColor >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionNoColor >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionNoColor))
-        
-        
+
         optionNoColorCallback "${options_parse_arg}" "${optionNoColor}"
-        
-        
+
         updateArgListNoColorCallback "${options_parse_arg}" "${optionNoColor}"
-        
-        
+
         ;;
       # Option 15/17
       # optionTheme alts --theme
       # type: String min 0 max 1
       # authorizedValues: default|default-force|noColor
       --theme)
-        
+
         shift
         if (($# == 0)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
           return 1
         fi
-        
+
         if [[ ! "$1" =~ default|default-force|noColor ]]; then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values([default default-force noColor])"
           return 1
         fi
-        
-        
-        
-        if ((options_parse_optionParsedCountOptionTheme >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionTheme >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionTheme))
         # shellcheck disable=SC2034
         optionTheme="$1"
-        
-        
+
         optionThemeCallback "${options_parse_arg}" "${optionTheme}"
-        
-        
+
         updateArgListThemeCallback "${options_parse_arg}" "${optionTheme}"
-        
-        
+
         ;;
       # Option 16/17
       # optionVersion alts --version
       # type: Boolean min 0 max 1
       --version)
-        
+
         # shellcheck disable=SC2034
         optionVersion="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionVersion >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionVersion >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionVersion))
-        
-        
+
         optionVersionCallback "${options_parse_arg}" "${optionVersion}"
-        
-        
+
         ;;
       # Option 17/17
       # optionQuiet alts --quiet|-q
       # type: Boolean min 0 max 1
       --quiet | -q)
-        
+
         # shellcheck disable=SC2034
         optionQuiet="1"
-        
-        
-        if ((options_parse_optionParsedCountOptionQuiet >= 1 )); then
+
+        if ((options_parse_optionParsedCountOptionQuiet >= 1)); then
           Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - Maximum number of option occurrences reached(1)"
           return 1
         fi
-        
+
         ((++options_parse_optionParsedCountOptionQuiet))
-        
-        
+
         optionQuietCallback "${options_parse_arg}" "${optionQuiet}"
-        
-        
+
         updateArgListQuietCallback "${options_parse_arg}" "${optionQuiet}"
-        
-        
+
         ;;
-      
+
       -*)
-        
-        
+
         unknownOption "" "${options_parse_arg}" || argOptDefaultBehavior=$?
-        
+
         ;;
       *)
         if ((0)); then
           # Technical if - never reached
           :
-        
+
         # Argument 1/1
         # argShellcheckFiles min 0 max -1
-        
-        
-        elif (( options_parse_parsedArgIndex >= 0 )); then
-        
+
+        elif ((options_parse_parsedArgIndex >= 0)); then
+
           ((++options_parse_argParsedCountArgShellcheckFiles))
           # shellcheck disable=SC2034
-          
+
           # shellcheck disable=SC2034
           argShellcheckFiles+=("${options_parse_arg}")
-          
+
           argShellcheckFilesCallback "${argShellcheckFiles[@]}" -- "${@:2}"
-          
-        
+
         # else too much args
         else
-          
+
           if [[ "${argOptDefaultBehavior}" = "0" ]]; then
             # too much args and no unknownArgumentCallbacks configured
             Log::displayError "Command ${SCRIPT_NAME} - Argument - too much arguments provided: $*"
             return 1
           fi
-          
+
         fi
         ;;
     esac
@@ -1507,7 +1438,7 @@ shellcheckLintCommandHelp() {
   Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
     "Lint bash files using shellcheck."
   echo
-  
+
   # ------------------------------------------
   # usage section
   # ------------------------------------------
@@ -1537,170 +1468,119 @@ shellcheckLintCommandHelp() {
   )
   Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
     "shellcheckLint" "${optionsAltList[@]}"
-  
-  
+
   # ------------------------------------------
   # options section
   # ------------------------------------------
-  
-  
+
   echo
   echo -e "${__HELP_TITLE_COLOR}OPTIONS:${__RESET_COLOR}"
   echo -e "  ${__HELP_OPTION_COLOR}--format${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-f format${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    define output format of this command"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--staged${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    lint only staged git files(files added to file list to be committed) and which are beginning with a bash shebang."
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--xargs${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    uses parallelization(using xargs command) only if tty format"
   echo
-  
-  
-  
+
   echo
   echo -e "${__HELP_TITLE_COLOR}GLOBAL OPTIONS:${__RESET_COLOR}"
   echo -e "  ${__HELP_OPTION_COLOR}--help${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-h${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Displays this command help"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--config${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Displays configuration"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--bash-framework-config bash-framework-config${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Use alternate bash framework configuration."
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--verbose${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-v${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Info level verbose mode (alias of --display-level INFO)"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}-vv${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Debug level verbose mode (alias of --display-level DEBUG)"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}-vvv${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Trace level verbose mode (alias of --display-level TRACE)"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--env-file env-file${__HELP_NORMAL} {list} (optional)"
   Array::wrap2 ' ' 76 4 "    Load the specified env file (deprecated, please use --bash-framework-config option instead)"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--log-level log-level${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Set log level"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--log-file log-file${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Set log file"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--display-level display-level${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Set display level"
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--no-color${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Produce monochrome output. alias of --theme noColor."
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--theme theme${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Choose color theme - default-force means colors will be produced even if command is piped."
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--version${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Print version information and quit."
   echo
-  
-  
+
   echo -e "  ${__HELP_OPTION_COLOR}--quiet${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}-q${__HELP_NORMAL} {single}"
   Array::wrap2 ' ' 76 4 "    Quiet mode, doesn't display any output."
   echo
-  
-  
+
   # ------------------------------------------
   # longDescription section
   # ------------------------------------------
   echo
   declare -a shellcheckLintCommandLongDescription=(
-  
-  
-  
-  "shellcheck wrapper that will:"
-  
-  
-  
-  "- install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically"
-  
-  
-  
-  $'\r'
-  
-  
-  
-  "- by default, lint all git files of this project which are beginning with a bash shebang"
-  
-  
-  
-  "except if the option --staged is passed"
-  
-  
-  
-  ""
-  
-  
-  
-  ${__HELP_TITLE}Special configuration .shellcheckrc:${__HELP_NORMAL}
-  
-  
-  
-  "use the following line in your .shellcheckrc file to exclude"
-  
-  
-  
-  "some files from being checked (use grep -E syntax)"
-  
-  
-  
-  "exclude=^bin/bash-tpl$"
-  
-  
-  
-  ""
-  
-  
-  
-  ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
-  
-  
-  
-  ""
-  
-  
-  
-  "@@@SHELLCHECK_HELP@@@"
-  
-  
-  
-  ""
-  
-  
+
+    "shellcheck wrapper that will:"
+
+    "- install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically"
+
+    $'\r'
+
+    "- by default, lint all git files of this project which are beginning with a bash shebang"
+
+    "except if the option --staged is passed"
+
+    ""
+
+    ${__HELP_TITLE}Special configuration .shellcheckrc:${__HELP_NORMAL}
+
+    "use the following line in your .shellcheckrc file to exclude"
+
+    "some files from being checked (use grep -E syntax)"
+
+    "exclude=^bin/bash-tpl$"
+
+    ""
+
+    ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
+
+    ""
+
+    "@@@SHELLCHECK_HELP@@@"
+
+    ""
+
   )
   Array::wrap2 ' ' 76 0 "${shellcheckLintCommandLongDescription[@]}"
   echo
@@ -1737,7 +1617,7 @@ shellcheckLintCommandHelp() {
 MAIN_FUNCTION_NAME="main"
 main() {
   #!/usr/bin/env bash
-  
+
   SCRIPT_NAME=${0##*/}
   REAL_SCRIPT_FILE="$(readlink -e "$(realpath "${BASH_SOURCE[0]}")")"
   if [[ -n "${EMBED_CURRENT_DIR}" ]]; then
@@ -1751,7 +1631,7 @@ main() {
   FRAMEWORK_VENDOR_DIR="${FRAMEWORK_ROOT_DIR}/vendor"
   FRAMEWORK_VENDOR_BIN_DIR="${FRAMEWORK_ROOT_DIR}/vendor/bin"
   shellcheckLintCommandParse "$@"
-  
+
 }
 
 # if file is sourced avoid calling main function
