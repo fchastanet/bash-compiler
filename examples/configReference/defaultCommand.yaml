@@ -1,11 +1,11 @@
 ---
 # export here all the variables that will be used in your templates
-vars:
+vars: &defaultVars
   MAIN_FUNCTION_NAME: main
   REPOSITORY_URL: https://github.com/fchastanet/bash-tools-framework
 binData:
   commands:
-    default:
+    default: &defaultCommand
       author: "[François Chastanet](https://github.com/fchastanet)"
       sourceFile: "${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}"
       license: MIT License

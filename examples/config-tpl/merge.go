@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -11,43 +13,64 @@ import (
 
 func main() {
 	// declare two map to hold the yaml content
-	frameworkConfig := map[string]interface{}{}
-	base := map[string]interface{}{}
+
+	// compute current directory
+	currentDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// read one yaml file
 	currentMap := map[string]interface{}{}
-
-	// read one yaml file
-	data, err := os.ReadFile("examples/configReference/frameworkConfig.yaml")
+	referenceDir := filepath.Join(currentDir, "examples/configReference")
+	referenceDirs := []string{referenceDir}
+	err = decodeFile(
+		"examples/configReference/shellcheckLint.yaml",
+		referenceDirs,
+		&currentMap,
+	)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	if err := yaml.Unmarshal(data, &frameworkConfig); err != nil {
-		panic(err)
+	resultMap := map[string]interface{}{}
+	if _, ok := currentMap["extends"]; ok {
+		extends := currentMap["extends"].([]interface{})
+		for _, file := range extends {
+			fileAbs := filepath.Join(referenceDir, file.(string))
+			if _, err := os.Stat(fileAbs); err != nil {
+				panic(err)
+			}
+			extendsMap := map[string]interface{}{}
+			err = decodeFile(fileAbs, referenceDirs, &extendsMap)
+			if err != nil {
+				panic(err)
+			}
+			resultMap = mergeMaps(resultMap, extendsMap)
+		}
 	}
 
-	// read one yaml file
-	data, err = os.ReadFile("examples/configReference/defaultCommand.yaml")
-	if err != nil {
-		panic(err)
-	}
-
-	if err := yaml.Unmarshal(data, &base); err != nil {
-		panic(err)
-	}
-
-	// read another yaml file
-	data1, _ := os.ReadFile("examples/configReference/shellcheckLint.yaml")
-	if err := yaml.Unmarshal(data1, &currentMap); err != nil {
-		panic(err)
-	}
-
-	// merge both yaml data recursively
-	base = mergeMaps(frameworkConfig, base)
-	base = mergeMaps(base, currentMap)
+	resultMap = mergeMaps(resultMap, currentMap)
+	delete(resultMap, "extends")
 
 	// print merged map
-	yamlResult, _ := yaml.Marshal(base)
+	yamlResult, _ := yaml.Marshal(resultMap)
 	fmt.Printf("%s\n", string(yamlResult))
+}
+
+func decodeFile(
+	file string, referenceDirs []string, myMap *map[string]interface{},
+) error {
+	fileReader, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+
+	dec := yaml.NewDecoder(fileReader, yaml.ReferenceDirs(referenceDirs...))
+	if err := dec.Decode(myMap); err != nil {
+		return err
+	}
+	return nil
 }
 
 func compareObjects(o1 interface{}, o2 interface{}) int {

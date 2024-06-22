@@ -3,6 +3,7 @@ module github.com/fchastanet/bash-compiler
 go 1.21.9
 
 require (
+	cuelang.org/go v0.9.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/alecthomas/kong v0.9.0
 	github.com/goccy/go-yaml v1.11.3
@@ -10,11 +11,11 @@ require (
 )
 
 require (
-	cuelang.org/go v0.8.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/fatih/color v1.17.0 // indirect
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
