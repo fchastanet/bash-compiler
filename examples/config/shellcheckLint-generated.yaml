@@ -247,18 +247,18 @@ compileConfig:
   BASH_FRAMEWORK_LOG_LEVEL: ${BASH_FRAMEWORK_LOG_LEVEL:-0}
   BASH_FRAMEWORK_THEME: ${BASH_FRAMEWORK_THEME:-default}
   BATS_FILE_NOT_NEEDED_REGEXP:
-    - .bats$
+    - ^bin/
     - .framework-config
-    - /ZZZ.sh$
-    - /_.sh$
-    - /__all.sh$
-    - /testsData/
     - ^.docker/
     - ^.github/
-    - ^bin/
+    - .bats$
+    - /testsData/
     - ^manualTests/
-    - ^src/_includes
+    - /_.sh$
+    - /ZZZ.sh$
+    - /__all.sh$
     - ^src/batsHeaders.sh$
+    - ^src/_includes
   COMPILE_PARAMETERS:
     binDir: ${FRAMEWORK_BIN_DIR}
     rootDir: ${FRAMEWORK_ROOT_DIR}
@@ -267,20 +267,20 @@ compileConfig:
   DISPLAY_DURATION: ${DISPLAY_DURATION:-1}
   FRAMEWORK_BIN_DIR: ${FRAMEWORK_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/bin}
   FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP:
-    - /testsData/
-    - "\\.bats$"
-    - "\\.tpl$"
+    - ^bin/
     - ^.github/
     - "^\\.framework-config$"
-    - ^bin/
+    - "\\.tpl$"
+    - /testsData/
     - ^manualTests/
+    - "\\.bats$"
     - src/Options/_bats.sh
   FRAMEWORK_FUNCTIONS_IGNORE_REGEXP:
-    - Acquire::ForceIPv4
-    - Functions::myFunction
-    - IMPORT::dir::file
     - Namespace::functions
+    - Functions::myFunction
     - Namespace::requireSomething
+    - IMPORT::dir::file
+    - Acquire::ForceIPv4
   FRAMEWORK_ROOT_DIR: ${FRAMEWORK_ROOT_DIR}
   FRAMEWORK_SRC_DIR: ${FRAMEWORK_SRC_DIR:-${FRAMEWORK_ROOT_DIR}/src}
   FRAMEWORK_SRC_DIRS:
@@ -288,23 +288,23 @@ compileConfig:
   FRAMEWORK_VENDOR_BIN_DIR: ${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}
   FRAMEWORK_VENDOR_DIR: ${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}
   NON_FRAMEWORK_FILES_REGEXP:
-    - .bats$
-    - .framework-config
-    - /ZZZ.sh$
-    - /_.sh$
-    - /__all.sh$
-    - /testsData/
-    - ^.docker/createUser.
-    - ^.github/
     - ^bin/
     - ^hooks/
-    - ^manualTests/
+    - ^test.sh$
     - ^preCommitTest.sh$
+    - ^.github/
+    - ^.docker/createUser.
+    - .framework-config
+    - .bats$
+    - /testsData/
+    - ^manualTests/
+    - /_.sh$
+    - /ZZZ.sh$
+    - /__all.sh$
     - ^src/_binaries
     - ^src/_includes
-    - ^src/_standalone
     - ^src/batsHeaders.sh$
-    - ^test.sh$
+    - ^src/_standalone
 vars:
   MAIN_FUNCTION_NAME: main
   REPOSITORY_URL: https://github.com/fchastanet/bash-tools-framework
