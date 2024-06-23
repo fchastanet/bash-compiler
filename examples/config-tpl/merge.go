@@ -1,24 +1,29 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 
+	sidekick "cuelang.org/go/cmd/cue/cmd"
 	"github.com/goccy/go-yaml"
 )
+
+//go:embed binFile.cue
+var binFileCueSchema string
 
 func main() {
 	// declare two map to hold the yaml content
 
 	// compute current directory
 	currentDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	// read one yaml file
 	currentMap := map[string]interface{}{}
@@ -29,9 +34,7 @@ func main() {
 		referenceDirs,
 		&currentMap,
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	resultMap := map[string]interface{}{}
 	if _, ok := currentMap["extends"]; ok {
@@ -53,9 +56,45 @@ func main() {
 	resultMap = mergeMaps(resultMap, currentMap)
 	delete(resultMap, "extends")
 
-	// print merged map
+	// write result to temp file
+	tempYamlFile, err := os.CreateTemp("", "config*.yaml")
+	check(err)
+	defer os.RemoveAll(tempYamlFile.Name())
 	yamlResult, _ := yaml.Marshal(resultMap)
-	fmt.Printf("%s\n", string(yamlResult))
+	tempYamlFile.Write(yamlResult)
+	log.Printf("Temp file containing resulting yaml file : %s\n", tempYamlFile.Name())
+
+	// write cue file to temp file
+	tempCueFile, err := os.CreateTemp("", "binFile*.cue")
+	check(err)
+	defer os.RemoveAll(tempCueFile.Name())
+	tempCueFile.Write([]byte(binFileCueSchema))
+	log.Printf("Temp file containing cue file : %s\n", tempCueFile.Name())
+
+	// transform using cue
+	cmd, err := sidekick.New([]string{
+		"export",
+		"-l", "input:", tempYamlFile.Name(),
+		tempCueFile.Name(),
+		"--out", "yaml", "-e", "output",
+	})
+	check(err)
+
+	// outputs result
+	var resultWriter bytes.Buffer
+	cmd.SetOutput(&resultWriter)
+	err = cmd.Run(cmd.Context())
+	check(err)
+	fmt.Printf("%s\n", resultWriter.String())
+}
+
+func check(e error) {
+	if e != nil {
+		// notice that we're using 1, so it will actually log where
+		// the error happened, 0 = this function, we don't want that.
+		_, filename, line, _ := runtime.Caller(1)
+		log.Fatal(fmt.Sprintf("[error] %s:%d %v", filename, line, e))
+	}
 }
 
 func decodeFile(

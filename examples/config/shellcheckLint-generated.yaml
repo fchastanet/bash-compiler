@@ -13,6 +13,12 @@ binData:
           name: shellcheckFiles
           type: StringArray
           variableName: argShellcheckFiles
+          functionName: argShellcheckFilesFunction
+          authorizedValues:
+            - {}
+          authorizedValuesList: []
+          defaultValue: []
+          regexp: ""
       author: "[François Chastanet](https://github.com/fchastanet)"
       callbacks:
         - commandOptionParseFinished
@@ -24,19 +30,26 @@ binData:
       functionName: shellcheckLintCommand
       help: Lint bash files using shellcheck.
       license: MIT License
-      longDescription:
-        "shellcheck wrapper that will:\n- install new shellcheck
-        version(${MIN_SHELLCHECK_VERSION}) automatically\n$'\\r'\n- by default,
-        lint all git files of this project which are beginning with a bash
-        shebang\n  except if the option --staged is
-        passed\n\n${__HELP_TITLE}Special configuration
-        .shellcheckrc:${__HELP_NORMAL}\nuse the following line in your
-        .shellcheckrc file to exclude\nsome files from being checked (use grep
-        -E syntax)\nexclude=^bin/bash-tpl$\n\n${__HELP_TITLE_COLOR}SHELLCHECK
-        HELP${__RESET_COLOR}\n\n@@@SHELLCHECK_HELP@@@\n"
+      longDescription: |
+        shellcheck wrapper that will:
+        - install new shellcheck version(${MIN_SHELLCHECK_VERSION}) automatically
+        $'\r'
+        - by default, lint all git files of this project which are beginning with a bash shebang
+          except if the option --staged is passed
+
+        ${__HELP_TITLE}Special configuration .shellcheckrc:${__HELP_NORMAL}
+        use the following line in your .shellcheckrc file to exclude
+        some files from being checked (use grep -E syntax)
+        exclude=^bin/bash-tpl$
+
+        ${__HELP_TITLE_COLOR}SHELLCHECK HELP${__RESET_COLOR}
+
+        @@@SHELLCHECK_HELP@@@
       optionGroups:
         shellcheckLintOptionGroup:
           title: "OPTIONS:"
+        default:
+          title: Default group
         zzzGroupGlobalOptionsGroup:
           title: "GLOBAL OPTIONS:"
       options:
@@ -49,12 +62,33 @@ binData:
           help: Displays this command help
           type: Boolean
           variableName: optionHelp
+          functionName: optionHelpFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --config
           group: zzzGroupGlobalOptionsGroup
           help: Displays configuration
           type: Boolean
           variableName: optionConfig
+          functionName: optionConfigFunction
+          min: 0
+          max: 1
+          callbacks: []
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --bash-framework-config
           callbacks:
@@ -63,6 +97,16 @@ binData:
           help: Use alternate bash framework configuration.
           type: String
           variableName: optionBashFrameworkConfig
+          functionName: optionBashFrameworkConfigFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: ""
+          helpValueName: bash-framework-config
         - alts:
             - --verbose
             - -v
@@ -73,6 +117,16 @@ binData:
           help: Info level verbose mode (alias of --display-level INFO)
           type: Boolean
           variableName: optionInfoVerbose
+          functionName: optionInfoVerboseFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - -vv
           callbacks:
@@ -82,6 +136,16 @@ binData:
           help: Debug level verbose mode (alias of --display-level DEBUG)
           type: Boolean
           variableName: optionDebugVerbose
+          functionName: optionDebugVerboseFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - -vvv
           callbacks:
@@ -91,6 +155,16 @@ binData:
           help: Trace level verbose mode (alias of --display-level TRACE)
           type: Boolean
           variableName: optionTraceVerbose
+          functionName: optionTraceVerboseFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --env-file
           callbacks:
@@ -103,6 +177,15 @@ binData:
           max: -1
           type: StringArray
           variableName: optionEnvFiles
+          functionName: optionEnvFilesFunction
+          min: 0
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: []
+          helpValueName: env-file
         - alts:
             - --log-level
           authorizedValuesList:
@@ -121,6 +204,31 @@ binData:
           help: Set log level
           type: String
           variableName: optionLogLevel
+          functionName: optionLogLevelFunction
+          min: 0
+          max: 1
+          authorizedValues:
+            - value: "OFF"
+              help: "OFF"
+            - value: ERR
+              help: ERR
+            - value: ERROR
+              help: ERROR
+            - value: WARN
+              help: WARN
+            - value: WARNING
+              help: WARNING
+            - value: INFO
+              help: INFO
+            - value: DEBUG
+              help: DEBUG
+            - value: TRACE
+              help: TRACE
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: ""
+          helpValueName: log-level
         - alts:
             - --log-file
           callbacks:
@@ -130,6 +238,16 @@ binData:
           help: Set log file
           type: String
           variableName: optionLogFile
+          functionName: optionLogFileFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: ""
+          helpValueName: log-file
         - alts:
             - --display-level
           authorizedValuesList:
@@ -148,6 +266,31 @@ binData:
           help: Set display level
           type: String
           variableName: optionDisplayLevel
+          functionName: optionDisplayLevelFunction
+          min: 0
+          max: 1
+          authorizedValues:
+            - value: "OFF"
+              help: "OFF"
+            - value: ERR
+              help: ERR
+            - value: ERROR
+              help: ERROR
+            - value: WARN
+              help: WARN
+            - value: WARNING
+              help: WARNING
+            - value: INFO
+              help: INFO
+            - value: DEBUG
+              help: DEBUG
+            - value: TRACE
+              help: TRACE
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: ""
+          helpValueName: display-level
         - alts:
             - --no-color
           callbacks:
@@ -157,6 +300,16 @@ binData:
           help: Produce monochrome output. alias of --theme noColor.
           type: Boolean
           variableName: optionNoColor
+          functionName: optionNoColorFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --theme
           authorizedValuesList:
@@ -173,6 +326,20 @@ binData:
             even if command is piped.
           type: String
           variableName: optionTheme
+          functionName: optionThemeFunction
+          min: 0
+          max: 1
+          authorizedValues:
+            - value: default
+              help: default
+            - value: default-force
+              help: default-force
+            - value: noColor
+              help: noColor
+          regexp: ""
+          onValue: null
+          offValue: null
+          helpValueName: theme
         - alts:
             - --version
           callbacks:
@@ -181,6 +348,16 @@ binData:
           help: Print version information and quit.
           type: Boolean
           variableName: optionVersion
+          functionName: optionVersionFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --quiet
             - -q
@@ -191,6 +368,16 @@ binData:
           help: Quiet mode, doesn't display any output.
           type: Boolean
           variableName: optionQuiet
+          functionName: optionQuietFunction
+          min: 0
+          max: 1
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
         - alts:
             - --format
             - -f
@@ -209,6 +396,28 @@ binData:
           help: define output format of this command
           type: String
           variableName: optionFormat
+          functionName: optionFormatFunction
+          min: 0
+          max: 1
+          authorizedValues:
+            - value: checkstyle
+              help: checkstyle
+            - value: diff
+              help: diff
+            - value: gcc
+              help: gcc
+            - value: json
+              help: json
+            - value: json1
+              help: json1
+            - value: quiet
+              help: quiet
+            - value: tty
+              help: tty
+          regexp: ""
+          onValue: null
+          offValue: null
+          helpValueName: format
         - alts:
             - --staged
           group: shellcheckLintOptionGroup
@@ -218,6 +427,16 @@ binData:
           min: 1
           type: StringArray
           variableName: optionStaged
+          functionName: optionStagedFunction
+          max: 1
+          callbacks: []
+          authorizedValues: []
+          authorizedValuesList: []
+          regexp: ""
+          onValue: null
+          offValue: null
+          defaultValue: []
+          helpValueName: staged
         - alts:
             - --xargs
           authorizedValuesList:
@@ -227,6 +446,20 @@ binData:
           help: uses parallelization(using xargs command) only if tty format
           type: Boolean
           variableName: optionXargs
+          functionName: optionXargsFunction
+          min: 0
+          max: 1
+          callbacks: []
+          authorizedValues:
+            - value: checkstyle
+              help: checkstyle
+            - value: diff
+              help: diff
+          regexp: null
+          onValue: 1
+          offValue: 0
+          defaultValue: 0
+          helpValueName: null
       sourceFile: ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
       unknownOptionCallbacks:
         - unknownOption
@@ -242,7 +475,7 @@ binFile:
   templateName: binFile
 compileConfig:
   BASH_FRAMEWORK_DISPLAY_LEVEL: ${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}
-  BASH_FRAMEWORK_LOG_FILE: "${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}"
+  BASH_FRAMEWORK_LOG_FILE: ${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}
   BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION: ${BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION:-5}
   BASH_FRAMEWORK_LOG_LEVEL: ${BASH_FRAMEWORK_LOG_LEVEL:-0}
   BASH_FRAMEWORK_THEME: ${BASH_FRAMEWORK_THEME:-default}
@@ -269,11 +502,11 @@ compileConfig:
   FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP:
     - ^bin/
     - ^.github/
-    - "^\\.framework-config$"
-    - "\\.tpl$"
+    - ^\.framework-config$
+    - \.tpl$
     - /testsData/
     - ^manualTests/
-    - "\\.bats$"
+    - \.bats$
     - src/Options/_bats.sh
   FRAMEWORK_FUNCTIONS_IGNORE_REGEXP:
     - Namespace::functions
