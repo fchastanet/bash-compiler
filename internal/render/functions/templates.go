@@ -10,8 +10,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/fchastanet/bash-compiler/internal/template"
-	render "github.com/fchastanet/bash-compiler/internal/template"
+	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
@@ -55,7 +54,7 @@ func includeFile(filePath string) string {
 }
 
 func RenderFromTemplateContent(
-	templateContext *template.Context, templateContent string,
+	templateContext *render.Context, templateContent string,
 ) (code string, err error) {
 	template, err := templateContext.Template.Parse(templateContent)
 	if err != nil {

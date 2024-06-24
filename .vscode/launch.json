@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "cmd/bash-compiler/main.go",
-      "args": ["templates-examples/testsData/shellcheckLint.yaml"],
+      "args": ["examples/config/shellcheckLint-generated.yaml"],
       "cwd": "/home/wsl/fchastanet/bash-compiler",
       "env": {
         "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework"

@@ -59,11 +59,11 @@ func main() {
 		panic(err)
 	}
 
-	templateContext, err := compiler.InitTemplateContext(binaryModel)
+	templateContext, err := binaryModel.InitTemplateContext()
 	if err != nil {
 		panic(err)
 	}
-	code, err := compiler.RenderFromTemplateName(templateContext, binaryModel.BinFile.TemplateName)
+	code, err := templateContext.RenderFromTemplateName()
 	if err != nil {
 		panic(err)
 	}

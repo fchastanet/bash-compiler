@@ -6,7 +6,6 @@ binFile:
   relativeRootDirBasedOnTargetDir: ..
   templateFile: binFile.gtpl
   targetFile: "${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint"
-  templateName: binFile
   srcDirs:
     - ${FRAMEWORK_ROOT_DIR}/src
   templateDirs:
