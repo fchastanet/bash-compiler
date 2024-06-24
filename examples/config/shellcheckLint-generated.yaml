@@ -472,7 +472,6 @@ binFile:
   templateDirs:
     - examples/templates
   templateFile: binFile.gtpl
-  templateName: binFile
 compileConfig:
   BASH_FRAMEWORK_DISPLAY_LEVEL: ${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}
   BASH_FRAMEWORK_LOG_FILE: ${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}

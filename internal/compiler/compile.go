@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/fchastanet/bash-compiler/internal/model"
-	"github.com/fchastanet/bash-compiler/internal/template"
-	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/template/functions"
+	"github.com/fchastanet/bash-compiler/internal/render"
+	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
@@ -58,7 +58,7 @@ func ErrDuplicatedFunctionsDirective() error {
 }
 
 // Compile generates code from given model
-func Compile(code string, templateContext *template.Context, binaryModel model.BinaryModel) (codeCompiled string, err error) {
+func Compile(code string, templateContext *render.Context, binaryModel model.BinaryModel) (codeCompiled string, err error) {
 	functionsMap := make(map[string]functionInfoStruct)
 	extractUniqueFrameworkFunctions(functionsMap, code)
 	_, err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
@@ -93,7 +93,7 @@ func Compile(code string, templateContext *template.Context, binaryModel model.B
 
 func renderEachFunctionAsTemplate(
 	functionsMap map[string]functionInfoStruct,
-	templateContext *template.Context,
+	templateContext *render.Context,
 ) (err error) {
 	var functionNames []string = utils.MapKeys(functionsMap)
 	for _, functionName := range functionNames {

@@ -41,7 +41,6 @@ input: #Schema
   targetFile:                      string
   relativeRootDirBasedOnTargetDir: string | *"."
   templateFile:                    string
-  templateName:                    string
   templateDirs: list.UniqueItems() & [string, ...string]
   srcDirs: list.UniqueItems() & [string, ...string]
 }

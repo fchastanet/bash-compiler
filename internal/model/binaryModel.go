@@ -4,6 +4,8 @@ package model
 import (
 	"os"
 
+	"github.com/fchastanet/bash-compiler/internal/render"
+	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
 	"github.com/goccy/go-yaml"
 )
 
@@ -12,7 +14,6 @@ type BinFileModel struct {
 	RelativeRootDirBasedOnTargetDir string   `yaml:"relativeRootDirBasedOnTargetDir"`
 	CommandDefinitionFiles          []string `yaml:"commandDefinitionFiles"`
 	TemplateFile                    string   `yaml:"templateFile"`
-	TemplateName                    string   `yaml:"templateName"`
 	TemplateDirs                    []string `yaml:"templateDirs"`
 	SrcDirs                         []string `yaml:"srcDirs"`
 }
@@ -36,4 +37,28 @@ func LoadBinaryModel(filePath string) (binaryModel BinaryModel, err error) {
 
 	// basic structure checks (json schema)
 	return binaryModel, nil
+}
+
+func (binaryModel BinaryModel) InitTemplateContext() (templateContext *render.Context, err error) {
+	// load template system
+	myTemplate, templateName, err := render.NewTemplate(
+		binaryModel.BinFile.TemplateDirs,
+		binaryModel.BinFile.TemplateFile,
+		myTemplateFunctions.FuncMap(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make(map[string]interface{})
+	data["binData"] = binaryModel.BinData
+	data["binFile"] = binaryModel.BinFile
+	data["vars"] = binaryModel.Vars
+
+	return &render.Context{
+		Template:     myTemplate,
+		TemplateName: templateName,
+		RootData:     data,
+		Data:         data,
+	}, nil
 }
