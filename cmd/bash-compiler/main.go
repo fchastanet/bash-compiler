@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -19,13 +20,31 @@ const (
 )
 
 type cli struct {
-	YamlFile YamlFile `arg:"" help:"Yaml file" type:"path"`
+	YamlFile             YamlFile    `arg:"" help:"Yaml file" type:"path"`
+	IntermediateFilesDir Directory   `short:"i" help:"save intermediate files to directory"`
+	Version              VersionFlag `name:"version" help:"Print version information and quit"`
 }
+
+type VersionFlag string
+type Directory string
 type YamlFile string
 
 func (yamlFile *YamlFile) Validate() error {
 	yamlFilePath := string(*yamlFile)
 	return utils.FileExists(yamlFilePath)
+}
+
+func (v VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
+func (v VersionFlag) IsBool() bool                       { return true }
+func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error { //nolint: unparam
+	fmt.Printf("Bash compiler version %s\n", vars["version"])
+	app.Exit(0)
+	return nil
+}
+
+func (directory *Directory) Validate() error {
+	directoryPath := string(*directory)
+	return utils.DirExists(directoryPath)
 }
 
 func main() {
@@ -49,7 +68,11 @@ func main() {
 		kong.ConfigureHelp(kong.HelpOptions{
 			Compact: true,
 			Summary: true,
-		}))
+		}),
+		kong.Vars{
+			"version": "0.1.0",
+		},
+	)
 
 	// load command yaml data model
 	binaryModelFilePath := string(cli.YamlFile)
