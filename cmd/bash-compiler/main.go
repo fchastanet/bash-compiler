@@ -2,13 +2,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/compiler"
-	"github.com/fchastanet/bash-compiler/internal/log"
+	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -55,7 +57,7 @@ func main() {
 		panic(err)
 	}
 
-	log.InitLogger()
+	logger.InitLogger()
 
 	// parse arguments
 	var cli cli
@@ -110,4 +112,26 @@ func main() {
 		panic(err)
 	}
 	slog.Info("Check", "file", targetFile)
+
+	// compute current directory
+	currentDir, err := os.Getwd()
+	logger.Check(err)
+
+	referenceDir := filepath.Join(currentDir, "examples/configReference")
+
+	modelMap := map[string]interface{}{}
+	err = model.LoadModel(referenceDir, "examples/configReference/shellcheckLint.yaml", &modelMap)
+	logger.Check(err)
+
+	// create temp file
+	tempYamlFile, err := os.CreateTemp("", "config*.yaml")
+	logger.Check(err)
+	defer os.RemoveAll(tempYamlFile.Name())
+
+	err = model.WriteYamlFile(modelMap, *tempYamlFile)
+	logger.Check(err)
+	var resultWriter bytes.Buffer
+	err = model.TransformModel(*tempYamlFile, &resultWriter)
+	logger.Check(err)
+	fmt.Printf("%s\n", resultWriter.String())
 }
