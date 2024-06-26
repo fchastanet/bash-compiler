@@ -1,9 +1,10 @@
-// Package utils
-package utils
+// Package files
+package files
 
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -58,4 +59,32 @@ func DirExists(filePath string) (err error) {
 		return ErrDirectoryWasExpected(filePath)
 	}
 	return nil
+}
+
+// Copy copies the contents of the file at srcPath to a regular file
+// at dstPath. If the file named by dstPath already exists, it is
+// truncated. The function does not copy the file mode, file
+// permission bits, or file attributes.
+func Copy(srcPath string, dstPath string) (err error) {
+	r, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer r.Close() // ignore error: file was opened read-only.
+
+	w, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		// Report the error, if any, from Close, but do so
+		// only if there isn't already an outgoing error.
+		if c := w.Close(); err == nil {
+			err = c
+		}
+	}()
+
+	_, err = io.Copy(w, r)
+	return err
 }

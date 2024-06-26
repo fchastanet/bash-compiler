@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
@@ -102,12 +103,12 @@ func renderEachFunctionAsTemplate(
 			continue
 		}
 		if functionInfo.SourceCode != "" {
-			slog.Info("renderEachFunctionAsTemplate", "functionName", functionName)
+			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName)
 			newCode, err := myTemplateFunctions.RenderFromTemplateContent(templateContext, functionInfo.SourceCode)
 			if err != nil {
 				return err
 			}
-			slog.Info("renderEachFunctionAsTemplate", "functionName", functionName, "code", newCode)
+			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName, "code", newCode)
 			functionInfo.SourceCode = newCode
 		}
 		functionInfo.SourceCodeAsTemplate = true
@@ -316,7 +317,7 @@ func findFileInSrcDirs(relativeFilePath string, srcDirs []string) (
 		srcFile := filepath.Join(srcDir, relativeFilePath)
 		srcFileExpanded := os.ExpandEnv(srcFile)
 		slog.Debug("Check if file exists", "srcDir", srcDir, "file", srcFile, "fileExpanded", srcFileExpanded)
-		err := utils.FileExists(srcFileExpanded)
+		err := files.FileExists(srcFileExpanded)
 		if err == nil {
 			return srcFileExpanded, srcDir, true
 		}

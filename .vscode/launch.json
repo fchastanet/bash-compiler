@@ -10,20 +10,16 @@
       "request": "launch",
       "mode": "auto",
       "program": "cmd/bash-compiler/main.go",
-      "args": ["examples/config/shellcheckLint-generated.yaml"],
+      "args": [
+        "examples/configReference/shellcheckLint.yaml",
+        "-t",
+        "examples/generated",
+        "-k"
+      ],
       "cwd": "/home/wsl/fchastanet/bash-compiler",
       "env": {
         "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework"
       }
-    },
-    {
-      "name": "Launch Yaml merger",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "examples/config-tpl/merge.go",
-      "args": [],
-      "cwd": "/home/wsl/fchastanet/bash-compiler"
     }
   ]
 }

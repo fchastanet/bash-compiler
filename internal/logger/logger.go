@@ -9,9 +9,9 @@ import (
 )
 
 // InitLogger initializes the logger in slog instance
-func InitLogger() {
+func InitLogger(level int) {
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.Level(level),
 	}
 	handler := slog.NewTextHandler(os.Stderr, opts)
 
