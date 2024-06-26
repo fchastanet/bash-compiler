@@ -10,8 +10,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
 var errFileNotFound = errors.New("File does not exist")
@@ -33,7 +33,7 @@ func include(
 
 func mustInclude(templateName string, templateData any,
 	templateContext render.Context) (output string, err error) {
-	slog.Info("mustInclude", "templateName", templateName, "templateData", templateData)
+	slog.Debug("mustInclude", "templateName", templateName, "templateData", templateData)
 	templateContext.Data = templateData
 	output, err = templateContext.Render(templateName)
 	if err != nil {
@@ -44,7 +44,7 @@ func mustInclude(templateName string, templateData any,
 
 func includeFile(filePath string) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Info("includeFile", "filePath", filePath, "filePathExpanded", filePathExpanded)
+	slog.Debug("includeFile", "filePath", filePath, "filePathExpanded", filePathExpanded)
 
 	file, err := os.ReadFile(filePathExpanded)
 	if err != nil {
@@ -87,7 +87,7 @@ func includeFileAsTemplate(filePath string, templateContext render.Context) stri
 func dynamicFile(filePath string, paths []string) string {
 	filePathExpanded := os.ExpandEnv(filePath)
 	slog.Info("dynamicFile", "filePath", filePath, "filePathExpanded", filePathExpanded)
-	err := utils.FileExists(filePathExpanded)
+	err := files.FileExists(filePathExpanded)
 	if err == nil {
 		return filePathExpanded
 	}
@@ -95,7 +95,7 @@ func dynamicFile(filePath string, paths []string) string {
 		dirExpanded := os.ExpandEnv(dir)
 		currentPath := path.Join(dirExpanded, filePathExpanded)
 		slog.Info("dynamicFile", "filePath", filePath, "dir", dir, "dirExpanded", dirExpanded, "currentPath", currentPath)
-		if err := utils.FileExists(currentPath); err == nil {
+		if err := files.FileExists(currentPath); err == nil {
 			return currentPath
 		}
 	}

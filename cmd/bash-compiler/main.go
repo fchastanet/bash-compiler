@@ -10,9 +10,9 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/compiler"
+	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
-	"github.com/fchastanet/bash-compiler/internal/utils"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -22,9 +22,12 @@ const (
 )
 
 type cli struct {
-	YamlFile             YamlFile    `arg:"" help:"Yaml file" type:"path"`
-	IntermediateFilesDir Directory   `short:"i" help:"save intermediate files to directory"`
-	Version              VersionFlag `name:"version" help:"Print version information and quit"`
+	YamlFile              YamlFile    `arg:"" help:"Yaml file" type:"path"`
+	TargetDir             Directory   `short:"t" optional:"" help:"Directory that will contain generated files"`
+	Version               VersionFlag `short:"v" name:"version" help:"Print version information and quit"`
+	KeepIntermediateFiles bool        `short:"k" help:"Keep intermediate files in target directory"`
+	Debug                 bool        `short:"d" help:"Set log in debug level"`
+	LogLevel              int         `hidden:""`
 }
 
 type VersionFlag string
@@ -33,7 +36,7 @@ type YamlFile string
 
 func (yamlFile *YamlFile) Validate() error {
 	yamlFilePath := string(*yamlFile)
-	return utils.FileExists(yamlFilePath)
+	return files.FileExists(yamlFilePath)
 }
 
 func (v VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
@@ -46,24 +49,12 @@ func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error { //nolin
 
 func (directory *Directory) Validate() error {
 	directoryPath := string(*directory)
-	return utils.DirExists(directoryPath)
+	return files.DirExists(directoryPath)
 }
 
-func main() {
-	// This controls the maxprocs environment variable in container runtimes.
-	// see https://martin.baillie.id/wrote/gotchas-in-the-go-network-packages-defaults/#bonus-gomaxprocs-containers-and-the-cfs
-	_, err := maxprocs.Set()
-	if err != nil {
-		panic(err)
-	}
-
-	logger.InitLogger()
-
-	// parse arguments
-	var cli cli
-
+func parseArgs(cli *cli) (err error) {
 	// just need the yaml file, from which all the dependencies will deduced
-	kong.Parse(&cli,
+	kong.Parse(cli,
 		kong.Name("bash-compiler"),
 		kong.Description("From a yaml file describing the bash application, interprets the templates and import the necessary bash functions"),
 		kong.UsageOnError(),
@@ -76,62 +67,105 @@ func main() {
 		},
 	)
 
-	// load command yaml data model
-	binaryModelFilePath := string(cli.YamlFile)
-	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
-	binaryModel, err := model.LoadBinaryModel(binaryModelFilePath)
-	if err != nil {
-		panic(err)
+	if cli.TargetDir == "" {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		cli.TargetDir = Directory(currentDir)
 	}
-
-	templateContext, err := binaryModel.InitTemplateContext()
-	if err != nil {
-		panic(err)
+	if cli.Debug {
+		cli.LogLevel = int(slog.LevelDebug)
 	}
-	code, err := templateContext.RenderFromTemplateName()
-	if err != nil {
-		panic(err)
-	}
-
-	// Save resulting file
-	if err := os.WriteFile("examples/binaries/shellcheckLint.beforeCompile.sh", []byte(code), UserReadWriteExecutePerm); err != nil {
-		panic(err)
-	}
-	slog.Info("Check examples/binaries/shellcheckLint.beforeCompile.sh")
-
-	// Compile
-	codeCompiled, err := compiler.Compile(code, templateContext, binaryModel)
-	if err != nil {
-		panic(err)
-	}
-
-	// Save resulting file
-	targetFile := os.ExpandEnv(binaryModel.BinFile.TargetFile)
-
-	if err := os.WriteFile(targetFile, []byte(codeCompiled), UserReadWriteExecutePerm); err != nil {
-		panic(err)
-	}
-	slog.Info("Check", "file", targetFile)
-
-	// compute current directory
-	currentDir, err := os.Getwd()
+	return nil
+}
+func main() {
+	// This controls the maxprocs environment variable in container runtimes.
+	// see https://martin.baillie.id/wrote/gotchas-in-the-go-network-packages-defaults/#bonus-gomaxprocs-containers-and-the-cfs
+	_, err := maxprocs.Set()
 	logger.Check(err)
 
-	referenceDir := filepath.Join(currentDir, "examples/configReference")
+	// parse arguments
+	var cli cli
+	err = parseArgs(&cli)
+	logger.Check(err)
+
+	logger.InitLogger(cli.LogLevel)
+
+	binaryModelFilePath := string(cli.YamlFile)
+	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
+	referenceDir := filepath.Dir(binaryModelFilePath)
 
 	modelMap := map[string]interface{}{}
-	err = model.LoadModel(referenceDir, "examples/configReference/shellcheckLint.yaml", &modelMap)
+	err = model.LoadModel(referenceDir, binaryModelFilePath, &modelMap)
 	logger.Check(err)
 
 	// create temp file
 	tempYamlFile, err := os.CreateTemp("", "config*.yaml")
 	logger.Check(err)
 	defer os.RemoveAll(tempYamlFile.Name())
-
 	err = model.WriteYamlFile(modelMap, *tempYamlFile)
 	logger.Check(err)
+	err = saveGeneratedFile(cli, binaryModelBaseName, "-merged.yaml", tempYamlFile.Name())
+	logger.Check(err)
+
 	var resultWriter bytes.Buffer
 	err = model.TransformModel(*tempYamlFile, &resultWriter)
 	logger.Check(err)
-	fmt.Printf("%s\n", resultWriter.String())
+	err = copyGeneratedFile(cli, binaryModelBaseName, "-cue-transformed.yaml", resultWriter.String())
+	logger.Check(err)
+
+	// load command yaml data model
+	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
+	binaryModel, err := model.LoadBinaryModel(resultWriter.Bytes())
+	logger.Check(err)
+
+	templateContext, err := binaryModel.InitTemplateContext()
+	logger.Check(err)
+	code, err := templateContext.RenderFromTemplateName()
+	logger.Check(err)
+	err = copyGeneratedFile(cli, binaryModelBaseName, "-afterTemplateRendering.sh", code)
+	logger.Check(err)
+
+	// Compile
+	codeCompiled, err := compiler.Compile(code, templateContext, binaryModel)
+	logger.Check(err)
+
+	// Save resulting file
+	targetFile := os.ExpandEnv(binaryModel.BinFile.TargetFile)
+	err = os.WriteFile(targetFile, []byte(codeCompiled), UserReadWriteExecutePerm)
+	logger.Check(err)
+	slog.Info("Compiled", "file", targetFile)
+}
+
+func saveGeneratedFile(
+	cli cli, basename string, suffix string, tempYamlFile string,
+) (err error) {
+	if cli.KeepIntermediateFiles {
+		targetFile := filepath.Join(
+			string(cli.TargetDir),
+			fmt.Sprintf("%s%s", basename, suffix),
+		)
+		err := files.Copy(tempYamlFile, targetFile)
+		if err != nil {
+			return err
+		}
+		slog.Info("KeepIntermediateFiles", "merged config file", targetFile)
+	}
+	return nil
+}
+
+func copyGeneratedFile(
+	cli cli, basename string, suffix string, code string,
+) (err error) {
+	if cli.KeepIntermediateFiles {
+		targetFile := filepath.Join(
+			string(cli.TargetDir),
+			fmt.Sprintf("%s%s", basename, suffix),
+		)
+		err := os.WriteFile(targetFile, []byte(code), UserReadWriteExecutePerm)
+		slog.Info("KeepIntermediateFiles", "merged config file", targetFile)
+		return err
+	}
+	return nil
 }

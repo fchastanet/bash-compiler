@@ -2,8 +2,6 @@
 package model
 
 import (
-	"os"
-
 	"github.com/fchastanet/bash-compiler/internal/render"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
 	"github.com/goccy/go-yaml"
@@ -23,9 +21,7 @@ type BinaryModel struct {
 	BinData interface{}  `yaml:"binData"`
 }
 
-// LoadBinaryModel loads yaml file containing binary related data
-func LoadBinaryModel(filePath string) (binaryModel BinaryModel, err error) {
-	yamlFileContent, err := os.ReadFile(filePath)
+func LoadBinaryModel(yamlFileContent []byte) (binaryModel BinaryModel, err error) {
 	binaryModel = BinaryModel{}
 	if err != nil {
 		return binaryModel, err
