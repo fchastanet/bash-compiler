@@ -20,7 +20,8 @@
 - [1. Excerpt](#1-excerpt)
 - [2. Documentation](#2-documentation)
   - [2.1. Go Libraries used](#21-go-libraries-used)
-    - [2.1.1. Template system](#211-template-system)
+  - [2.1.1. Template system](#211-template-system)
+  - [Compiler Algorithm](#compiler-algorithm)
 - [3. Development](#3-development)
   - [3.1. Pre-commit hook](#31-pre-commit-hook)
   - [3.2. Build/run/clean](#32-buildrunclean)
@@ -49,14 +50,16 @@ imported as well (of course only once).
   - [slog tutorial](https://betterstack.com/community/guides/logging/logging-in-go/#customizing-the-default-logger)
 - [Yaml parser](https://github.com/goccy/go-yaml) is used to load template data
   from yaml file
+- [Kong](github.com/alecthomas/kong) used for command arguments parsing
+- [cuelang](cuelang.org/go) allows to transform yaml file in another one
 
-#### 2.1.1. Template system
+### 2.1.1. Template system
 
 [template system](https://pkg.go.dev/text/template@go1.22.3)
 [doc 1](https://lets-go.alexedwards.net/sample/02.08-html-templating-and-inheritance.html)
 
-There is the choice between Go template/text or template/html libraries I chosen
-template/text to avoid some escaping that are not needed in bash.
+There is the choice between Go template/text or template/html libraries. I
+chosen template/text to avoid some escaping that are not needed in bash.
 
 Go template/text or template/html don't provide any execution context to the
 filters (FuncMap).
@@ -64,7 +67,8 @@ filters (FuncMap).
 I'm not using Template.ParseGlob because I have to call it twice to include
 files of root directory and sub directories with 2 glob patterns. But a bug in
 text/template makes the template be initialized again after each calls to
-ParseGlob function.
+ParseGlob function. So I compute manually list of templates in
+internal/render/render.go NewTemplate function.
 
 I simulated a context by pushing the context to the render function. So the data
 associated to the template has the following structure:
@@ -79,7 +83,7 @@ type Context struct {
 ```
 
 - Template points to the first template that has been rendered
-- Name if the name of the first template that has been rendered
+- Name is the name of the first template that has been rendered
 - RootData are the data that have been sent at the start of the rendering
 - Data are the data sent to the sub template (possibly a part of RootData or the
   whole RootData)
@@ -87,12 +91,99 @@ type Context struct {
 Then each filter has to be called with the right context. The special filter
 `include` allows to include a sub template overriding context Data.
 
-Template filter functions: my current template filter functions are inspired by
-[Sprig](https://github.com/Masterminds/sprig)
+Template filter functions, `internal/render/functions/index.go` includes:
 
-- I'm not using it because it is not maintained anymore
-- a possible alternate fork is [sprout](https://github.com/go-sprout/sprout) but
-  it misses a lot of functions.
+- [Sprig filter functions](https://github.com/Masterminds/sprig)
+  - Sprig is not maintained anymore, a possible alternate fork is
+    [sprout](https://github.com/go-sprout/sprout) but it misses a lot of
+    functions.
+- my own templates functions
+  - string functions
+    - stringLength
+    - format allow to format string like in this example
+      - `{{ format "${%sLongDescription[@]}" .functionName }}`
+  - templates functions
+    - include: allows to include a template by template name allowing to use
+      filter
+    - includeFile: allows to include a template by filename
+    - includeFileAsTemplate: same as includeFile but interpreting the file as a
+      template
+    - dynamicFile: resolve first matching filepath in paths provided as argument
+
+### Compiler Algorithm
+
+The command to generate a bash binary file:
+
+```bash
+FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
+  ./bin/bash-compiler examples/configReference/shellcheckLint.yaml \
+  --target-dir examples/generated \
+  --keep-intermediate-files
+```
+
+This will trigger the following actions
+
+```plantuml
+@startuml "compiler"
+title compile
+skinparam {
+  ' https://github.com/plantuml/plantuml/blob/49115dfc7d4156961e5b49a81c09b474daa79823/src/net/sourceforge/plantuml/style/FromSkinparamToStyle.java#L145
+  activityDiamondBackgroundColor #AAAAAA
+  activityEndColor #red
+}
+
+start
+
+partition "cmd/bash-compiler/main.go" {
+
+  :parseArgs(cli *cli);
+  note right
+    Parses command arguments
+  endnote
+
+  partition "Load/Transform model" #LightSkyBlue {
+    #DeepSkyBlue:tempYamlFile = model.LoadModel(referenceDir, binaryModelFilePath, &modelMap);
+    note right
+      Loads yaml file
+      if property extends defined, load these files
+      merging them together.
+      ReferenceDir allows to be able to resolve aliases
+      in yaml files defined in this referenceDir
+    endnote
+
+    #DeepSkyBlue:model.TransformModel(*tempYamlFile, &resultWriter);
+    note right
+      Transforms previous yaml file using cue and loads it byte[]
+    endnote
+
+    #DeepSkyBlue:binaryModel = model.LoadBinaryModel(resultWriter.Bytes());
+    note right
+      binaryModel contains transformed yaml file in memory with the following structure
+      {
+        binFile:
+        vars:
+        binData:
+      }
+    endnote
+  }
+
+
+  partition "Render code using template" #LightSkyBlue {
+    #DeepSkyBlue:templateContext = binaryModel.InitTemplateContext();
+    #DeepSkyBlue:code = templateContext.RenderFromTemplateName();
+  }
+  partition "Compile" #LightSkyBlue {
+    #DeepSkyBlue:codeCompiled, err := compiler.Compile(code, templateContext, binaryModel);
+  }
+
+  :Save resulting file;
+
+}
+
+stop
+@enduml
+
+```
 
 ## 3. Development
 

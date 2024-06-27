@@ -79,6 +79,51 @@ func parseArgs(cli *cli) (err error) {
 	}
 	return nil
 }
+
+func loadBinaryModel(cli cli, binaryModelFilePath string, binaryModelBaseName string) (
+	binaryModel *model.BinaryModel, err error) {
+	referenceDir := filepath.Dir(binaryModelFilePath)
+	modelMap := map[string]interface{}{}
+	err = model.LoadModel(referenceDir, binaryModelFilePath, &modelMap)
+	if err != nil {
+		return nil, err
+	}
+
+	// create temp file
+	tempYamlFile, err := os.CreateTemp("", "config*.yaml")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(tempYamlFile.Name())
+	err = model.WriteYamlFile(modelMap, *tempYamlFile)
+	if err != nil {
+		return nil, err
+	}
+	err = debugSaveGeneratedFile(cli, binaryModelBaseName, "-merged.yaml", tempYamlFile.Name())
+	if err != nil {
+		return nil, err
+	}
+
+	var resultWriter bytes.Buffer
+	err = model.TransformModel(*tempYamlFile, &resultWriter)
+	if err != nil {
+		return nil, err
+	}
+	err = debugCopyGeneratedFile(cli, binaryModelBaseName, "-cue-transformed.yaml", resultWriter.String())
+	if err != nil {
+		return nil, err
+	}
+
+	// load command yaml data model
+	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
+	var binaryModelVar model.BinaryModel
+	binaryModelVar, err = model.LoadBinaryModel(resultWriter.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return &binaryModelVar, nil
+}
+
 func main() {
 	// This controls the maxprocs environment variable in container runtimes.
 	// see https://martin.baillie.id/wrote/gotchas-in-the-go-network-packages-defaults/#bonus-gomaxprocs-containers-and-the-cfs
@@ -92,43 +137,22 @@ func main() {
 
 	logger.InitLogger(cli.LogLevel)
 
+	// Load binary model
 	binaryModelFilePath := string(cli.YamlFile)
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
-	referenceDir := filepath.Dir(binaryModelFilePath)
-
-	modelMap := map[string]interface{}{}
-	err = model.LoadModel(referenceDir, binaryModelFilePath, &modelMap)
+	binaryModel, err := loadBinaryModel(cli, binaryModelFilePath, binaryModelBaseName)
 	logger.Check(err)
 
-	// create temp file
-	tempYamlFile, err := os.CreateTemp("", "config*.yaml")
-	logger.Check(err)
-	defer os.RemoveAll(tempYamlFile.Name())
-	err = model.WriteYamlFile(modelMap, *tempYamlFile)
-	logger.Check(err)
-	err = saveGeneratedFile(cli, binaryModelBaseName, "-merged.yaml", tempYamlFile.Name())
-	logger.Check(err)
-
-	var resultWriter bytes.Buffer
-	err = model.TransformModel(*tempYamlFile, &resultWriter)
-	logger.Check(err)
-	err = copyGeneratedFile(cli, binaryModelBaseName, "-cue-transformed.yaml", resultWriter.String())
-	logger.Check(err)
-
-	// load command yaml data model
-	slog.Info("Loading", "binaryModelFilePath", binaryModelFilePath)
-	binaryModel, err := model.LoadBinaryModel(resultWriter.Bytes())
-	logger.Check(err)
-
+	// Render code using template
 	templateContext, err := binaryModel.InitTemplateContext()
 	logger.Check(err)
 	code, err := templateContext.RenderFromTemplateName()
 	logger.Check(err)
-	err = copyGeneratedFile(cli, binaryModelBaseName, "-afterTemplateRendering.sh", code)
+	err = debugCopyGeneratedFile(cli, binaryModelBaseName, "-afterTemplateRendering.sh", code)
 	logger.Check(err)
 
 	// Compile
-	codeCompiled, err := compiler.Compile(code, templateContext, binaryModel)
+	codeCompiled, err := compiler.Compile(code, templateContext, *binaryModel)
 	logger.Check(err)
 
 	// Save resulting file
@@ -138,7 +162,7 @@ func main() {
 	slog.Info("Compiled", "file", targetFile)
 }
 
-func saveGeneratedFile(
+func debugSaveGeneratedFile(
 	cli cli, basename string, suffix string, tempYamlFile string,
 ) (err error) {
 	if cli.KeepIntermediateFiles {
@@ -155,7 +179,7 @@ func saveGeneratedFile(
 	return nil
 }
 
-func copyGeneratedFile(
+func debugCopyGeneratedFile(
 	cli cli, basename string, suffix string, code string,
 ) (err error) {
 	if cli.KeepIntermediateFiles {
