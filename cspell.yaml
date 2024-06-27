@@ -111,6 +111,7 @@ languageSettings:
       - mySoftwares
       - softwareTerms
       - software
+      - plantuml
 
   - languageId: go
     locale: "*"

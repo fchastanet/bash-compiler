@@ -4,29 +4,15 @@ package functions
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"reflect"
 
 	sprig "github.com/Masterminds/sprig/v3"
 )
 
-var errorIfEmptyError = errors.New("Value cannot be empty")
 var errorNotSupportedType = errors.New("Type not supported")
 
-func errorIfEmpty(value string) (string, error) {
-	if value == "" {
-		return "", errorIfEmptyError
-	}
-	return value, nil
-}
-
-func logWarn(message string, args ...any) string {
-	slog.Warn(message, args...)
-	return ""
-}
-
-func bashVariableRef(variableName string) string {
-	return fmt.Sprintf("${%s}", variableName)
+func format(format string, args ...any) string {
+	return fmt.Sprintf(format, args...)
 }
 
 func stringLength(list interface{}) (int, error) {
@@ -45,19 +31,14 @@ func stringLength(list interface{}) (int, error) {
 
 func FuncMap() map[string]interface{} {
 	funcMap := sprig.FuncMap()
-	funcMap["errorIfEmpty"] = errorIfEmpty
-	funcMap["logWarn"] = logWarn
 	// string functions
 	funcMap["len"] = stringLength
-	funcMap["bashVariableRef"] = bashVariableRef
+	funcMap["format"] = format
 	// templates functions
 	funcMap["include"] = include
 	funcMap["includeFile"] = includeFile
 	funcMap["includeFileAsTemplate"] = includeFileAsTemplate
 	funcMap["dynamicFile"] = dynamicFile
-	// YAML functions
-	funcMap["fromYAMLFile"] = FromYAMLFile
-	funcMap["toYAML"] = ToYAML
 
 	return funcMap
 }

@@ -54,7 +54,7 @@ echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }
 {{ end -}}
 echo -e "  {{ include "option.help" $option $context -}}"
 {{ if $option.help -}}
-Array::wrap2 ' ' 76 4 "    {{ $option.help }}"
+Array::wrap2 ' ' 76 4 "    " {{ $option.help | quote }}
 echo
 {{ end }}
 {{ $previousGroupId = $groupId }}
@@ -70,16 +70,16 @@ echo
 {{ .longDescription }}
 {{ else -}}
 declare -a {{ .functionName }}LongDescription=(
-{{ $longDescriptionList := splitList "\n" .longDescription }}
-{{ range $line := $longDescriptionList }}
-{{ if hasPrefix "$" $line }}
-{{ $line }}
-{{ else }}
-{{ quote $line }}
+{{ $longDescriptionList := splitList "\n" .longDescription -}}
+{{ range $line := $longDescriptionList -}}
+{{ if hasPrefix "$'" $line -}}
+{{ $line -}}
+{{ else -}}
+{{ quote $line -}}
 {{ end }}
-{{ end }}
+{{ end -}}
 )
-Array::wrap2 ' ' 76 0 "{{ list "${" .functionName  "LongDescription[@]}" | join "" }}"
+Array::wrap2 ' ' 76 0 "{{ format "${%sLongDescription[@]}" .functionName }}"
 echo
 {{ end -}}
 {{ end -}}
@@ -90,7 +90,7 @@ echo
 # ------------------------------------------
 echo
 echo -n -e "${__HELP_TITLE_COLOR}VERSION: ${__RESET_COLOR}"
-echo '{{ .version }}'
+echo {{ .version | quote }}
 {{ end -}}
 
 {{ if .author -}}
@@ -99,7 +99,7 @@ echo '{{ .version }}'
 # ------------------------------------------
 echo
 echo -n -e "${__HELP_TITLE_COLOR}AUTHOR: ${__RESET_COLOR}"
-echo '{{ .author }}'
+echo {{ .author | quote }}
 {{ end -}}
 
 {{ if .sourceFile -}}
@@ -108,7 +108,7 @@ echo '{{ .author }}'
 # ------------------------------------------
 echo
 echo -n -e "${__HELP_TITLE_COLOR}SOURCE FILE: ${__RESET_COLOR}"
-echo '{{ .sourceFile }}'
+echo {{ .sourceFile | quote }}
 {{ end -}}
 
 {{ if .license -}}
@@ -117,17 +117,17 @@ echo '{{ .sourceFile }}'
 # ------------------------------------------
 echo
 echo -n -e "${__HELP_TITLE_COLOR}LICENSE: ${__RESET_COLOR}"
-echo '{{ .license }}'
+echo {{ .license | quote }}
 {{ end -}}
 
 {{ if .copyright -}}
 # ------------------------------------------
 # copyright section
 # ------------------------------------------
-{{ if eq .copyrightType "function" }}
+{{ if hasSuffix "Callback" .copyright -}}
 Array::wrap2 ' ' 76 0 "$({{ .copyright }})"
 {{ else -}}
-Array::wrap2 ' ' 76 0 """{{ .copyright }}"""
+Array::wrap2 ' ' 76 0 {{ .copyright | quote }}
 {{ end -}}
 {{ end }}
 {{end}}
