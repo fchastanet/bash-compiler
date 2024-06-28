@@ -1,0 +1,176 @@
+@startuml
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: true
+end legend
+namespace compiler {
+    interface CompilerInterface  {
+        + Compile() (string, error)
+
+    }
+    class compileContext << (S,Aquamarine) >> {
+        - code string
+        - templateContext *render.Context
+        - binaryModel *model.BinaryModel
+        - functionsMap <font color=blue>map</font>[string]functionInfoStruct
+        - ignoreFunctionsRegexp []*regexp.Regexp
+
+        - renderEachFunctionAsTemplate() error
+        - isNonFrameworkFunction(functionName string) bool
+        - nonFrameworkFunctionRegexpCompile() bool
+        - generateFunctionCode() (string, error)
+        - retrieveAllFunctionsContent() (bool, error)
+        - retrieveEachFunctionPath() (bool, error)
+        - extractUniqueFrameworkFunctions(code string) bool
+        - findFileInSrcDirs(relativeFilePath string) (string, string, bool)
+
+        + Compile() (string, error)
+
+    }
+    class compiler.InsertPosition << (T, #FF7700) >>  {
+    }
+    class functionInfoStruct << (S,Aquamarine) >> {
+        + FunctionName string
+        + SrcFile string
+        + Inserted bool
+        + InsertPosition InsertPosition
+        + SourceCode string
+        + SourceCodeLoaded bool
+        + SourceCodeAsTemplate bool
+
+    }
+}
+
+"compiler.CompilerInterface" <|-- "implements""compiler.compileContext"
+
+"compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
+"compiler.compileContext""uses" o-- "model.BinaryModel"
+"compiler.compileContext""uses" o-- "regexp.Regexp"
+"compiler.compileContext""uses" o-- "render.Context"
+"compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
+
+namespace generator {
+    interface CodeGeneratorInterface  {
+        + GenerateCode() (string, error)
+
+    }
+    class codeGeneratorContext << (S,Aquamarine) >> {
+        - yamlFilePath string
+        - targetDir string
+        - binaryModelBaseName string
+        - keepIntermediateFiles bool
+        - templateContext *render.Context
+
+        + GenerateCode() (string, error)
+
+    }
+}
+
+"generator.CodeGeneratorInterface" <|-- "implements""generator.codeGeneratorContext"
+"model.BinaryModelInterface" <|-- "implements""generator.codeGeneratorContext"
+
+"generator.codeGeneratorContext""uses" o-- "render.Context"
+
+namespace main {
+    class Directory << (S,Aquamarine) >> {
+        + Validate() error
+
+    }
+    class VersionFlag << (S,Aquamarine) >> {
+        + Decode(_ *kong.DecodeContext) error
+        + IsBool() bool
+        + BeforeApply(app *kong.Kong, vars kong.Vars) error
+
+    }
+    class YamlFile << (S,Aquamarine) >> {
+        + Validate() error
+
+    }
+    class cli << (S,Aquamarine) >> {
+        + YamlFile YamlFile
+        + TargetDir Directory
+        + Version VersionFlag
+        + KeepIntermediateFiles bool
+        + Debug bool
+        + LogLevel int
+
+    }
+    class main.Directory << (T, #FF7700) >>  {
+    }
+    class main.VersionFlag << (T, #FF7700) >>  {
+    }
+    class main.YamlFile << (T, #FF7700) >>  {
+    }
+}
+
+
+"main.cli""uses" o-- "main.Directory"
+"main.cli""uses" o-- "main.VersionFlag"
+"main.cli""uses" o-- "main.YamlFile"
+
+namespace model {
+    class BinFileModel << (S,Aquamarine) >> {
+        + TargetFile string
+        + RelativeRootDirBasedOnTargetDir string
+        + CommandDefinitionFiles []string
+        + TemplateFile string
+        + TemplateDirs []string
+        + SrcDirs []string
+
+    }
+    class BinaryModel << (S,Aquamarine) >> {
+        + BinFile BinFileModel
+        + Vars <font color=blue>interface</font>{}
+        + BinData <font color=blue>interface</font>{}
+        + CompileConfig <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+    }
+    class BinaryModelContext << (S,Aquamarine) >> {
+        + BinaryModel *BinaryModel
+        + TemplateContext *render.Context
+        + TargetDir string
+        + BinaryModelFilePath string
+        + BinaryModelBaseName string
+        + ReferenceDir string
+        + KeepIntermediateFiles bool
+
+        - initTemplateContext() (*render.Context, error)
+
+        + LoadBinaryModel() error
+
+    }
+    interface BinaryModelInterface  {
+        + GenerateCode() (string, error)
+
+    }
+}
+
+
+"model.BinaryModel""uses" o-- "model.BinFileModel"
+"model.BinaryModelContext""uses" o-- "model.BinaryModel"
+"model.BinaryModelContext""uses" o-- "render.Context"
+
+namespace render {
+    class Context << (S,Aquamarine) >> {
+        + Template *template.Template
+        + TemplateName string
+        + RootData <font color=blue>interface</font>{}
+        + Data <font color=blue>interface</font>{}
+
+        + RenderFromTemplateName() (string, error)
+        + Render(template string) (string, error)
+
+    }
+}
+
+
+"render.Context""uses" o-- "template.Template"
+
+"__builtin__.int8" #.. "alias of""compiler.InsertPosition"
+"__builtin__.string" #.. "alias of""main.Directory"
+"__builtin__.string" #.. "alias of""main.VersionFlag"
+"__builtin__.string" #.. "alias of""main.YamlFile"
+@enduml

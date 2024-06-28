@@ -3,7 +3,6 @@ package render
 import (
 	"bytes"
 	"log/slog"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -18,11 +17,6 @@ type Context struct {
 	RootData     interface{}
 	Data         interface{}
 }
-
-const (
-	UserReadWritePerm        os.FileMode = 0600
-	UserReadWriteExecutePerm os.FileMode = 0700
-)
 
 func NewTemplate(
 	templateDirs []string,

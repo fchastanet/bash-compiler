@@ -8,6 +8,11 @@ import (
 	"os"
 )
 
+const (
+	UserReadWritePerm        os.FileMode = 0600
+	UserReadWriteExecutePerm os.FileMode = 0700
+)
+
 var errFilePathMissing = errors.New("File path does not exist")
 
 func ErrFilePathMissing(file string) error {

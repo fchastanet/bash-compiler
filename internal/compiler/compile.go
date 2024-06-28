@@ -46,6 +46,10 @@ type functionInfoStruct struct {
 	SourceCodeAsTemplate bool
 }
 
+type CodeCompilerInterface interface {
+	Compile() (codeCompiled string, err error)
+}
+
 var errFunctionNotFound = errors.New("Function not found")
 
 func ErrFunctionNotFound(functionName string, srcDirs []string) error {
@@ -58,33 +62,49 @@ func ErrDuplicatedFunctionsDirective() error {
 	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
 }
 
+type compileContext struct {
+	code                  string
+	templateContext       *render.Context
+	binaryModel           *model.BinaryModel
+	functionsMap          map[string]functionInfoStruct
+	ignoreFunctionsRegexp []*regexp.Regexp
+}
+
 // Compile generates code from given model
-func Compile(code string, templateContext *render.Context, binaryModel model.BinaryModel) (codeCompiled string, err error) {
-	functionsMap := make(map[string]functionInfoStruct)
-	extractUniqueFrameworkFunctions(functionsMap, code)
-	_, err = retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
+func NewCompiler(code string, binaryModelContext model.BinaryModelContext) CodeCompilerInterface {
+	return &compileContext{
+		code:            code,
+		templateContext: binaryModelContext.TemplateContext,
+		binaryModel:     binaryModelContext.BinaryModel,
+		functionsMap:    make(map[string]functionInfoStruct),
+	}
+}
+
+func (context *compileContext) Compile() (codeCompiled string, err error) {
+	context.extractUniqueFrameworkFunctions(context.code)
+	_, err = context.retrieveEachFunctionPath()
 	if err != nil {
 		return "", err
 	}
 	newFunctionAdded := true
 	for newFunctionAdded {
-		newFunctionAdded, err = retrieveAllFunctionsContent(functionsMap, binaryModel)
+		newFunctionAdded, err = context.retrieveAllFunctionsContent()
 		if err != nil {
 			return "", err
 		}
 	}
 
-	err = renderEachFunctionAsTemplate(functionsMap, templateContext)
+	err = context.renderEachFunctionAsTemplate()
 	if err != nil {
 		return "", err
 	}
 
-	functionsCode, err := generateFunctionCode(functionsMap)
+	functionsCode, err := context.generateFunctionCode()
 	if err != nil {
 		return "", err
 	}
 
-	generatedCode, err := injectFunctionCode(code, functionsCode)
+	generatedCode, err := injectFunctionCode(context.code, functionsCode)
 	if err != nil {
 		return "", err
 	}
@@ -92,19 +112,17 @@ func Compile(code string, templateContext *render.Context, binaryModel model.Bin
 	return generatedCode, nil
 }
 
-func renderEachFunctionAsTemplate(
-	functionsMap map[string]functionInfoStruct,
-	templateContext *render.Context,
-) (err error) {
-	var functionNames []string = utils.MapKeys(functionsMap)
+func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
+	var functionNames []string = utils.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
-		functionInfo := functionsMap[functionName]
+		functionInfo := context.functionsMap[functionName]
 		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
 			continue
 		}
 		if functionInfo.SourceCode != "" {
 			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName)
-			newCode, err := myTemplateFunctions.RenderFromTemplateContent(templateContext, functionInfo.SourceCode)
+			newCode, err := myTemplateFunctions.RenderFromTemplateContent(
+				context.templateContext, functionInfo.SourceCode)
 			if err != nil {
 				return err
 			}
@@ -112,40 +130,52 @@ func renderEachFunctionAsTemplate(
 			functionInfo.SourceCode = newCode
 		}
 		functionInfo.SourceCodeAsTemplate = true
-		functionsMap[functionName] = functionInfo
+		context.functionsMap[functionName] = functionInfo
 	}
 	return nil
 }
 
-func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
-	var rewrittenCode bytes.Buffer
-	scanner := bufio.NewScanner(strings.NewReader(code))
-	slog.Debug("debugCode", "code", code)
-	functionDirectiveFound := false
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		if functionsDirectiveRegexp.Match(line) {
-			if functionDirectiveFound {
-				return "", ErrDuplicatedFunctionsDirective()
-			}
-			rewrittenCode.Write([]byte(functionsCode))
-			functionDirectiveFound = true
+func (context *compileContext) isNonFrameworkFunction(functionName string) bool {
+	context.nonFrameworkFunctionRegexpCompile()
+	for _, re := range context.ignoreFunctionsRegexp {
+		if re.MatchString(functionName) {
+			return true
 		}
-
-		rewrittenCode.Write(line)
-		rewrittenCode.WriteByte(byte('\n'))
 	}
-	return rewrittenCode.String(), nil
+
+	return false
 }
 
-func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code string, err error) {
-	var functionNames []string = utils.MapKeys(functionsMap)
+func (context *compileContext) nonFrameworkFunctionRegexpCompile() bool {
+	if context.ignoreFunctionsRegexp != nil {
+		return true
+	}
+	regexpArray := context.binaryModel.CompileConfig["FRAMEWORK_FUNCTIONS_IGNORE_REGEXP"]
+
+	if regexpStringArray, ok := regexpArray.([]interface{}); ok {
+		context.ignoreFunctionsRegexp = []*regexp.Regexp{}
+		for _, reg := range regexpStringArray {
+			regStr := fmt.Sprint(reg)
+			re, err := regexp.Compile(fmt.Sprint(regStr))
+			if err != nil {
+				slog.Warn("ignored invalid regexp", "regexp", regStr, "error", err)
+			} else {
+				context.ignoreFunctionsRegexp = append(context.ignoreFunctionsRegexp, re)
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func (context *compileContext) generateFunctionCode() (code string, err error) {
+	var functionNames []string = utils.MapKeys(context.functionsMap)
 	sort.Strings(functionNames) // ensure to generate functions always in the same order
 	var bufferFirst bytes.Buffer
 	var bufferMiddle bytes.Buffer
 	var bufferLast bytes.Buffer
 	for _, functionName := range functionNames {
-		functionInfo := functionsMap[functionName]
+		functionInfo := context.functionsMap[functionName]
 		if !functionInfo.SourceCodeLoaded {
 			slog.Warn("Function source code not loaded", "functionName", functionName)
 			continue
@@ -183,12 +213,15 @@ func generateFunctionCode(functionsMap map[string]functionInfoStruct) (code stri
 	return finalBuffer.String(), nil
 }
 
-func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, binaryModel model.BinaryModel) (
+func (context *compileContext) retrieveAllFunctionsContent() (
 	newFunctionAdded bool, err error,
 ) {
-	var functionNames []string = utils.MapKeys(functionsMap)
+	var functionNames []string = utils.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
-		functionInfo := functionsMap[functionName]
+		if context.isNonFrameworkFunction(functionName) {
+			continue
+		}
+		functionInfo := context.functionsMap[functionName]
 		slog.Debug("retrieveAllFunctionsContent", "functionName", functionName, "SourceCodeLoaded", functionInfo.SourceCodeLoaded)
 		if functionInfo.SourceCodeLoaded {
 			slog.Debug("Function source code loaded", "functionName", functionName)
@@ -201,9 +234,9 @@ func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, bin
 		}
 		functionInfo.SourceCode = string(fileContent)
 		functionInfo.SourceCodeLoaded = true
-		functionsMap[functionName] = functionInfo
-		newFunctionExtracted := extractUniqueFrameworkFunctions(functionsMap, functionInfo.SourceCode)
-		addedFiles, err := retrieveEachFunctionPath(functionsMap, binaryModel.BinFile.SrcDirs)
+		context.functionsMap[functionName] = functionInfo
+		newFunctionExtracted := context.extractUniqueFrameworkFunctions(functionInfo.SourceCode)
+		addedFiles, err := context.retrieveEachFunctionPath()
 		newFunctionAdded = newFunctionAdded || addedFiles || newFunctionExtracted
 		if err != nil {
 			return newFunctionAdded, err
@@ -212,34 +245,37 @@ func retrieveAllFunctionsContent(functionsMap map[string]functionInfoStruct, bin
 	return newFunctionAdded, nil
 }
 
-func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDirs []string) (
+func (context *compileContext) retrieveEachFunctionPath() (
 	addedFiles bool, err error) {
 	addedFiles = false
-	var functionNames []string = utils.MapKeys(functionsMap)
+	var functionNames []string = utils.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
-		functionInfo := functionsMap[functionName]
+		if context.isNonFrameworkFunction(functionName) {
+			continue
+		}
+		functionInfo := context.functionsMap[functionName]
 		if functionInfo.SrcFile != "" {
 			continue
 		}
 		functionRelativePath := convertFunctionNameToPath(functionName)
-		filePath, _, found := findFileInSrcDirs(functionRelativePath, srcDirs)
+		filePath, _, found := context.findFileInSrcDirs(functionRelativePath)
 		if !found {
-			return addedFiles, ErrFunctionNotFound(functionName, srcDirs)
+			return addedFiles, ErrFunctionNotFound(functionName, context.binaryModel.BinFile.SrcDirs)
 		}
 		functionInfo.SrcFile = filePath
-		functionsMap[functionName] = functionInfo
+		context.functionsMap[functionName] = functionInfo
 
 		// compute relative filepath
 		relativeFilePathDir := filepath.Dir(functionRelativePath)
 
 		// check if _.sh in directory of the function is needed to be loaded
 		underscoreShFile := filepath.Join(relativeFilePathDir, "_.sh")
-		filePath, _, found = findFileInSrcDirs(underscoreShFile, srcDirs)
+		filePath, _, found = context.findFileInSrcDirs(underscoreShFile)
 		if found {
-			if _, ok := functionsMap[filePath]; !ok {
+			if _, ok := context.functionsMap[filePath]; !ok {
 				slog.Debug("Adding file", "file", filePath)
 				addedFiles = true
-				functionsMap[filePath] = functionInfoStruct{
+				context.functionsMap[filePath] = functionInfoStruct{
 					FunctionName:         filePath,
 					SrcFile:              filePath,
 					Inserted:             false,
@@ -253,12 +289,12 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 
 		// check if ZZZ.sh in directory of the function is needed to be loaded
 		zzzShFile := filepath.Join(relativeFilePathDir, "ZZZ.sh")
-		filePath, _, found = findFileInSrcDirs(zzzShFile, srcDirs)
+		filePath, _, found = context.findFileInSrcDirs(zzzShFile)
 		if found {
-			if _, ok := functionsMap[filePath]; !ok {
+			if _, ok := context.functionsMap[filePath]; !ok {
 				addedFiles = true
 				slog.Debug("Adding file", "file", filePath)
-				functionsMap[filePath] = functionInfoStruct{
+				context.functionsMap[filePath] = functionInfoStruct{
 					FunctionName:         filePath,
 					SrcFile:              filePath,
 					Inserted:             false,
@@ -272,11 +308,11 @@ func retrieveEachFunctionPath(functionsMap map[string]functionInfoStruct, srcDir
 	}
 
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
-	slog.Info("Found these", "bashFrameworkFunctions", utils.MapKeys(functionsMap))
+	slog.Info("Found these", "bashFrameworkFunctions", utils.MapKeys(context.functionsMap))
 	return addedFiles, nil
 }
 
-func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct, code string) (newFunctionAdded bool) {
+func (context *compileContext) extractUniqueFrameworkFunctions(code string) (newFunctionAdded bool) {
 	var rewrittenCode bytes.Buffer
 	newFunctionAdded = false
 	funcNameGroupIndex := bashFrameworkFunctionRegexp.SubexpIndex("funcName")
@@ -290,9 +326,13 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 		matches := bashFrameworkFunctionRegexp.FindSubmatch(line)
 		if matches != nil {
 			funcName := string(matches[funcNameGroupIndex])
-			if _, keyExists := functionsMap[funcName]; !keyExists {
+			if _, keyExists := context.functionsMap[funcName]; !keyExists {
 				slog.Debug("Found new", "bashFrameworkFunction", funcName)
-				functionsMap[funcName] = functionInfoStruct{
+				if context.isNonFrameworkFunction(funcName) {
+					continue
+				}
+
+				context.functionsMap[funcName] = functionInfoStruct{
 					FunctionName:         funcName,
 					SrcFile:              "",
 					Inserted:             false,
@@ -310,10 +350,10 @@ func extractUniqueFrameworkFunctions(functionsMap map[string]functionInfoStruct,
 }
 
 //nolint:unparam
-func findFileInSrcDirs(relativeFilePath string, srcDirs []string) (
+func (context *compileContext) findFileInSrcDirs(relativeFilePath string) (
 	filePath string, srcDir string, found bool,
 ) {
-	for _, srcDir := range srcDirs {
+	for _, srcDir := range context.binaryModel.BinFile.SrcDirs {
 		srcFile := filepath.Join(srcDir, relativeFilePath)
 		srcFileExpanded := os.ExpandEnv(srcFile)
 		slog.Debug("Check if file exists", "srcDir", srcDir, "file", srcFile, "fileExpanded", srcFileExpanded)
@@ -327,4 +367,25 @@ func findFileInSrcDirs(relativeFilePath string, srcDirs []string) (
 
 func convertFunctionNameToPath(functionName string) string {
 	return strings.ReplaceAll(functionName, "::", "/") + ".sh"
+}
+
+func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
+	var rewrittenCode bytes.Buffer
+	scanner := bufio.NewScanner(strings.NewReader(code))
+	slog.Debug("debugCode", "code", code)
+	functionDirectiveFound := false
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if functionsDirectiveRegexp.Match(line) {
+			if functionDirectiveFound {
+				return "", ErrDuplicatedFunctionsDirective()
+			}
+			rewrittenCode.Write([]byte(functionsCode))
+			functionDirectiveFound = true
+		}
+
+		rewrittenCode.Write(line)
+		rewrittenCode.WriteByte(byte('\n'))
+	}
+	return rewrittenCode.String(), nil
 }
