@@ -113,7 +113,11 @@ func main() {
 	logger.Check(err)
 
 	// Compile
-	compiler := compiler.NewCompiler(code, *binaryModelContext)
+	compiler := compiler.NewCompiler(
+		code,
+		binaryModelContext.TemplateContext,
+		binaryModelContext.BinaryModel.CompilerConfig,
+	)
 	codeCompiled, err := compiler.Compile()
 	logger.Check(err)
 

@@ -7,7 +7,7 @@ Render Methods: true
 Private Aggregations: true
 end legend
 namespace compiler {
-    interface CompilerInterface  {
+    interface CodeCompilerInterface  {
         + Compile() (string, error)
 
     }
@@ -29,10 +29,10 @@ namespace compiler {
     }
 }
 
-"compiler.CompilerInterface" <|-- "implements""compiler.compileContext"
+"compiler.CodeCompilerInterface" <|-- "implements""compiler.compileContext"
 
 "compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
-"compiler.compileContext""uses" o-- "model.BinaryModel"
+"compiler.compileContext""uses" o-- "model.CompilerConfig"
 "compiler.compileContext""uses" o-- "regexp.Regexp"
 "compiler.compileContext""uses" o-- "render.Context"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
@@ -104,7 +104,7 @@ namespace model {
         + BinFile BinFileModel
         + Vars <font color=blue>interface</font>{}
         + BinData <font color=blue>interface</font>{}
-        + CompileConfig <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        + CompilerConfig CompilerConfig
 
     }
     class BinaryModelContext << (S,Aquamarine) >> {
@@ -123,10 +123,17 @@ namespace model {
         + GenerateCode() (string, error)
 
     }
+    class CompilerConfig << (S,Aquamarine) >> {
+        + FunctionsIgnoreRegexpList []string
+        + SrcDirs []string
+        + SrcDirsExpanded []string
+
+    }
 }
 
 
 "model.BinaryModel""uses" o-- "model.BinFileModel"
+"model.BinaryModel""uses" o-- "model.CompilerConfig"
 "model.BinaryModelContext""uses" o-- "model.BinaryModel"
 "model.BinaryModelContext""uses" o-- "render.Context"
 

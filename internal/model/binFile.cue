@@ -12,29 +12,15 @@ input: _
 
 // validate the input against a schema
 input: #Schema
-#CompileConfigSchema: {
-  FRAMEWORK_ROOT_DIR: string | "${FRAMEWORK_ROOT_DIR}"
-  FRAMEWORK_SRC_DIR: string | "${FRAMEWORK_SRC_DIR:-${FRAMEWORK_ROOT_DIR}/src}"
-  FRAMEWORK_SRC_DIRS: list.UniqueItems() & [string, ...string] | *[ "${FRAMEWORK_ROOT_DIR}/src" ]
-  FRAMEWORK_VENDOR_BIN_DIR: string | "${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}"
-  FRAMEWORK_VENDOR_DIR: string | "${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}"
-  BASH_FRAMEWORK_DISPLAY_LEVEL: string | "${BASH_FRAMEWORK_DISPLAY_LEVEL:-3}"
-  BASH_FRAMEWORK_LOG_FILE: string | "${BASH_FRAMEWORK_LOG_FILE:-${FRAMEWORK_ROOT_DIR}/logs/${0##*/}.log}"
-  BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION: string | "${BASH_FRAMEWORK_LOG_FILE_MAX_ROTATION:-5}"
-  BASH_FRAMEWORK_LOG_LEVEL: string | "${BASH_FRAMEWORK_LOG_LEVEL:-0}"
-  BASH_FRAMEWORK_THEME: string | "${BASH_FRAMEWORK_THEME:-default}"
-  BATS_FILE_NOT_NEEDED_REGEXP: list.UniqueItems() & [...string]
-  COMPILE_PARAMETERS: {
-    binDir: string | "${FRAMEWORK_BIN_DIR}"
-    rootDir: string | "${FRAMEWORK_ROOT_DIR}"
-    srcDir: string | "${FRAMEWORK_SRC_DIR}"
-    templateDir: string | "${FRAMEWORK_SRC_DIR}"
-  }
-  DISPLAY_DURATION: string | "${DISPLAY_DURATION:-1}"
-  FRAMEWORK_BIN_DIR: string | "${FRAMEWORK_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/bin}"
-  FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP: list.UniqueItems() & [...string]
-  FRAMEWORK_FUNCTIONS_IGNORE_REGEXP: list.UniqueItems() & [...string]
-  NON_FRAMEWORK_FILES_REGEXP: list.UniqueItems() & [...string]
+#CompilerConfigSchema: {
+  rootDir: string | "${FRAMEWORK_ROOT_DIR}"
+  srcDirs: list.UniqueItems() & [string, ...string] | *[ "${FRAMEWORK_ROOT_DIR}/src" ]
+  binDir: string | "${FRAMEWORK_BIN_DIR}"
+  templateDir: string | "${FRAMEWORK_SRC_DIR}"
+  vendorDir: string | "${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}"
+  vendorBinDir: string | "${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}"
+
+  functionsIgnoreRegexpList: list.UniqueItems() & [...string]
 }
 
 #BinFileSchema: {
@@ -268,7 +254,7 @@ input: #Schema
 		commands: #CommandsSchema
 	}
 
-  compileConfig: #CompileConfigSchema
+  compilerConfig: #CompilerConfigSchema
 }
 
 output: input

@@ -28,6 +28,18 @@ var (
 		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)
 )
 
+var errFunctionNotFound = errors.New("Function not found")
+
+func ErrFunctionNotFound(functionName string, srcDirs []string) error {
+	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
+}
+
+var errDuplicatedFunctionsDirective = errors.New("Duplicated FUNCTIONS directive")
+
+func ErrDuplicatedFunctionsDirective() error {
+	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
+}
+
 type InsertPosition int8
 
 const (
@@ -50,33 +62,25 @@ type CodeCompilerInterface interface {
 	Compile() (codeCompiled string, err error)
 }
 
-var errFunctionNotFound = errors.New("Function not found")
-
-func ErrFunctionNotFound(functionName string, srcDirs []string) error {
-	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
-}
-
-var errDuplicatedFunctionsDirective = errors.New("Duplicated FUNCTIONS directive")
-
-func ErrDuplicatedFunctionsDirective() error {
-	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
-}
-
 type compileContext struct {
 	code                  string
 	templateContext       *render.Context
-	binaryModel           *model.BinaryModel
 	functionsMap          map[string]functionInfoStruct
 	ignoreFunctionsRegexp []*regexp.Regexp
+	config                model.CompilerConfig
 }
 
 // Compile generates code from given model
-func NewCompiler(code string, binaryModelContext model.BinaryModelContext) CodeCompilerInterface {
+func NewCompiler(
+	code string,
+	templateContext *render.Context,
+	config model.CompilerConfig,
+) CodeCompilerInterface {
 	return &compileContext{
 		code:            code,
-		templateContext: binaryModelContext.TemplateContext,
-		binaryModel:     binaryModelContext.BinaryModel,
+		templateContext: templateContext,
 		functionsMap:    make(map[string]functionInfoStruct),
+		config:          config,
 	}
 }
 
@@ -146,26 +150,20 @@ func (context *compileContext) isNonFrameworkFunction(functionName string) bool 
 	return false
 }
 
-func (context *compileContext) nonFrameworkFunctionRegexpCompile() bool {
+func (context *compileContext) nonFrameworkFunctionRegexpCompile() {
 	if context.ignoreFunctionsRegexp != nil {
-		return true
+		return
 	}
-	regexpArray := context.binaryModel.CompileConfig["FRAMEWORK_FUNCTIONS_IGNORE_REGEXP"]
-
-	if regexpStringArray, ok := regexpArray.([]interface{}); ok {
-		context.ignoreFunctionsRegexp = []*regexp.Regexp{}
-		for _, reg := range regexpStringArray {
-			regStr := fmt.Sprint(reg)
-			re, err := regexp.Compile(fmt.Sprint(regStr))
-			if err != nil {
-				slog.Warn("ignored invalid regexp", "regexp", regStr, "error", err)
-			} else {
-				context.ignoreFunctionsRegexp = append(context.ignoreFunctionsRegexp, re)
-			}
+	context.ignoreFunctionsRegexp = []*regexp.Regexp{}
+	for _, reg := range context.config.FunctionsIgnoreRegexpList {
+		regStr := fmt.Sprint(reg)
+		re, err := regexp.Compile(fmt.Sprint(regStr))
+		if err != nil {
+			slog.Warn("ignored invalid regexp", "regexp", regStr, "error", err)
+		} else {
+			context.ignoreFunctionsRegexp = append(context.ignoreFunctionsRegexp, re)
 		}
-		return true
 	}
-	return false
 }
 
 func (context *compileContext) generateFunctionCode() (code string, err error) {
@@ -260,7 +258,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 		functionRelativePath := convertFunctionNameToPath(functionName)
 		filePath, _, found := context.findFileInSrcDirs(functionRelativePath)
 		if !found {
-			return addedFiles, ErrFunctionNotFound(functionName, context.binaryModel.BinFile.SrcDirs)
+			return addedFiles, ErrFunctionNotFound(functionName, context.config.SrcDirsExpanded)
 		}
 		functionInfo.SrcFile = filePath
 		context.functionsMap[functionName] = functionInfo
@@ -353,7 +351,7 @@ func (context *compileContext) extractUniqueFrameworkFunctions(code string) (new
 func (context *compileContext) findFileInSrcDirs(relativeFilePath string) (
 	filePath string, srcDir string, found bool,
 ) {
-	for _, srcDir := range context.binaryModel.BinFile.SrcDirs {
+	for _, srcDir := range context.config.SrcDirs {
 		srcFile := filepath.Join(srcDir, relativeFilePath)
 		srcFileExpanded := os.ExpandEnv(srcFile)
 		slog.Debug("Check if file exists", "srcDir", srcDir, "file", srcFile, "fileExpanded", srcFileExpanded)
