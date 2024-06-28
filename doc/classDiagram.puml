@@ -6,13 +6,31 @@ Render Fields: true
 Render Methods: true
 Private Aggregations: true
 end legend
+namespace binary {
+    interface CompilerInterface  {
+        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModelContext, string, error)
+
+    }
+    class codeCompiler << (S,Aquamarine) >> {
+        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModelContext, string, error)
+
+    }
+}
+
+"binary.CompilerInterface" <|-- "implements""binary.codeCompiler"
+
+"binary.codeCompiler""uses" o-- "compiler.CodeCompilerInterface"
+"binary.codeCompiler""uses" o-- "generator.CodeGeneratorInterface"
+"binary.codeCompiler""uses" o-- "model.BinaryModelContext"
+"binary.codeCompiler""uses" o-- "render.Context"
+
 namespace compiler {
     interface CodeCompilerInterface  {
-        + Compile() (string, error)
+        + Compile(code string) (string, error)
 
     }
     class compileContext << (S,Aquamarine) >> {
-        + Compile() (string, error)
+        + Compile(code string) (string, error)
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
@@ -38,20 +56,19 @@ namespace compiler {
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
 
 namespace generator {
-    interface CodeGeneratorInterface  {
+    class CodeGeneratorContext << (S,Aquamarine) >> {
         + GenerateCode() (string, error)
 
     }
-    class codeGeneratorContext << (S,Aquamarine) >> {
+    interface CodeGeneratorInterface  {
         + GenerateCode() (string, error)
 
     }
 }
 
-"generator.CodeGeneratorInterface" <|-- "implements""generator.codeGeneratorContext"
-"model.BinaryModelInterface" <|-- "implements""generator.codeGeneratorContext"
+"generator.CodeGeneratorInterface" <|-- "implements""generator.CodeGeneratorContext"
 
-"generator.codeGeneratorContext""uses" o-- "render.Context"
+"generator.CodeGeneratorContext""uses" o-- "render.Context"
 
 namespace main {
     class Directory << (S,Aquamarine) >> {
@@ -109,7 +126,6 @@ namespace model {
     }
     class BinaryModelContext << (S,Aquamarine) >> {
         + BinaryModel *BinaryModel
-        + TemplateContext *render.Context
         + TargetDir string
         + BinaryModelFilePath string
         + BinaryModelBaseName string
@@ -120,7 +136,7 @@ namespace model {
 
     }
     interface BinaryModelInterface  {
-        + GenerateCode() (string, error)
+        + LoadBinaryModel() error
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
@@ -131,11 +147,11 @@ namespace model {
     }
 }
 
+"model.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
 
 "model.BinaryModel""uses" o-- "model.BinFileModel"
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
 "model.BinaryModelContext""uses" o-- "model.BinaryModel"
-"model.BinaryModelContext""uses" o-- "render.Context"
 
 namespace render {
     class Context << (S,Aquamarine) >> {
