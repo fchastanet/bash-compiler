@@ -9,7 +9,7 @@ type CodeGeneratorInterface interface {
 	GenerateCode() (codeCompiled string, err error)
 }
 
-type codeGeneratorContext struct {
+type CodeGeneratorContext struct {
 	yamlFilePath          string
 	targetDir             string
 	binaryModelBaseName   string
@@ -24,7 +24,7 @@ func NewCodeGenerator(
 	templateContext *render.Context,
 	keepIntermediateFiles bool,
 ) CodeGeneratorInterface {
-	return &codeGeneratorContext{
+	return &CodeGeneratorContext{
 		yamlFilePath:          yamlFilePath,
 		targetDir:             targetDir,
 		binaryModelBaseName:   binaryModelBaseName,
@@ -33,7 +33,7 @@ func NewCodeGenerator(
 	}
 }
 
-func (codeGeneratorContext *codeGeneratorContext) GenerateCode() (codeCompiled string, err error) {
+func (codeGeneratorContext *CodeGeneratorContext) GenerateCode() (codeCompiled string, err error) {
 	// Render code using template
 	code, err := codeGeneratorContext.templateContext.RenderFromTemplateName()
 	if err != nil {

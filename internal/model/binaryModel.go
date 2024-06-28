@@ -35,7 +35,6 @@ type BinaryModel struct {
 
 type BinaryModelContext struct {
 	BinaryModel           *BinaryModel
-	TemplateContext       *render.Context
 	TargetDir             string
 	BinaryModelFilePath   string
 	BinaryModelBaseName   string
@@ -44,7 +43,7 @@ type BinaryModelContext struct {
 }
 
 type BinaryModelInterface interface {
-	GenerateCode() (codeCompiled string, err error)
+	LoadBinaryModel() (err error)
 }
 
 func NewBinaryModel(
@@ -122,8 +121,6 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 	}
 	binaryModelContext.BinaryModel = &binaryModel
 
-	binaryModelContext.TemplateContext, err = binaryModelContext.initTemplateContext()
-
 	binaryModelContext.expandVars()
 
 	return err
@@ -139,7 +136,7 @@ func (binaryModelContext *BinaryModelContext) expandVars() {
 	}
 }
 
-func (binaryModelContext BinaryModelContext) initTemplateContext() (templateContext *render.Context, err error) {
+func NewTemplateContext(binaryModelContext BinaryModelContext) (templateContext *render.Context, err error) {
 	// load template system
 	myTemplate, templateName, err := render.NewTemplate(
 		binaryModelContext.BinaryModel.BinFile.TemplateDirs,

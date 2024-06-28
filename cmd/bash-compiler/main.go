@@ -8,11 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
-	"github.com/fchastanet/bash-compiler/internal/compiler"
+	"github.com/fchastanet/bash-compiler/internal/binary"
 	"github.com/fchastanet/bash-compiler/internal/files"
-	"github.com/fchastanet/bash-compiler/internal/generator"
 	"github.com/fchastanet/bash-compiler/internal/logger"
-	"github.com/fchastanet/bash-compiler/internal/model"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -92,33 +90,14 @@ func main() {
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
 	referenceDir := filepath.Dir(binaryModelFilePath)
 
-	binaryModelContext := model.NewBinaryModel(
+	binaryCompiler := binary.NewCompiler()
+	binaryModelContext, codeCompiled, err := binaryCompiler.Compile(
 		string(cli.TargetDir),
 		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
 		cli.KeepIntermediateFiles,
 	)
-	err = binaryModelContext.LoadBinaryModel()
-	logger.Check(err)
-
-	codeGenerator := generator.NewCodeGenerator(
-		string(cli.YamlFile),
-		string(cli.TargetDir),
-		binaryModelBaseName,
-		binaryModelContext.TemplateContext,
-		cli.KeepIntermediateFiles,
-	)
-	code, err := codeGenerator.GenerateCode()
-	logger.Check(err)
-
-	// Compile
-	compiler := compiler.NewCompiler(
-		code,
-		binaryModelContext.TemplateContext,
-		binaryModelContext.BinaryModel.CompilerConfig,
-	)
-	codeCompiled, err := compiler.Compile()
 	logger.Check(err)
 
 	// Save resulting file

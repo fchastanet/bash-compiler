@@ -59,11 +59,10 @@ type functionInfoStruct struct {
 }
 
 type CodeCompilerInterface interface {
-	Compile() (codeCompiled string, err error)
+	Compile(code string) (codeCompiled string, err error)
 }
 
 type compileContext struct {
-	code                  string
 	templateContext       *render.Context
 	functionsMap          map[string]functionInfoStruct
 	ignoreFunctionsRegexp []*regexp.Regexp
@@ -72,20 +71,18 @@ type compileContext struct {
 
 // Compile generates code from given model
 func NewCompiler(
-	code string,
 	templateContext *render.Context,
 	config model.CompilerConfig,
 ) CodeCompilerInterface {
 	return &compileContext{
-		code:            code,
 		templateContext: templateContext,
 		functionsMap:    make(map[string]functionInfoStruct),
 		config:          config,
 	}
 }
 
-func (context *compileContext) Compile() (codeCompiled string, err error) {
-	context.extractUniqueFrameworkFunctions(context.code)
+func (context *compileContext) Compile(code string) (codeCompiled string, err error) {
+	context.extractUniqueFrameworkFunctions(code)
 	_, err = context.retrieveEachFunctionPath()
 	if err != nil {
 		return "", err
@@ -108,7 +105,7 @@ func (context *compileContext) Compile() (codeCompiled string, err error) {
 		return "", err
 	}
 
-	generatedCode, err := injectFunctionCode(context.code, functionsCode)
+	generatedCode, err := injectFunctionCode(code, functionsCode)
 	if err != nil {
 		return "", err
 	}
