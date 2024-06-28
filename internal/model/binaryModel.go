@@ -20,11 +20,17 @@ type BinFileModel struct {
 	TemplateDirs                    []string `yaml:"templateDirs"`
 	SrcDirs                         []string `yaml:"srcDirs"`
 }
+type CompilerConfig struct {
+	FunctionsIgnoreRegexpList []string `yaml:"functionsIgnoreRegexpList"`
+	SrcDirs                   []string `yaml:"srcDirs"`
+	SrcDirsExpanded           []string `yaml:"-"`
+}
+
 type BinaryModel struct {
-	BinFile       BinFileModel           `yaml:"binFile"`
-	Vars          interface{}            `yaml:"vars"`
-	BinData       interface{}            `yaml:"binData"`
-	CompileConfig map[string]interface{} `yaml:"compileConfig"`
+	BinFile        BinFileModel   `yaml:"binFile"`
+	Vars           interface{}    `yaml:"vars"`
+	BinData        interface{}    `yaml:"binData"`
+	CompilerConfig CompilerConfig `yaml:"compilerConfig"`
 }
 
 type BinaryModelContext struct {
@@ -118,7 +124,19 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 
 	binaryModelContext.TemplateContext, err = binaryModelContext.initTemplateContext()
 
+	binaryModelContext.expandVars()
+
 	return err
+}
+
+func (binaryModelContext *BinaryModelContext) expandVars() {
+	binaryModelContext.BinaryModel.CompilerConfig.SrcDirsExpanded = []string{}
+	for _, srcDir := range binaryModelContext.BinaryModel.CompilerConfig.SrcDirs {
+		binaryModelContext.BinaryModel.CompilerConfig.SrcDirsExpanded = append(
+			binaryModelContext.BinaryModel.CompilerConfig.SrcDirsExpanded,
+			os.ExpandEnv(srcDir),
+		)
+	}
 }
 
 func (binaryModelContext BinaryModelContext) initTemplateContext() (templateContext *render.Context, err error) {
