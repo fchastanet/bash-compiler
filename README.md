@@ -22,6 +22,7 @@
   - [2.1. Go Libraries used](#21-go-libraries-used)
   - [2.1.1. Template system](#211-template-system)
   - [Compiler Algorithm](#compiler-algorithm)
+  - [Class diagram](#class-diagram)
 - [3. Development](#3-development)
   - [3.1. Pre-commit hook](#31-pre-commit-hook)
   - [3.2. Build/run/clean](#32-buildrunclean)
@@ -182,7 +183,24 @@ partition "cmd/bash-compiler/main.go" {
 
 stop
 @enduml
+```
 
+### Class diagram
+
+```plantuml
+@startuml "bash-compiler class diagram"
+!pragma layout elk
+
+!include doc/classDiagram.puml
+@enduml
+```
+
+```plantuml
+@startuml "bash-compiler class diagram with private methods"
+!pragma layout elk
+
+!include doc/classDiagramWithPrivateMethods.puml
+@enduml
 ```
 
 ## 3. Development

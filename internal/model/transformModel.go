@@ -12,7 +12,7 @@ import (
 //go:embed binFile.cue
 var binFileCueSchema string
 
-func TransformModel(tempYamlFile os.File, resultWriter *bytes.Buffer) (err error) {
+func transformModel(tempYamlFile os.File, resultWriter *bytes.Buffer) (err error) {
 	// write cue file to temp file
 	tempCueFile, err := os.CreateTemp("", "binFile*.cue")
 	if err != nil {

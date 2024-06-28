@@ -14,6 +14,7 @@ gitleaks
 gofmt
 Gofmt
 golint
+goplantuml
 gzip
 Hadolint
 koanf

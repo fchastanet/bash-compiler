@@ -16,17 +16,21 @@
 {{ include "binFile.initDirs.gtpl" .Data.binData $context -}}
 
 # FUNCTIONS
-{{ range $file := .Data.binFile.CommandDefinitionFiles }}
+{{ range $file := .Data.binData.commands.default.definitionFiles }}
 {{- includeFileAsTemplate $file $context }}
 {{ end }}
 {{- include "commands" .Data.binData.commands $context -}}
 
+{{ include "binFile.facade.gtpl" .Data.binData . | trim }}
+
 {{ $mainFunction := .Data.vars.MAIN_FUNCTION_NAME | default "main" -}}
 MAIN_FUNCTION_NAME="{{ $mainFunction -}}"
 {{ $mainFunction -}}() {
-  {{ include "binFile.hook.main.in.gtpl" . . | indent 2 | trim }}
-  {{ include "binFile.facade.gtpl" .Data.binData . | indent 2 | trim }}
-  {{ include "binFile.hook.main.out.gtpl" . . | indent 2 | trim }}
+{{ include "binFile.hook.main.in.gtpl" . . | trim }}
+{{ if .Data.binData.commands.default.mainFile -}}
+{{ includeFileAsTemplate .Data.binData.commands.default.mainFile $context }}
+{{ end -}}
+{{ include "binFile.hook.main.out.gtpl" . . | trim }}
 }
 
 # if file is sourced avoid calling main function
