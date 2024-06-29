@@ -3,6 +3,7 @@ depguard
 difflib
 dupl
 errorlint
+expandenv
 exportloopref
 funlen
 GOARCH

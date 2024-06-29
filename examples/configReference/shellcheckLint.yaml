@@ -2,14 +2,10 @@ extends:
   - defaultCommand.yaml
   - frameworkConfig.yaml
 
-binFile:
+compilerConfig:
+  targetFile: "${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint"
   relativeRootDirBasedOnTargetDir: ..
   templateFile: binFile.gtpl
-  targetFile: "${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint"
-  srcDirs:
-    - ${FRAMEWORK_ROOT_DIR}/src
-  templateDirs:
-    - examples/templates
 binData:
   commands:
     default:

@@ -43,7 +43,7 @@ func (codeGeneratorContext *CodeGeneratorContext) GenerateCode() (codeCompiled s
 		err = logger.DebugCopyGeneratedFile(
 			codeGeneratorContext.targetDir,
 			codeGeneratorContext.binaryModelBaseName,
-			"-afterTemplateRendering.sh",
+			"-3-afterTemplateRendering.sh",
 			code,
 		)
 		if err != nil {
