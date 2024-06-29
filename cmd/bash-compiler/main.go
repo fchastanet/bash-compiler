@@ -91,7 +91,7 @@ func main() {
 	referenceDir := filepath.Dir(binaryModelFilePath)
 
 	binaryCompiler := binary.NewCompiler()
-	binaryModelContext, codeCompiled, err := binaryCompiler.Compile(
+	codeCompiled, err := binaryCompiler.Compile(
 		string(cli.TargetDir),
 		binaryModelFilePath,
 		binaryModelBaseName,
@@ -101,7 +101,7 @@ func main() {
 	logger.Check(err)
 
 	// Save resulting file
-	targetFile := os.ExpandEnv(binaryModelContext.BinaryModel.BinFile.TargetFile)
+	targetFile := os.ExpandEnv(binaryCompiler.BinaryModelContext.BinaryModel.BinFile.TargetFile)
 	err = os.WriteFile(targetFile, []byte(codeCompiled), files.UserReadWriteExecutePerm)
 	logger.Check(err)
 	slog.Info("Compiled", "file", targetFile)

@@ -3,7 +3,6 @@ package binary
 import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/generator"
-	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 )
@@ -14,67 +13,69 @@ type CompilerInterface interface {
 		binaryModelBaseName string,
 		referenceDir string,
 		keepIntermediateFiles bool,
-	) (binaryModelContext *model.BinaryModelContext, codeCompiled string, err error)
+	) (codeCompiled string, err error)
 }
 
-type codeCompiler struct {
-	//nolint:unused
-	binaryModel model.BinaryModelContext
-	//nolint:unused
-	templateContext render.Context
-	//nolint:unused
-	codeGenerator generator.CodeGeneratorInterface
-	//nolint:unused
-	codeCompiler compiler.CodeCompilerInterface
+type CodeCompilerContext struct {
+	BinaryModelContext *model.BinaryModelContext
+	TemplateContext    *render.Context
+	CodeGenerator      *generator.CodeGeneratorInterface
+	CodeCompiler       *compiler.CodeCompilerInterface
 }
 
-func NewCompiler() CompilerInterface {
-	return codeCompiler{}
+func NewCompiler() CodeCompilerContext {
+	return CodeCompilerContext{}
 }
 
-func (codeCompiler) Compile(
+func (codeCompilerContext *CodeCompilerContext) Compile(
 	targetDir string,
 	binaryModelFilePath string,
 	binaryModelBaseName string,
 	referenceDir string,
 	keepIntermediateFiles bool,
-
-) (binaryModelContext *model.BinaryModelContext, codeCompiled string, err error) {
-	binaryModelContext = model.NewBinaryModel(
+) (codeCompiled string, err error) {
+	codeCompilerContext.BinaryModelContext = model.NewBinaryModel(
 		targetDir,
 		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
 		keepIntermediateFiles,
 	)
-	err = binaryModelContext.LoadBinaryModel()
-	logger.Check(err)
+	err = codeCompilerContext.BinaryModelContext.LoadBinaryModel()
+	if err != nil {
+		return "", err
+	}
 
-	templateContext, err := model.NewTemplateContext(*binaryModelContext)
-	logger.Check(err)
+	codeCompilerContext.TemplateContext, err = model.NewTemplateContext(*codeCompilerContext.BinaryModelContext)
+	if err != nil {
+		return "", err
+	}
 
 	codeGenerator := generator.NewCodeGenerator(
 		binaryModelFilePath,
 		targetDir,
 		binaryModelBaseName,
-		templateContext,
+		codeCompilerContext.TemplateContext,
 		keepIntermediateFiles,
 	)
+	codeCompilerContext.CodeGenerator = &codeGenerator
 
 	codeCompiler := compiler.NewCompiler(
-		templateContext,
-		binaryModelContext.BinaryModel.CompilerConfig,
+		codeCompilerContext.TemplateContext,
+		codeCompilerContext.BinaryModelContext.BinaryModel.CompilerConfig,
 	)
+	codeCompilerContext.CodeCompiler = &codeCompiler
 
 	code, err := codeGenerator.GenerateCode()
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
 
 	// Compile
 	codeCompiled, err = codeCompiler.Compile(code)
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
-	return binaryModelContext, codeCompiled, nil
+
+	return codeCompiled, nil
 }
