@@ -9,9 +9,8 @@ compilerConfig: &defaultFrameworkConfig
   srcDirs:
     - ${FRAMEWORK_ROOT_DIR}/src
   binDir: ${FRAMEWORK_ROOT_DIR}/bin
-  templateDir: ${FRAMEWORK_SRC_DIR}
-  vendorDir: ${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}
-  vendorBinDir: ${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}
+  templateDirs:
+    - ${COMPILER_ROOT_DIR}/examples/templates
 
   # describe the functions that will be skipped from being imported
   functionsIgnoreRegexpList:

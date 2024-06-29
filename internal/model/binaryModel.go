@@ -3,6 +3,8 @@ package model
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -12,25 +14,73 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-type BinFileModel struct {
+var errMissingKey = errors.New("Invalid key")
+
+func ErrMissingKey(key string) error {
+	return fmt.Errorf("%w: %s", errMissingKey, key)
+}
+
+var errInvalidType = errors.New("Invalid type")
+
+func ErrInvalidType(myVar interface{}) error {
+	return fmt.Errorf("%w: %T", errInvalidType, myVar)
+}
+
+type Dictionary map[string]interface{}
+
+func (dic Dictionary) GetStringValue(key string) (value string, err error) {
+	val, ok := dic[key]
+	if !ok {
+		return "", ErrMissingKey(key)
+	}
+	if value, ok := val.(string); ok {
+		return ExpandStringValue(value), nil
+	}
+
+	return "", ErrInvalidType(value)
+}
+
+func ExpandStringValue(value string) string {
+	return os.ExpandEnv(value)
+}
+
+func (dic Dictionary) GetStringList(key string) (values []string, err error) {
+	val, ok := dic[key]
+	slog.Debug("dic", "dic", dic)
+	if !ok {
+		return nil, ErrMissingKey(key)
+	}
+	if values, ok := val.([]string); ok {
+		return ExpandStringList(values), nil
+	}
+
+	return nil, ErrInvalidType(values)
+}
+
+func ExpandStringList(values []string) []string {
+	slice := make([]string, len(values))
+	for i := len(values) - 1; i >= 0; i-- {
+		slice[i] = os.ExpandEnv(values[i])
+	}
+	return slice
+}
+
+type CompilerConfig struct {
+	Dictionary
 	TargetFile                      string   `yaml:"targetFile"`
 	RelativeRootDirBasedOnTargetDir string   `yaml:"relativeRootDirBasedOnTargetDir"`
 	CommandDefinitionFiles          []string `yaml:"commandDefinitionFiles"`
 	TemplateFile                    string   `yaml:"templateFile"`
 	TemplateDirs                    []string `yaml:"templateDirs"`
+	FunctionsIgnoreRegexpList       []string `yaml:"functionsIgnoreRegexpList"`
 	SrcDirs                         []string `yaml:"srcDirs"`
-}
-type CompilerConfig struct {
-	FunctionsIgnoreRegexpList []string `yaml:"functionsIgnoreRegexpList"`
-	SrcDirs                   []string `yaml:"srcDirs"`
-	SrcDirsExpanded           []string `yaml:"-"`
+	SrcDirsExpanded                 []string `yaml:"-"`
 }
 
 type BinaryModel struct {
-	BinFile        BinFileModel   `yaml:"binFile"`
-	Vars           interface{}    `yaml:"vars"`
-	BinData        interface{}    `yaml:"binData"`
 	CompilerConfig CompilerConfig `yaml:"compilerConfig"`
+	Vars           Dictionary     `yaml:"vars"`
+	BinData        interface{}    `yaml:"binData"`
 }
 
 type BinaryModelContext struct {
@@ -87,7 +137,7 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 		err = logger.DebugSaveGeneratedFile(
 			binaryModelContext.TargetDir,
 			binaryModelContext.BinaryModelBaseName,
-			"-merged.yaml",
+			"-1-merged.yaml",
 			tempYamlFile.Name(),
 		)
 		if err != nil {
@@ -104,7 +154,7 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 		err = logger.DebugCopyGeneratedFile(
 			binaryModelContext.TargetDir,
 			binaryModelContext.BinaryModelBaseName,
-			"-cue-transformed.yaml",
+			"-2-cue-transformed.yaml",
 			resultWriter.String(),
 		)
 		if err != nil {
@@ -121,11 +171,19 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 	}
 	binaryModelContext.BinaryModel = &binaryModel
 
+	binaryModelContext.setEnvVars()
 	binaryModelContext.expandVars()
 
 	return err
 }
 
+func (binaryModelContext *BinaryModelContext) setEnvVars() {
+	for key, value := range binaryModelContext.BinaryModel.Vars {
+		if val, ok := value.(string); ok {
+			os.Setenv(key, val)
+		}
+	}
+}
 func (binaryModelContext *BinaryModelContext) expandVars() {
 	binaryModelContext.BinaryModel.CompilerConfig.SrcDirsExpanded = []string{}
 	for _, srcDir := range binaryModelContext.BinaryModel.CompilerConfig.SrcDirs {
@@ -137,10 +195,11 @@ func (binaryModelContext *BinaryModelContext) expandVars() {
 }
 
 func NewTemplateContext(binaryModelContext BinaryModelContext) (templateContext *render.Context, err error) {
+	templateDirs := ExpandStringList(binaryModelContext.BinaryModel.CompilerConfig.TemplateDirs)
 	// load template system
 	myTemplate, templateName, err := render.NewTemplate(
-		binaryModelContext.BinaryModel.BinFile.TemplateDirs,
-		binaryModelContext.BinaryModel.BinFile.TemplateFile,
+		templateDirs,
+		binaryModelContext.BinaryModel.CompilerConfig.TemplateFile,
 		myTemplateFunctions.FuncMap(),
 	)
 	if err != nil {
@@ -149,7 +208,7 @@ func NewTemplateContext(binaryModelContext BinaryModelContext) (templateContext 
 
 	data := make(map[string]interface{})
 	data["binData"] = binaryModelContext.BinaryModel.BinData
-	data["binFile"] = binaryModelContext.BinaryModel.BinFile
+	data["compilerConfig"] = binaryModelContext.BinaryModel.CompilerConfig
 	data["vars"] = binaryModelContext.BinaryModel.Vars
 
 	return &render.Context{

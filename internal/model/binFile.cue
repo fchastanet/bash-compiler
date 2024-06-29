@@ -13,22 +13,15 @@ input: _
 // validate the input against a schema
 input: #Schema
 #CompilerConfigSchema: {
-  rootDir: string | "${FRAMEWORK_ROOT_DIR}"
-  srcDirs: list.UniqueItems() & [string, ...string] | *[ "${FRAMEWORK_ROOT_DIR}/src" ]
-  binDir: string | "${FRAMEWORK_BIN_DIR}"
-  templateDir: string | "${FRAMEWORK_SRC_DIR}"
-  vendorDir: string | "${FRAMEWORK_VENDOR_DIR:-${FRAMEWORK_ROOT_DIR}/vendor}"
-  vendorBinDir: string | "${FRAMEWORK_VENDOR_BIN_DIR:-${FRAMEWORK_ROOT_DIR}/vendor/bin}"
-
-  functionsIgnoreRegexpList: list.UniqueItems() & [...string]
-}
-
-#BinFileSchema: {
   targetFile:                      string
   relativeRootDirBasedOnTargetDir: string | *"."
-  templateFile:                    string
+  templateFile: string | input.compilerConfig.rootDir
+  rootDir: string
+  srcDirs: list.UniqueItems() & [string, ...string] | *[ "\(rootDir)/src" ]
+  binDir: string | "\(rootDir)/bin"
   templateDirs: list.UniqueItems() & [string, ...string]
-  srcDirs: list.UniqueItems() & [string, ...string]
+
+  functionsIgnoreRegexpList: list.UniqueItems() & [...string]
 }
 
 #defaultValueSchema: null | int | string
@@ -246,7 +239,7 @@ input: #Schema
 
 #Schema: {
 	// Commands
-	binFile: #BinFileSchema
+  compilerConfig: #CompilerConfigSchema
 	vars: {
 		{[=~"^[A-Z0-9_]+$" & !~"^()$"]: string}
 	}
@@ -254,7 +247,6 @@ input: #Schema
 		commands: #CommandsSchema
 	}
 
-  compilerConfig: #CompilerConfigSchema
 }
 
 output: input

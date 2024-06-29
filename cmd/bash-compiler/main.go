@@ -11,6 +11,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/binary"
 	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/model"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -21,6 +22,7 @@ type cli struct {
 	KeepIntermediateFiles bool        `short:"k" help:"Keep intermediate files in target directory"`
 	Debug                 bool        `short:"d" help:"Set log in debug level"`
 	LogLevel              int         `hidden:""`
+	RootDir               Directory   `hidden:""`
 }
 
 type VersionFlag string
@@ -60,11 +62,12 @@ func parseArgs(cli *cli) (err error) {
 		},
 	)
 
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	cli.RootDir = Directory(currentDir)
 	if cli.TargetDir == "" {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
 		cli.TargetDir = Directory(currentDir)
 	}
 	if cli.Debug {
@@ -83,8 +86,10 @@ func main() {
 	var cli cli
 	err = parseArgs(&cli)
 	logger.Check(err)
-
 	logger.InitLogger(cli.LogLevel)
+
+	// set useful env variables that can be interpolated during template rendering
+	os.Setenv("COMPILER_ROOT_DIR", string(cli.RootDir))
 
 	binaryModelFilePath := string(cli.YamlFile)
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
@@ -101,7 +106,10 @@ func main() {
 	logger.Check(err)
 
 	// Save resulting file
-	targetFile := os.ExpandEnv(binaryCompiler.BinaryModelContext.BinaryModel.BinFile.TargetFile)
+	targetFile := model.ExpandStringValue(
+		binaryCompiler.BinaryModelContext.BinaryModel.CompilerConfig.TargetFile,
+	)
+
 	err = os.WriteFile(targetFile, []byte(codeCompiled), files.UserReadWriteExecutePerm)
 	logger.Check(err)
 	slog.Info("Compiled", "file", targetFile)

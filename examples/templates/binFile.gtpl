@@ -3,7 +3,7 @@
 {{ $context := . -}}
 ###############################################################################
 {{ if .Data.binData.commands.default.sourceFile -}}
-# GENERATED FROM {{ .Data.binData.commands.default.sourceFile }}
+# GENERATED FROM {{ .Data.binData.commands.default.sourceFile | expandenv }}
 {{ else -}}
 # GENERATED
 {{ end -}}

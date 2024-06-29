@@ -28,7 +28,7 @@ func Check(e error) {
 		// notice that we're using 1, so it will actually log where
 		// the error happened, 0 = this function, we don't want that.
 		_, filename, line, _ := runtime.Caller(1)
-		log.Fatalf("[error] %s:%d %v", filename, line, e)
+		log.Fatalf("[error] %s:%d %+v", filename, line, e)
 	}
 }
 
