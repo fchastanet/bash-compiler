@@ -260,22 +260,16 @@ build/clean.sh
 
 ## 4. Commands
 
-Generate yaml file:
-
-```bash
-go run examples/config-tpl/merge.go >examples/config/shellcheckLint-generated.yaml
-```
-
-Transform and validate yaml file
-
-```bash
-cue export -l input: examples/config/shellcheckLint-generated.yaml examples/config/binFile.cue --out yaml -e output >examples/config/shellcheckLint-transformed.yaml
-```
-
 Compile bin file
 
 ```bash
-FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler/main.go examples/config/shellcheckLint-transformed.yaml
+FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler/main.go examples/configReference/shellcheckLint.yaml -t examples/generated -k -d
+```
+
+for debugging purpose, manually Transform and validate yaml file using cue
+
+```bash
+cue export -l input: examples/generated/shellcheckLint-merged.yaml internal/model/binFile.cue --out yaml -e output >examples/generated/shellcheckLint-cue-transformed.yaml
 ```
 
 ## 5. Alternatives
