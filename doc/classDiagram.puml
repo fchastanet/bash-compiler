@@ -7,22 +7,27 @@ Render Methods: true
 Private Aggregations: true
 end legend
 namespace binary {
-    interface CompilerInterface  {
-        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModelContext, string, error)
+    class CodeCompilerContext << (S,Aquamarine) >> {
+        + BinaryModelContext *model.BinaryModelContext
+        + TemplateContext *render.Context
+        + CodeGenerator *generator.CodeGeneratorInterface
+        + CodeCompiler *compiler.CodeCompilerInterface
+
+        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (string, error)
 
     }
-    class codeCompiler << (S,Aquamarine) >> {
-        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModelContext, string, error)
+    interface CompilerInterface  {
+        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (string, error)
 
     }
 }
 
-"binary.CompilerInterface" <|-- "implements""binary.codeCompiler"
+"binary.CompilerInterface" <|-- "implements""binary.CodeCompilerContext"
 
-"binary.codeCompiler""uses" o-- "compiler.CodeCompilerInterface"
-"binary.codeCompiler""uses" o-- "generator.CodeGeneratorInterface"
-"binary.codeCompiler""uses" o-- "model.BinaryModelContext"
-"binary.codeCompiler""uses" o-- "render.Context"
+"binary.CodeCompilerContext""uses" o-- "compiler.CodeCompilerInterface"
+"binary.CodeCompilerContext""uses" o-- "generator.CodeGeneratorInterface"
+"binary.CodeCompilerContext""uses" o-- "model.BinaryModelContext"
+"binary.CodeCompilerContext""uses" o-- "render.Context"
 
 namespace compiler {
     interface CodeCompilerInterface  {
