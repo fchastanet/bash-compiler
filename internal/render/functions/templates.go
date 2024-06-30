@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/render"
 )
@@ -39,7 +40,7 @@ func mustInclude(templateName string, templateData any,
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	return output, err
+	return code.RemoveFirstShebangLineIfAny(output), err
 }
 
 func includeFile(filePath string) string {
@@ -55,7 +56,7 @@ func includeFile(filePath string) string {
 
 func RenderFromTemplateContent(
 	templateContext *render.Context, templateContent string,
-) (code string, err error) {
+) (codeStr string, err error) {
 	template, err := templateContext.Template.Parse(templateContent)
 	if err != nil {
 		return "", err
@@ -66,7 +67,7 @@ func RenderFromTemplateContent(
 		return "", err
 	}
 
-	return tplWriter.String(), err
+	return code.RemoveFirstShebangLineIfAny(tplWriter.String()), err
 }
 
 func includeFileAsTemplate(filePath string, templateContext render.Context) string {

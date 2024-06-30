@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
@@ -21,7 +22,6 @@ import (
 )
 
 var (
-	// shebangRegexp            = regexp.MustCompile(`^[ \t]*(#!.*)?$`)
 	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
 	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
 	bashFrameworkFunctionRegexp = regexp.MustCompile(
@@ -227,7 +227,7 @@ func (context *compileContext) retrieveAllFunctionsContent() (
 		if err != nil {
 			return false, err
 		}
-		functionInfo.SourceCode = string(fileContent)
+		functionInfo.SourceCode = code.RemoveFirstShebangLineIfAny(string(fileContent))
 		functionInfo.SourceCodeLoaded = true
 		context.functionsMap[functionName] = functionInfo
 		newFunctionExtracted := context.extractUniqueFrameworkFunctions(functionInfo.SourceCode)
