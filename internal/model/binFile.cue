@@ -165,6 +165,7 @@ input: #Schema
 }
 
 #CommandSchema: {
+  mainFile: string | *null
   // command definition files to include
   definitionFiles: list.UniqueItems() & [string, ...string]
   // Options

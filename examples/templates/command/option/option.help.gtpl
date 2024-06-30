@@ -11,5 +11,5 @@ ${__HELP_OPTION_COLOR}{{/*
   */}}{{- $max := default -1 .Data.max -}}{{/*
   */}}{{ if gt $min 0 }} (at least {{ $min }} times){{ else }} (optional){{ end }}{{/*
   */}}{{ if gt $max 0 }} (at most {{ $max }} times) {{ end }}{{/*
-*/}}{{ end -}}
+*/}}{{- end }}
 {{- end }}
