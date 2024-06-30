@@ -21,12 +21,11 @@ echo
 # ------------------------------------------
 # usage/options section
 # ------------------------------------------
-optionsAltList=({{ range $index, $option := .options }}
-  "{{ include "option.help.alts" $option $context }}"{{/*
-  */}}{{ end }}
+optionsAltList=({{ range $index, $option := .options -}}"{{- include "option.help.alts" $option $context | trimAll "\n" -}}" {{ end }}
 )
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
   "{{ .commandName }}" "${optionsAltList[@]}"
+echo
 {{ end }}
 
 {{ if .arguments -}}
@@ -52,7 +51,7 @@ echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 echo
 echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }}${__RESET_COLOR}"
 {{ end -}}
-echo -e "  {{ include "option.help" $option $context -}}"
+echo -e "  {{ include "option.help" $option $context | trimAll "\n" -}}"
 {{ if $option.help -}}
 Array::wrap2 ' ' 76 4 "    " {{ $option.help | quote }}
 echo
@@ -108,7 +107,7 @@ echo {{ .author | quote }}
 # ------------------------------------------
 echo
 echo -n -e "${__HELP_TITLE_COLOR}SOURCE FILE: ${__RESET_COLOR}"
-echo {{ .sourceFile | quote }}
+echo {{ .sourceFile | expandenv | quote }}
 {{ end -}}
 
 {{ if .license -}}

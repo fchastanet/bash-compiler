@@ -6,6 +6,6 @@
     {{- if eq .Data.min 0 -}}[{{ end -}}{{/*
     */}}{{- .Data.alts | join "|" -}}{{/*
     */}} <{{- .Data.helpValueName | default "value" -}}>{{/*
-    */}}{{ if eq .Data.min 0 }}]{{ end }}
+    */}}{{ if eq .Data.min 0 }}]{{ end -}}
   {{- end -}}
-{{ end }}
+{{- end -}}

@@ -16,6 +16,7 @@ binData:
       commandName: shellcheckLint
       definitionFiles:
         - ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh
+      mainFile: ${FRAMEWORK_ROOT_DIR}/src/_binaries/shellcheckLint.sh
       help: Lint bash files using shellcheck.
       longDescription:
         "shellcheck wrapper that will:\n- install new shellcheck
@@ -59,8 +60,7 @@ binData:
           help: define output format of this command
           type: String
           variableName: optionFormat
-          callbacks:
-            - test
+
         - alts:
             - --staged
           group: shellcheckLintOptionGroup

@@ -28,7 +28,7 @@ MAIN_FUNCTION_NAME="{{ $mainFunction -}}"
 {{ $mainFunction -}}() {
 {{ include "binFile.hook.main.in.gtpl" . . | trim }}
 {{ if .Data.binData.commands.default.mainFile -}}
-{{ includeFileAsTemplate .Data.binData.commands.default.mainFile $context }}
+{{ includeFileAsTemplate .Data.binData.commands.default.mainFile $context | removeFirstShebangLineIfAny }}
 {{ end -}}
 {{ include "binFile.hook.main.out.gtpl" . . | trim }}
 }
@@ -37,5 +37,11 @@ MAIN_FUNCTION_NAME="{{ $mainFunction -}}"
 # shellcheck disable=SC2178
 BASH_SOURCE=".$0" # cannot be changed in bash
 # shellcheck disable=SC2128
-test ".$0" != ".${BASH_SOURCE}" || {{ $mainFunction }} "$@"
+if test ".$0" == ".${BASH_SOURCE}"; then
+  if [[ "${BASH_FRAMEWORK_QUIET_MODE:-0}" = "1" ]]; then
+    {{ $mainFunction }} "$@" &>/dev/null
+  else
+    {{ $mainFunction }} "$@"
+  fi
+fi
 {{- end -}}
