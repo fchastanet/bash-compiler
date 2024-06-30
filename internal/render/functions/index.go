@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	sprig "github.com/Masterminds/sprig/v3"
+	"github.com/fchastanet/bash-compiler/internal/code"
 )
 
 var errorNotSupportedType = errors.New("Type not supported")
@@ -39,6 +40,7 @@ func FuncMap() map[string]interface{} {
 	funcMap["includeFile"] = includeFile
 	funcMap["includeFileAsTemplate"] = includeFileAsTemplate
 	funcMap["dynamicFile"] = dynamicFile
+	funcMap["removeFirstShebangLineIfAny"] = code.RemoveFirstShebangLineIfAny
 
 	return funcMap
 }
