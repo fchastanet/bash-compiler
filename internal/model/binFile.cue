@@ -16,6 +16,8 @@ input: #Schema
   targetFile:                      string
   relativeRootDirBasedOnTargetDir: string | *"."
   templateFile: string | input.compilerConfig.rootDir
+  dynamicConfig:
+    {[=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string}
   rootDir: string
   srcDirs: list.UniqueItems() & [string, ...string] | *[ "\(rootDir)/src" ]
   binDir: string | "\(rootDir)/bin"

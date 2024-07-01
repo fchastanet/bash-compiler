@@ -66,15 +66,15 @@ func ExpandStringList(values []string) []string {
 }
 
 type CompilerConfig struct {
-	Dictionary
-	TargetFile                      string   `yaml:"targetFile"`
-	RelativeRootDirBasedOnTargetDir string   `yaml:"relativeRootDirBasedOnTargetDir"`
-	CommandDefinitionFiles          []string `yaml:"commandDefinitionFiles"`
-	TemplateFile                    string   `yaml:"templateFile"`
-	TemplateDirs                    []string `yaml:"templateDirs"`
-	FunctionsIgnoreRegexpList       []string `yaml:"functionsIgnoreRegexpList"`
-	SrcDirs                         []string `yaml:"srcDirs"`
-	SrcDirsExpanded                 []string `yaml:"-"`
+	DynamicConfig                   Dictionary `yaml:"dynamicConfig"`
+	TargetFile                      string     `yaml:"targetFile"`
+	RelativeRootDirBasedOnTargetDir string     `yaml:"relativeRootDirBasedOnTargetDir"`
+	CommandDefinitionFiles          []string   `yaml:"commandDefinitionFiles"`
+	TemplateFile                    string     `yaml:"templateFile"`
+	TemplateDirs                    []string   `yaml:"templateDirs"`
+	FunctionsIgnoreRegexpList       []string   `yaml:"functionsIgnoreRegexpList"`
+	SrcDirs                         []string   `yaml:"srcDirs"`
+	SrcDirsExpanded                 []string   `yaml:"-"`
 }
 
 type BinaryModel struct {

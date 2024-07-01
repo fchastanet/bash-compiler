@@ -24,17 +24,17 @@ func ErrFileNotFound(file string, srcDirs []string) error {
 // include allows to include a template
 // allowing to use filter
 // Eg: {{ include "template.tpl" | indent 4 }}
-func include(
+func Include(
 	template string, templateData any,
 	templateContext render.Context) string {
 	var output string
-	output, _ = mustInclude(template, templateData, templateContext)
+	output, _ = MustInclude(template, templateData, templateContext)
 	return output
 }
 
-func mustInclude(templateName string, templateData any,
+func MustInclude(templateName string, templateData any,
 	templateContext render.Context) (output string, err error) {
-	slog.Debug("mustInclude", "templateName", templateName, "templateData", templateData)
+	slog.Debug("MustInclude", "templateName", templateName, "templateData", templateData)
 	templateContext.Data = templateData
 	output, err = templateContext.Render(templateName)
 	if err != nil {

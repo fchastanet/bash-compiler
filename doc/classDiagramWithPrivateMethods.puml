@@ -30,6 +30,17 @@ namespace binary {
 "binary.CodeCompilerContext""uses" o-- "render.Context"
 
 namespace compiler {
+    class Annotation << (S,Aquamarine) >> {
+        - kind string
+        - properties <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+        + Process(compileContext *compileContext, _ string) error
+
+    }
+    interface AnnotationProcessorInterface  {
+        + Process(compileContext *compileContext, code string) error
+
+    }
     interface CodeCompilerInterface  {
         + Compile(code string) (string, error)
 
@@ -39,7 +50,10 @@ namespace compiler {
         - functionsMap <font color=blue>map</font>[string]functionInfoStruct
         - ignoreFunctionsRegexp []*regexp.Regexp
         - config model.CompilerConfig
+        - annotationProcessors []*AnnotationProcessorInterface
 
+        - computeRequires() error
+        - computeRequired() error
         - renderEachFunctionAsTemplate() error
         - isNonFrameworkFunction(functionName string) bool
         - nonFrameworkFunctionRegexpCompile()
@@ -62,16 +76,20 @@ namespace compiler {
         + SourceCode string
         + SourceCodeLoaded bool
         + SourceCodeAsTemplate bool
+        + AnnotationMap <font color=blue>map</font>[string]Annotation
 
     }
 }
 
+"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.Annotation"
 "compiler.CodeCompilerInterface" <|-- "implements""compiler.compileContext"
 
+"compiler.compileContext""uses" o-- "compiler.AnnotationProcessorInterface"
 "compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
 "compiler.compileContext""uses" o-- "model.CompilerConfig"
 "compiler.compileContext""uses" o-- "regexp.Regexp"
 "compiler.compileContext""uses" o-- "render.Context"
+"compiler.functionInfoStruct""uses" o-- "compiler.Annotation"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
 
 namespace generator {
@@ -117,6 +135,7 @@ namespace main {
         + KeepIntermediateFiles bool
         + Debug bool
         + LogLevel int
+        + RootDir Directory
 
     }
     class main.Directory << (T, #FF7700) >>  {
@@ -133,20 +152,10 @@ namespace main {
 "main.cli""uses" o-- "main.YamlFile"
 
 namespace model {
-    class BinFileModel << (S,Aquamarine) >> {
-        + TargetFile string
-        + RelativeRootDirBasedOnTargetDir string
-        + CommandDefinitionFiles []string
-        + TemplateFile string
-        + TemplateDirs []string
-        + SrcDirs []string
-
-    }
     class BinaryModel << (S,Aquamarine) >> {
-        + BinFile BinFileModel
-        + Vars <font color=blue>interface</font>{}
-        + BinData <font color=blue>interface</font>{}
         + CompilerConfig CompilerConfig
+        + Vars Dictionary
+        + BinData <font color=blue>interface</font>{}
 
     }
     class BinaryModelContext << (S,Aquamarine) >> {
@@ -157,6 +166,7 @@ namespace model {
         + ReferenceDir string
         + KeepIntermediateFiles bool
 
+        - setEnvVars()
         - expandVars()
 
         + LoadBinaryModel() error
@@ -167,18 +177,32 @@ namespace model {
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
+        + DynamicConfig Dictionary
+        + TargetFile string
+        + RelativeRootDirBasedOnTargetDir string
+        + CommandDefinitionFiles []string
+        + TemplateFile string
+        + TemplateDirs []string
         + FunctionsIgnoreRegexpList []string
         + SrcDirs []string
         + SrcDirsExpanded []string
 
     }
+    class Dictionary << (S,Aquamarine) >> {
+        + GetStringValue(key string) (string, error)
+        + GetStringList(key string) ([]string, error)
+
+    }
+    class model.Dictionary << (T, #FF7700) >>  {
+    }
 }
 
 "model.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
 
-"model.BinaryModel""uses" o-- "model.BinFileModel"
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
+"model.BinaryModel""uses" o-- "model.Dictionary"
 "model.BinaryModelContext""uses" o-- "model.BinaryModel"
+"model.CompilerConfig""uses" o-- "model.Dictionary"
 
 namespace render {
     class Context << (S,Aquamarine) >> {
@@ -200,4 +224,5 @@ namespace render {
 "__builtin__.string" #.. "alias of""main.Directory"
 "__builtin__.string" #.. "alias of""main.VersionFlag"
 "__builtin__.string" #.. "alias of""main.YamlFile"
+"model.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "alias of""model.Dictionary"
 @enduml
