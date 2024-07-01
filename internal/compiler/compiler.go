@@ -48,6 +48,15 @@ const (
 	InsertPositionLast   InsertPosition = 2
 )
 
+type AnnotationProcessorInterface interface {
+	Process(compileContext *compileContext, code string) error
+}
+
+type Annotation struct {
+	kind       string
+	properties map[string]interface{}
+}
+
 type functionInfoStruct struct {
 	FunctionName         string
 	SrcFile              string // "" if not computed yet
@@ -56,6 +65,7 @@ type functionInfoStruct struct {
 	SourceCode           string // the src file content
 	SourceCodeLoaded     bool
 	SourceCodeAsTemplate bool
+	AnnotationMap        map[string]Annotation
 }
 
 type CodeCompilerInterface interface {
@@ -67,6 +77,7 @@ type compileContext struct {
 	functionsMap          map[string]functionInfoStruct
 	ignoreFunctionsRegexp []*regexp.Regexp
 	config                model.CompilerConfig
+	annotationProcessors  []*AnnotationProcessorInterface
 }
 
 // Compile generates code from given model
@@ -74,10 +85,14 @@ func NewCompiler(
 	templateContext *render.Context,
 	config model.CompilerConfig,
 ) CodeCompilerInterface {
+	requireProcessor := NewRequireAnnotationProcessor()
 	return &compileContext{
 		templateContext: templateContext,
 		functionsMap:    make(map[string]functionInfoStruct),
 		config:          config,
+		annotationProcessors: []*AnnotationProcessorInterface{
+			&requireProcessor,
+		},
 	}
 }
 
@@ -98,6 +113,13 @@ func (context *compileContext) Compile(code string) (codeCompiled string, err er
 	err = context.renderEachFunctionAsTemplate()
 	if err != nil {
 		return "", err
+	}
+
+	for _, annotationProcessor := range context.annotationProcessors {
+		err = (*annotationProcessor).Process(context, code)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	functionsCode, err := context.generateFunctionCode()

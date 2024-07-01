@@ -13,6 +13,7 @@ noargs
 noninteractive
 NONINTERACTIVE
 nullglob
+Pathchk
 pipefail
 posix
 realpath

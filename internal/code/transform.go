@@ -3,6 +3,8 @@ package code
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -10,6 +12,12 @@ import (
 var (
 	shebangRegexp = regexp.MustCompile(`^(#!/.*)?$`)
 )
+
+var errRequiredFunctionNotFound = errors.New("Required function not found")
+
+func ErrRequiredFunctionNotFound(functionName string) error {
+	return fmt.Errorf("%w: %s", errRequiredFunctionNotFound, functionName)
+}
 
 func RemoveFirstShebangLineIfAny(code string) string {
 	scanner := bufio.NewScanner(strings.NewReader(code))
