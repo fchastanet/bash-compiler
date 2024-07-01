@@ -36,11 +36,13 @@ func FuncMap() map[string]interface{} {
 	funcMap["len"] = stringLength
 	funcMap["format"] = format
 	// templates functions
-	funcMap["include"] = include
+	funcMap["include"] = Include
 	funcMap["includeFile"] = includeFile
 	funcMap["includeFileAsTemplate"] = includeFileAsTemplate
 	funcMap["dynamicFile"] = dynamicFile
 	funcMap["removeFirstShebangLineIfAny"] = code.RemoveFirstShebangLineIfAny
+	funcMap["firstCharacterTitle"] = FirstCharacterTitle
+	funcMap["snakeCase"] = ToSnakeCase
 
 	return funcMap
 }

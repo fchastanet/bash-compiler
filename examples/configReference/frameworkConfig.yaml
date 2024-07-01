@@ -12,6 +12,10 @@ compilerConfig: &defaultFrameworkConfig
   templateDirs:
     - ${COMPILER_ROOT_DIR}/examples/templates
 
+  dynamicConfig:
+    requireTemplate: require
+    checkRequirementsTemplate: checkRequirements
+
   # describe the functions that will be skipped from being imported
   functionsIgnoreRegexpList:
     - Namespace::functions

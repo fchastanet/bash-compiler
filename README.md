@@ -20,9 +20,11 @@
 - [1. Excerpt](#1-excerpt)
 - [2. Documentation](#2-documentation)
   - [2.1. Go Libraries used](#21-go-libraries-used)
-  - [2.1.1. Template system](#211-template-system)
-  - [Compiler Algorithm](#compiler-algorithm)
-  - [Class diagram](#class-diagram)
+  - [2.2. Template system](#22-template-system)
+  - [2.3. Compiler Algorithm](#23-compiler-algorithm)
+  - [2.4. Class diagram](#24-class-diagram)
+  - [Compiler directives](#compiler-directives)
+    - [@require](#require)
 - [3. Development](#3-development)
   - [3.1. Pre-commit hook](#31-pre-commit-hook)
   - [3.2. Build/run/clean](#32-buildrunclean)
@@ -54,7 +56,7 @@ imported as well (of course only once).
 - [Kong](github.com/alecthomas/kong) used for command arguments parsing
 - [cuelang](cuelang.org/go) allows to transform yaml file in another one
 
-### 2.1.1. Template system
+### 2.2. Template system
 
 [template system](https://pkg.go.dev/text/template@go1.22.3)
 [doc 1](https://lets-go.alexedwards.net/sample/02.08-html-templating-and-inheritance.html)
@@ -111,7 +113,7 @@ Template filter functions, `internal/render/functions/index.go` includes:
       template
     - dynamicFile: resolve first matching filepath in paths provided as argument
 
-### Compiler Algorithm
+### 2.3. Compiler Algorithm
 
 The command to generate a bash binary file:
 
@@ -185,7 +187,7 @@ stop
 @enduml
 ```
 
-### Class diagram
+### 2.4. Class diagram
 
 ```plantuml
 @startuml "bash-compiler class diagram"
@@ -202,6 +204,103 @@ stop
 !include doc/classDiagramWithPrivateMethods.puml
 @enduml
 ```
+
+### Compiler directives
+
+#### @require
+
+The annotation @require added to a function like in this example:
+
+```bash
+# @require Env::requireLoad
+# @require Log::requireLoad
+Log::logMessage() {
+  # rest of the function content
+}
+```
+
+will do the following actions:
+
+- compiler checks that the required functions exist, if not an error is
+  triggered.
+- compiler adds code to the required function that will set an environment
+  variable to 1 when the function is called (eg:
+  REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED=1).
+- compiler adds code to the function that has these requirements in to check if
+  these environment variables are set and exit 1 if not.
+- compiler checks if the function is called at least once but it is the
+  developer's responsibility to call the require function at the right place.
+
+Code is generated using go templates. The go templates are configured in the
+yaml file at compiler config level.
+
+```yaml
+compilerConfig:
+  dynamicConfig:
+    requireTemplate: require
+    checkRequirementsTemplate: checkRequirements
+# rest of the config file content
+```
+
+`examples/templates/annotations/require.gtpl` => generates this code:
+
+```bash
+Env::RequireLoad() {
+  REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED=1
+  # rest of the function content
+}
+```
+
+`examples/templates/annotations/checkRequirements.gtpl` => generates this code:
+
+```bash
+# @require Env::requireLoad
+# @require Log::requireLoad
+Log::logMessage() {
+  if [[ "${REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED:-0}" != 1 ]]; then
+    echo >&2 "Requirement Env::requireLoad has not been loaded"
+    exit 1
+  fi
+
+  if [[ "${REQUIRE_FUNCTION_LOG_REQUIRE_LOAD_LOADED:-0}" != 1 ]]; then
+    echo >&2 "Requirement Log::requireLoad has not been loaded"
+    exit 1
+  fi
+  # rest of the function content
+```
+
+The aims of a require are the following:
+
+- be to be able to test for a requirement just before executing a function that
+  is marked with @require
+- when compiling be able to know if a function with a specific requirement has
+  been used (eg: ubuntu>20)
+- There are several kind of requirements:
+  - checking that a command is available
+    - this requirement needs to be called at the proper level if the binary
+      actually installs this command.
+    - @require Aws::requireAwsCommand
+    - @require Docker::requireDockerCommand
+    - @require Git::requireGitCommand
+    - @require Linux::requireCurlCommand
+    - @require Linux::requireJqCommand
+    - @require Linux::requireRealpathCommand
+    - @require Linux::requirePathchkCommand
+    - @require Linux::requireSudoCommand
+    - @require Linux::requireTarCommand
+    - @require Ssh::requireSshKeygenCommand
+    - @require Ssh::requireSshKeyscanCommand
+  - checking a feature is available
+    - @require Git::requireShallowClone actually based on git version
+  - checking a specific environment/state is available on execution
+    - @require Linux::requireUbuntu
+    - @require Linux::Wsl::requireWsl
+    - @require Linux::requireExecutedAsUser
+    - ubuntu>20
+  - ensuring some specific loading are made
+    - @require Env::requireLoad
+    - @require Log::requireLoad
+    - @require UI::requireTheme
 
 ## 3. Development
 
