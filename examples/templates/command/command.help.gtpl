@@ -15,28 +15,37 @@ echo
 # ------------------------------------------
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" "{{- .commandName }} {{/*
   */}}{{- if .options -}} [OPTIONS]{{- end }} {{/*
-  */}}{{- if .arguments -}} [ARGUMENTS]{{- end }}"
+  */}}{{- if .args -}} [ARGUMENTS]{{- end }}"
 echo
 {{ if .options -}}
 # ------------------------------------------
 # usage/options section
 # ------------------------------------------
-optionsAltList=({{ range $index, $option := .options -}}"{{- include "option.help.alts" $option $context | trimAll "\n" -}}" {{ end }}
+optionsAltList=({{ range $index, $option := .options -}}"{{/*
+ */}}{{ include "option.help.alts" $option $context | trimAll "\n" -}}" {{ end }}
 )
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
   "{{ .commandName }}" "${optionsAltList[@]}"
 echo
 {{ end }}
 
-{{ if .arguments -}}
+{{ if .args -}}
 # ------------------------------------------
 # usage/arguments section
 # ------------------------------------------
 echo
 echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 {{ range $index, $arg := .args }}
-  echo -e "{{ include "arg.help" $arg $context }}"{{/*
-*/}}{{ end }}
+  Array::wrap2 " " 80 2 "  {{ include "arg.help" $arg $context }}"
+  {{ if $arg.help -}}
+  {{ $argHelp := splitList "\n" $arg.help -}}
+  Array::wrap2 ' ' 76 4 "    " {{/*
+    */}}{{ range $line := $argHelp -}}{{/*
+    */}}{{ $line | quote }}{{/*
+    */}}{{ end }}
+  echo
+  {{ end }}
+{{ end }}
 {{ end -}}
 
 {{ if .options -}}
@@ -55,6 +64,19 @@ echo -e "  {{ include "option.help" $option $context | trimAll "\n" -}}"
 {{ if $option.help -}}
 Array::wrap2 ' ' 76 4 "    " {{ $option.help | quote }}
 echo
+{{ end }}
+{{ $valuesLen := (sub (len .authorizedValuesList) 1) }}
+{{ if gt $valuesLen -1 -}}
+Array::wrap2 ' ' 76 6 "    Possible values: "
+{{- range $index, $value := .authorizedValuesList }} "{{- $value -}}{{if lt $index $valuesLen}}, {{end}}" {{ end }}
+echo
+{{ end }}
+{{ if .authorizedValues -}}
+{{ range $index, $value := .authorizedValues -}}
+{{ if ne $value.value $value.help }}
+echo -e "${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+{{ end }}
+{{ end }}
 {{ end }}
 {{ $previousGroupId = $groupId }}
 {{ end -}}

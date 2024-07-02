@@ -12,6 +12,8 @@ binData:
       functionName: shellcheckLintCommand
       unknownOptionCallbacks:
         - unknownOption
+      beforeParseCallbacks:
+        - beforeParseCallback
       version: "1.0"
       commandName: shellcheckLint
       definitionFiles:
@@ -28,6 +30,8 @@ binData:
         .shellcheckrc file to exclude\nsome files from being checked (use grep
         -E syntax)\nexclude=^bin/bash-tpl$\n\n${__HELP_TITLE_COLOR}SHELLCHECK
         HELP${__RESET_COLOR}\n\n@@@SHELLCHECK_HELP@@@\n"
+      callbacks:
+        - shellcheckLintParseCallback
       args:
         - callbacks:
             - argShellcheckFilesCallback
@@ -68,8 +72,7 @@ binData:
             lint only staged git files(files added to file list to be committed)
             and which are beginning with a bash shebang.
           variableName: optionStaged
-          type: StringArray
-          min: 1
+          type: Boolean
 
         - alts:
             - --xargs

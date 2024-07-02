@@ -233,6 +233,8 @@ input: #Schema
   longDescription:        string | *""
   callbacks:              #callbacks
   unknownOptionCallbacks: #callbacks
+  beforeParseCallbacks: #callbacks
+  afterParseCallbacks: #callbacks
 }
 
 #CommandsSchema: {
