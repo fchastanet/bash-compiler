@@ -20,5 +20,13 @@ case "${action}" in
 esac
 exit 0
 {{ else }}
-{{ .Data.commands.default.functionName }}Parse "$@"
+{{ with .Data.commands.default -}}
+{{ range $callback := .beforeParseCallbacks -}}
+{{ $callback }}
+{{ end }}
+{{ .functionName }}Parse "$@"
+{{ range $callback := .afterParseCallbacks -}}
+{{ $callback }}
+{{ end }}
+{{ end }}
 {{ end }}
