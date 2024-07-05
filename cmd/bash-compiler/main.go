@@ -2,10 +2,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/binary"
@@ -15,6 +17,8 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
+var errToGetCurrentFilename = errors.New("Unable to get the current filename")
+
 type cli struct {
 	YamlFile              YamlFile    `arg:"" help:"Yaml file" type:"path"`
 	TargetDir             Directory   `short:"t" optional:"" help:"Directory that will contain generated files"`
@@ -22,7 +26,7 @@ type cli struct {
 	KeepIntermediateFiles bool        `short:"k" help:"Keep intermediate files in target directory"`
 	Debug                 bool        `short:"d" help:"Set log in debug level"`
 	LogLevel              int         `hidden:""`
-	RootDir               Directory   `hidden:""`
+	CompilerRootDir       Directory   `hidden:""`
 }
 
 type VersionFlag string
@@ -62,13 +66,20 @@ func parseArgs(cli *cli) (err error) {
 		},
 	)
 
-	currentDir, err := os.Getwd()
+	// current dir
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return errToGetCurrentFilename
+	}
+	compilerRootDir, err := filepath.Abs(filepath.Dir(filename) + "/../..")
 	if err != nil {
 		return err
 	}
-	cli.RootDir = Directory(currentDir)
+	slog.Info("parseArgs", "compilerRootDir", compilerRootDir)
+
+	cli.CompilerRootDir = Directory(compilerRootDir)
 	if cli.TargetDir == "" {
-		cli.TargetDir = Directory(currentDir)
+		cli.TargetDir = Directory(compilerRootDir)
 	}
 	if cli.Debug {
 		cli.LogLevel = int(slog.LevelDebug)
@@ -89,7 +100,8 @@ func main() {
 	logger.InitLogger(cli.LogLevel)
 
 	// set useful env variables that can be interpolated during template rendering
-	os.Setenv("COMPILER_ROOT_DIR", string(cli.RootDir))
+	slog.Info("main", "COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
 	binaryModelFilePath := string(cli.YamlFile)
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
