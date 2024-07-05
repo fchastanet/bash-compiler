@@ -196,6 +196,7 @@ func (binaryModelContext *BinaryModelContext) expandVars() {
 
 func NewTemplateContext(binaryModelContext BinaryModelContext) (templateContext *render.Context, err error) {
 	templateDirs := ExpandStringList(binaryModelContext.BinaryModel.CompilerConfig.TemplateDirs)
+	slog.Info("NewTemplateContext", "templateDirs", templateDirs)
 	// load template system
 	myTemplate, templateName, err := render.NewTemplate(
 		templateDirs,
