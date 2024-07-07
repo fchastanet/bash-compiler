@@ -2,6 +2,7 @@ package model
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -35,10 +36,16 @@ func LoadModel(referenceDir string, modelFilePath string, resultMap *map[string]
 	if _, ok := model["extends"]; ok {
 		extends := model["extends"].([]interface{})
 		for _, file := range extends {
-			fileAbs := filepath.Join(referenceDir, file.(string))
+			fileAbs := os.ExpandEnv(file.(string))
+			slog.Debug("Try expanding vars", "original", file.(string), "expanded", fileAbs)
 			if _, err := os.Stat(fileAbs); err != nil {
-				return err
+				fileAbs = filepath.Join(referenceDir, file.(string))
+				slog.Debug("Try finding file in referenceDir", "referenceDir", referenceDir, "expanded", fileAbs)
+				if _, err := os.Stat(fileAbs); err != nil {
+					return err
+				}
 			}
+
 			extendsMap := map[string]interface{}{}
 			err = decodeFile(fileAbs, referenceDirs, &extendsMap)
 			if err != nil {

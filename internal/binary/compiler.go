@@ -66,6 +66,10 @@ func (codeCompilerContext *CodeCompilerContext) Compile(
 		codeCompilerContext.BinaryModelContext.BinaryModel.CompilerConfig,
 	)
 	codeCompilerContext.CodeCompiler = &codeCompiler
+	err = codeCompiler.Init()
+	if logger.FancyHandleError(err) {
+		return "", err
+	}
 
 	code, err := codeGenerator.GenerateCode()
 	if logger.FancyHandleError(err) {

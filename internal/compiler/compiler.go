@@ -15,6 +15,7 @@ import (
 
 	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/files"
+	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
@@ -29,6 +30,7 @@ var (
 )
 
 var errFunctionNotFound = errors.New("Function not found")
+var errAnnotationCastIssue = errors.New("Cannot cast annotation")
 
 func ErrFunctionNotFound(functionName string, srcDirs []string) error {
 	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
@@ -49,12 +51,9 @@ const (
 )
 
 type AnnotationProcessorInterface interface {
-	Process(compileContext *compileContext, code string) error
-}
-
-type Annotation struct {
-	kind       string
-	properties map[string]interface{}
+	Init() error
+	ParseFunction(functionStruct *functionInfoStruct) error
+	Process(code string) error
 }
 
 type functionInfoStruct struct {
@@ -65,10 +64,11 @@ type functionInfoStruct struct {
 	SourceCode           string // the src file content
 	SourceCodeLoaded     bool
 	SourceCodeAsTemplate bool
-	AnnotationMap        map[string]Annotation
+	AnnotationMap        map[string]interface{}
 }
 
 type CodeCompilerInterface interface {
+	Init() error
 	Compile(code string) (codeCompiled string, err error)
 }
 
@@ -85,15 +85,26 @@ func NewCompiler(
 	templateContext *render.Context,
 	config model.CompilerConfig,
 ) CodeCompilerInterface {
-	requireProcessor := NewRequireAnnotationProcessor()
-	return &compileContext{
+	compileContext := compileContext{
 		templateContext: templateContext,
 		functionsMap:    make(map[string]functionInfoStruct),
 		config:          config,
-		annotationProcessors: []*AnnotationProcessorInterface{
-			&requireProcessor,
-		},
 	}
+	requireProcessor := NewRequireAnnotationProcessor(&compileContext)
+	compileContext.annotationProcessors = []*AnnotationProcessorInterface{
+		&requireProcessor,
+	}
+	return &compileContext
+}
+
+func (context *compileContext) Init() error {
+	for _, annotationProcessor := range context.annotationProcessors {
+		err := (*annotationProcessor).Init()
+		if logger.FancyHandleError(err) {
+			return err
+		}
+	}
+	return nil
 }
 
 func (context *compileContext) Compile(code string) (codeCompiled string, err error) {
@@ -116,7 +127,7 @@ func (context *compileContext) Compile(code string) (codeCompiled string, err er
 	}
 
 	for _, annotationProcessor := range context.annotationProcessors {
-		err = (*annotationProcessor).Process(context, code)
+		err = (*annotationProcessor).Process(code)
 		if err != nil {
 			return "", err
 		}
@@ -151,6 +162,12 @@ func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
 			}
 			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName, "code", newCode)
 			functionInfo.SourceCode = newCode
+			for _, annotationProcessor := range context.annotationProcessors {
+				err = (*annotationProcessor).ParseFunction(&functionInfo)
+				if err != nil {
+					return err
+				}
+			}
 		}
 		functionInfo.SourceCodeAsTemplate = true
 		context.functionsMap[functionName] = functionInfo
@@ -300,6 +317,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 					SourceCode:           "",
 					SourceCodeLoaded:     false,
 					SourceCodeAsTemplate: false,
+					AnnotationMap:        make(map[string]interface{}),
 				}
 			}
 		}
@@ -319,6 +337,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 					SourceCode:           "",
 					SourceCodeLoaded:     false,
 					SourceCodeAsTemplate: false,
+					AnnotationMap:        make(map[string]interface{}),
 				}
 			}
 		}
@@ -357,6 +376,7 @@ func (context *compileContext) extractUniqueFrameworkFunctions(code string) (new
 					SourceCode:           "",
 					SourceCodeLoaded:     false,
 					SourceCodeAsTemplate: false,
+					AnnotationMap:        make(map[string]interface{}),
 				}
 				newFunctionAdded = true
 			}
