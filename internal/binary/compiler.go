@@ -3,6 +3,7 @@ package binary
 import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/generator"
+	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 )
@@ -67,13 +68,13 @@ func (codeCompilerContext *CodeCompilerContext) Compile(
 	codeCompilerContext.CodeCompiler = &codeCompiler
 
 	code, err := codeGenerator.GenerateCode()
-	if err != nil {
+	if logger.FancyHandleError(err) {
 		return "", err
 	}
 
 	// Compile
 	codeCompiled, err = codeCompiler.Compile(code)
-	if err != nil {
+	if logger.FancyHandleError(err) {
 		return "", err
 	}
 
