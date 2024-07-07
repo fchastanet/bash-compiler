@@ -58,3 +58,16 @@ func DebugCopyGeneratedFile(
 	slog.Info("KeepIntermediateFiles", "merged config file", targetFile)
 	return err
 }
+
+// this logs the function name as well.
+func FancyHandleError(err error) bool {
+	if err != nil {
+		// notice that we're using 1, so it will actually log the where
+		// the error happened, 0 = this function, we don't want that.
+		pc, filename, line, _ := runtime.Caller(1)
+
+		slog.Error(fmt.Sprintf("error in %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), filename, line, err))
+		return true
+	}
+	return false
+}
