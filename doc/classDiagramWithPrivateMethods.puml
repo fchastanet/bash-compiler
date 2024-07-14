@@ -30,18 +30,15 @@ namespace binary {
 "binary.CodeCompilerContext""uses" o-- "render.Context"
 
 namespace compiler {
-    class Annotation << (S,Aquamarine) >> {
-        - kind string
-        - properties <font color=blue>map</font>[string]<font color=blue>interface</font>{}
-
-        + Process(compileContext *compileContext, _ string) error
-
-    }
     interface AnnotationProcessorInterface  {
-        + Process(compileContext *compileContext, code string) error
+        + Init() error
+        + ParseFunction(functionStruct *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
 
     }
     interface CodeCompilerInterface  {
+        + Init() error
         + Compile(code string) (string, error)
 
     }
@@ -52,8 +49,6 @@ namespace compiler {
         - config model.CompilerConfig
         - annotationProcessors []*AnnotationProcessorInterface
 
-        - computeRequires() error
-        - computeRequired() error
         - renderEachFunctionAsTemplate() error
         - isNonFrameworkFunction(functionName string) bool
         - nonFrameworkFunctionRegexpCompile()
@@ -63,10 +58,36 @@ namespace compiler {
         - extractUniqueFrameworkFunctions(code string) bool
         - findFileInSrcDirs(relativeFilePath string) (string, string, bool)
 
+        + Init() error
         + Compile(code string) (string, error)
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
+    }
+    class duplicatedAsNameError << (S,Aquamarine) >> {
+        - lineNumber int
+        - asName string
+        - resource string
+
+        + Error() string
+
+    }
+    class embedAnnotationProcessor << (S,Aquamarine) >> {
+        - context *compileContext
+        - embedFileTemplateName string
+        - embedDirTemplateName string
+        - embedMap <font color=blue>map</font>[string]string
+
+        - renderFile(asName string, resource string, fileMode os.FileMode) (string, error)
+        - renderDir(asName string, resource string) (string, error)
+        - renderTemplate(data <font color=blue>map</font>[string]string, templateName string) (string, error)
+
+        + Init() error
+        + ParseFunction(_ *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
+        + RenderResource(asName string, resource string, lineNumber int) (string, error)
+
     }
     class functionInfoStruct << (S,Aquamarine) >> {
         + FunctionName string
@@ -76,21 +97,56 @@ namespace compiler {
         + SourceCode string
         + SourceCodeLoaded bool
         + SourceCodeAsTemplate bool
-        + AnnotationMap <font color=blue>map</font>[string]Annotation
+        + AnnotationMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+        - getRequireAnnotation() (*requireAnnotation, error)
+
+    }
+    class requireAnnotation << (S,Aquamarine) >> {
+        - requiredFunctions []string
+        - isRequired bool
+        - isComputed bool
+
+    }
+    class requireAnnotationProcessor << (S,Aquamarine) >> {
+        - context *compileContext
+        - checkRequirementsTemplateName string
+        - requireTemplateName string
+
+        - addRequireCodeToEachRequiredFunctions(functionStruct *functionInfoStruct) error
+        - addCheckRequirementsCodeIfNeeded(functionStruct *functionInfoStruct) error
+        - addRequireCode(functionStruct *functionInfoStruct) error
+        - addCheckRequirementsCode(functionStruct *functionInfoStruct, requires []string) error
+
+        + Init() error
+        + ParseFunction(functionStruct *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
+
+    }
+    class unsupportedEmbeddedResourceError << (S,Aquamarine) >> {
+        - asName string
+        - resource string
+        - lineNumber int
+        - innerError error
+
+        + Error() string
 
     }
 }
 
-"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.Annotation"
 "compiler.CodeCompilerInterface" <|-- "implements""compiler.compileContext"
+"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.embedAnnotationProcessor"
+"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.requireAnnotationProcessor"
 
 "compiler.compileContext""uses" o-- "compiler.AnnotationProcessorInterface"
 "compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
 "compiler.compileContext""uses" o-- "model.CompilerConfig"
 "compiler.compileContext""uses" o-- "regexp.Regexp"
 "compiler.compileContext""uses" o-- "render.Context"
-"compiler.functionInfoStruct""uses" o-- "compiler.Annotation"
+"compiler.embedAnnotationProcessor""uses" o-- "compiler.compileContext"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
+"compiler.requireAnnotationProcessor""uses" o-- "compiler.compileContext"
 
 namespace generator {
     class CodeGeneratorContext << (S,Aquamarine) >> {
@@ -135,7 +191,7 @@ namespace main {
         + KeepIntermediateFiles bool
         + Debug bool
         + LogLevel int
-        + RootDir Directory
+        + CompilerRootDir Directory
 
     }
     class main.Directory << (T, #FF7700) >>  {

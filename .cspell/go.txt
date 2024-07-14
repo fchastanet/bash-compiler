@@ -3,6 +3,7 @@ difflib
 errorlint
 exportloopref
 funlen
+Gname
 GOARCH
 gochecknoglobals
 gocover

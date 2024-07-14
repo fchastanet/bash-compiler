@@ -2,6 +2,8 @@
 package files
 
 import (
+	"crypto/md5" //nolint:golint,gosec
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -92,4 +94,18 @@ func Copy(srcPath string, dstPath string) (err error) {
 
 	_, err = io.Copy(w, r)
 	return err
+}
+
+func Md5SumFromFile(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New() //nolint:all
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
