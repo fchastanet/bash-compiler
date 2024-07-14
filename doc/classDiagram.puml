@@ -30,23 +30,36 @@ namespace binary {
 "binary.CodeCompilerContext""uses" o-- "render.Context"
 
 namespace compiler {
-    class Annotation << (S,Aquamarine) >> {
-        + Process(compileContext *compileContext, _ string) error
-
-    }
     interface AnnotationProcessorInterface  {
-        + Process(compileContext *compileContext, code string) error
+        + Init() error
+        + ParseFunction(functionStruct *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
 
     }
     interface CodeCompilerInterface  {
+        + Init() error
         + Compile(code string) (string, error)
 
     }
     class compileContext << (S,Aquamarine) >> {
+        + Init() error
         + Compile(code string) (string, error)
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
+    }
+    class duplicatedAsNameError << (S,Aquamarine) >> {
+        + Error() string
+
+    }
+    class embedAnnotationProcessor << (S,Aquamarine) >> {
+        + Init() error
+        + ParseFunction(_ *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
+        + RenderResource(asName string, resource string, lineNumber int) (string, error)
+
     }
     class functionInfoStruct << (S,Aquamarine) >> {
         + FunctionName string
@@ -56,21 +69,36 @@ namespace compiler {
         + SourceCode string
         + SourceCodeLoaded bool
         + SourceCodeAsTemplate bool
-        + AnnotationMap <font color=blue>map</font>[string]Annotation
+        + AnnotationMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+    }
+    class requireAnnotation << (S,Aquamarine) >> {
+    }
+    class requireAnnotationProcessor << (S,Aquamarine) >> {
+        + Init() error
+        + ParseFunction(functionStruct *functionInfoStruct) error
+        + Process() error
+        + PostProcess(code string) (string, error)
+
+    }
+    class unsupportedEmbeddedResourceError << (S,Aquamarine) >> {
+        + Error() string
 
     }
 }
 
-"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.Annotation"
 "compiler.CodeCompilerInterface" <|-- "implements""compiler.compileContext"
+"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.embedAnnotationProcessor"
+"compiler.AnnotationProcessorInterface" <|-- "implements""compiler.requireAnnotationProcessor"
 
 "compiler.compileContext""uses" o-- "compiler.AnnotationProcessorInterface"
 "compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
 "compiler.compileContext""uses" o-- "model.CompilerConfig"
 "compiler.compileContext""uses" o-- "regexp.Regexp"
 "compiler.compileContext""uses" o-- "render.Context"
-"compiler.functionInfoStruct""uses" o-- "compiler.Annotation"
+"compiler.embedAnnotationProcessor""uses" o-- "compiler.compileContext"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
+"compiler.requireAnnotationProcessor""uses" o-- "compiler.compileContext"
 
 namespace generator {
     class CodeGeneratorContext << (S,Aquamarine) >> {
@@ -109,7 +137,7 @@ namespace main {
         + KeepIntermediateFiles bool
         + Debug bool
         + LogLevel int
-        + RootDir Directory
+        + CompilerRootDir Directory
 
     }
     class main.Directory << (T, #FF7700) >>  {

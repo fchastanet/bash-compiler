@@ -22,13 +22,6 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
-var (
-	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
-	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
-	bashFrameworkFunctionRegexp = regexp.MustCompile(
-		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)
-)
-
 var errFunctionNotFound = errors.New("Function not found")
 var errAnnotationCastIssue = errors.New("Cannot cast annotation")
 
@@ -53,7 +46,8 @@ const (
 type AnnotationProcessorInterface interface {
 	Init() error
 	ParseFunction(functionStruct *functionInfoStruct) error
-	Process(code string) error
+	Process() error
+	PostProcess(code string) (newCode string, err error)
 }
 
 type functionInfoStruct struct {
@@ -91,8 +85,10 @@ func NewCompiler(
 		config:          config,
 	}
 	requireProcessor := NewRequireAnnotationProcessor(&compileContext)
+	embedProcessor := NewEmbedAnnotationProcessor(&compileContext)
 	compileContext.annotationProcessors = []*AnnotationProcessorInterface{
 		&requireProcessor,
+		&embedProcessor,
 	}
 	return &compileContext
 }
@@ -108,29 +104,9 @@ func (context *compileContext) Init() error {
 }
 
 func (context *compileContext) Compile(code string) (codeCompiled string, err error) {
-	context.extractUniqueFrameworkFunctions(code)
-	_, err = context.retrieveEachFunctionPath()
+	err = context.functionsAnalysis(code)
 	if err != nil {
 		return "", err
-	}
-	newFunctionAdded := true
-	for newFunctionAdded {
-		newFunctionAdded, err = context.retrieveAllFunctionsContent()
-		if err != nil {
-			return "", err
-		}
-	}
-
-	err = context.renderEachFunctionAsTemplate()
-	if err != nil {
-		return "", err
-	}
-
-	for _, annotationProcessor := range context.annotationProcessors {
-		err = (*annotationProcessor).Process(code)
-		if err != nil {
-			return "", err
-		}
 	}
 
 	functionsCode, err := context.generateFunctionCode()
@@ -143,7 +119,53 @@ func (context *compileContext) Compile(code string) (codeCompiled string, err er
 		return "", err
 	}
 
+	codeBeforePostProcesses := generatedCode
+	newCode := generatedCode
+	for _, annotationProcessor := range context.annotationProcessors {
+		newCode, err = (*annotationProcessor).PostProcess(newCode)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	isCodeHasChanged := newCode != codeBeforePostProcesses
+	generatedCode = newCode
+	if isCodeHasChanged {
+		generatedCode, err = context.Compile(generatedCode)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	return generatedCode, nil
+}
+
+func (context *compileContext) functionsAnalysis(code string) (err error) {
+	context.extractUniqueFrameworkFunctions(code)
+	_, err = context.retrieveEachFunctionPath()
+	if err != nil {
+		return err
+	}
+	newFunctionAdded := true
+	for newFunctionAdded {
+		newFunctionAdded, err = context.retrieveAllFunctionsContent()
+		if err != nil {
+			return err
+		}
+	}
+
+	err = context.renderEachFunctionAsTemplate()
+	if err != nil {
+		return err
+	}
+
+	for _, annotationProcessor := range context.annotationProcessors {
+		err = (*annotationProcessor).Process()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
@@ -356,7 +378,7 @@ func (context *compileContext) extractUniqueFrameworkFunctions(code string) (new
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		rewrittenCode.Write(line)
-		if commentRegexp.Match(line) {
+		if IsCommentLine(line) {
 			continue
 		}
 		matches := bashFrameworkFunctionRegexp.FindSubmatch(line)
@@ -413,7 +435,7 @@ func injectFunctionCode(code string, functionsCode string) (newCode string, err 
 	functionDirectiveFound := false
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		if functionsDirectiveRegexp.Match(line) {
+		if IsFunctionDirective(line) {
 			if functionDirectiveFound {
 				return "", ErrDuplicatedFunctionsDirective()
 			}

@@ -23,10 +23,12 @@
   - [2.2. Template system](#22-template-system)
   - [2.3. Compiler Algorithm](#23-compiler-algorithm)
   - [2.4. Class diagram](#24-class-diagram)
-  - [Compiler directives](#compiler-directives)
-    - [@require](#require)
+  - [2.5. Compiler annotations](#25-compiler-annotations)
+    - [2.5.1. @require](#251-require)
+  - [2.6. @embed](#26-embed)
 - [3. Development](#3-development)
   - [3.1. Pre-commit hook](#31-pre-commit-hook)
+    - [3.1.1. @embed](#311-embed)
   - [3.2. Build/run/clean](#32-buildrunclean)
     - [3.2.1. Build](#321-build)
     - [3.2.2. Tests](#322-tests)
@@ -205,9 +207,9 @@ stop
 @enduml
 ```
 
-### Compiler directives
+### 2.5. Compiler annotations
 
-#### @require
+#### 2.5.1. @require
 
 The annotation @require added to a function like in this example:
 
@@ -302,6 +304,36 @@ The aims of a require are the following:
     - @require Log::requireLoad
     - @require UI::requireTheme
 
+### 2.6. @embed
+
+The @embed annotation allows to embed as base64 encoded a file or a directory.
+
+The syntax is the following:
+
+```bash
+# @embed "${FRAMEWORK_ROOT_DIR}/README.md" as readme
+# @embed "${FRAMEWORK_ROOT_DIR}/.cspell" as cspell
+```
+
+This will generate the code below:
+
+```bash
+Compiler::Embed::extractFileFromBase64 \
+  "${PERSISTENT_TMPDIR:-/tmp}/1e26600f34bdaf348803250aa87f4924/readme" \
+  "base64 encode string" \
+  "644"
+
+declare -gx embed_file_readme="${PERSISTENT_TMPDIR:-/tmp}/1e26600f34bdaf348803250aa87f4924/readme"
+
+Compiler::Embed::extractDirFromBase64 \
+  "${PERSISTENT_TMPDIR:-/tmp}/5c12a039d61ab2c98111e5353362f380/cspell" \
+  "base64 encode string"
+
+declare -gx embed_dir_cspell="${PERSISTENT_TMPDIR:-/tmp}/5c12a039d61ab2c98111e5353362f380/cspell"
+```
+
+The embedded files will be automatically uncompressed.
+
 ## 3. Development
 
 ### 3.1. Pre-commit hook
@@ -318,6 +350,61 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
 
 Now each time you commit or push, some linters/compilation tools are launched
 automatically
+
+#### 3.1.1. @embed
+
+Allows to embed files, directories or a framework function. The following syntax
+can be used:
+
+_Syntax:_ `# @embed "srcFile" AS "targetFile"`
+
+_Syntax:_ `# @embed "srcDir" AS "targetDir"`
+
+_Syntax:_ `# @embed Namespace::functions AS "myFunction"`
+
+if `@embed` annotation is provided, the file/dir provided will be added inside
+the resulting bin file as a tar gz file(base64 encoded) and automatically
+extracted when executed.
+
+_`@embed` annotation usage example:_
+
+```bash
+#!/usr/bin/env bash
+# @embed "${FRAMEWORK_ROOT_DIR}/bin/otherNeededBinary" as "otherNeededBinary"
+# @embed Backup::file as "backupFile"
+sudo "${embed_file_backupFile}" ...
+"${embed_file_otherNeededBinary}"
+```
+
+The compiler's embed annotation offers the ability to embed files, directories
+or a framework function. `annotationEmbed` allows to:
+
+- **include a file**(binary or not) as base64 encoded, the file can then be
+  extracted using the automatically generated method
+  `Compiler::Embed::extractFile_asName` where asName is the name chosen using
+  annotation explained above. The original file mode will be restored after
+  extraction. The variable `embed_file_asName` contains the targeted filepath.
+- **include a directory**, the directory will be tar gz and added to the
+  compiled file as base64 encoded string. The directory can then be extracted
+  using the automatically generated method `Compiler::Embed::extractDir_asName`
+  where asName is the name chosen using annotation explained above. The variable
+  embed_dir_asName contains the targeted directory path.
+- **include a bash framework function**, a special binary file that simply calls
+  this function will be automatically generated. This binary file will be added
+  to the compiled file as base64 encoded string. Then it will be automatically
+  extracted to temporary directory and is callable directly using `asName`
+  chosen above because path of the temporary directory has been added into the
+  PATH variable.
+
+![activity diagram to explain how embed annotation are injected](doc/embedActivityDiagram.svg)
+
+```plantuml
+@startuml "bash-compiler embed annotation activity diagram"
+!include doc/embedActivityDiagram.puml
+@enduml
+```
+
+[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/doc/embedActivityDiagram.puml).
 
 ### 3.2. Build/run/clean
 

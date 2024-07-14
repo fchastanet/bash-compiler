@@ -29,13 +29,11 @@ const annotationRequireKind string = "require"
 
 type requireAnnotationProcessor struct {
 	context                       *compileContext
-	kind                          string
 	checkRequirementsTemplateName string
 	requireTemplateName           string
 }
 
 type requireAnnotation struct {
-	kind              string
 	requiredFunctions []string
 	isRequired        bool
 	isComputed        bool
@@ -44,7 +42,6 @@ type requireAnnotation struct {
 func NewRequireAnnotationProcessor(context *compileContext) AnnotationProcessorInterface {
 	return &requireAnnotationProcessor{
 		context: context,
-		kind:    annotationRequireKind,
 	}
 }
 
@@ -70,7 +67,6 @@ func (annotationProcessor *requireAnnotationProcessor) ParseFunction(functionStr
 	annotation, ok := functionStruct.AnnotationMap[annotationRequireKind]
 	if !ok {
 		annotation = requireAnnotation{
-			kind:              annotationRequireKind,
 			requiredFunctions: []string{},
 			isRequired:        false,
 			isComputed:        false,
@@ -104,7 +100,7 @@ func findRequiredFunctions(code string) []string {
 	return requiredFunctions
 }
 
-func (annotationProcessor *requireAnnotationProcessor) Process(_ string) error {
+func (annotationProcessor *requireAnnotationProcessor) Process() error {
 	functionsMap := annotationProcessor.context.functionsMap
 	var functionNames []string = utils.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
@@ -250,4 +246,8 @@ func isCodeContainsFunction(code string, functionName string) error {
 	}
 	slog.Error("isCodeContainsFunction function does not match", "functionName", functionName)
 	return ErrRequiredFunctionNotFound(functionName)
+}
+
+func (annotationProcessor *requireAnnotationProcessor) PostProcess(code string) (string, error) {
+	return code, nil
 }

@@ -5,6 +5,11 @@ import (
 	"path/filepath"
 )
 
+func MatchFullDirectory(directory string) (files []string, err error) {
+	directoryGlob := filepath.Join(directory, "**")
+	return MatchPatterns(directoryGlob)
+}
+
 // NewAtLevel Initializes logger with provided level
 func MatchPatterns(patterns ...string) (files []string, err error) {
 	for _, pattern := range patterns {
