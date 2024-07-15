@@ -40,11 +40,13 @@ namespace compiler {
     interface CodeCompilerInterface  {
         + Init() error
         + Compile(code string) (string, error)
+        + GenerateCode(code string) (string, error)
 
     }
     class compileContext << (S,Aquamarine) >> {
         + Init() error
         + Compile(code string) (string, error)
+        + GenerateCode(code string) (string, error)
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
@@ -176,7 +178,7 @@ namespace model {
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
-        + DynamicConfig Dictionary
+        + AnnotationsConfig Dictionary
         + TargetFile string
         + RelativeRootDirBasedOnTargetDir string
         + CommandDefinitionFiles []string
