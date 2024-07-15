@@ -47,12 +47,12 @@ func NewRequireAnnotationProcessor(context *compileContext) AnnotationProcessorI
 
 func (annotationProcessor *requireAnnotationProcessor) Init() error {
 	checkRequirementsTemplateName, err :=
-		annotationProcessor.context.config.DynamicConfig.GetStringValue("checkRequirementsTemplate")
+		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
 	if err != nil {
 		return err
 	}
 	requireTemplateName, err :=
-		annotationProcessor.context.config.DynamicConfig.GetStringValue("requireTemplate")
+		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("requireTemplate")
 	if err != nil {
 		return err
 	}

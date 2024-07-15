@@ -238,7 +238,7 @@ yaml file at compiler config level.
 
 ```yaml
 compilerConfig:
-  dynamicConfig:
+  annotationsConfig:
     requireTemplate: require
     checkRequirementsTemplate: checkRequirements
 # rest of the config file content

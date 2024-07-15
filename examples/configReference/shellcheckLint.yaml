@@ -2,6 +2,9 @@ extends:
   - defaultCommand.yaml
   - frameworkConfig.yaml
 
+vars:
+  SRC_FILE_PATH: src/_binaries/commandDefinitions/shellcheckLint.yaml
+
 compilerConfig:
   targetFile: "${FRAMEWORK_ROOT_DIR}/bin/shellcheckLint"
   relativeRootDirBasedOnTargetDir: ..

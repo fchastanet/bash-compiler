@@ -16,8 +16,13 @@ input: #Schema
   targetFile:                      string
   relativeRootDirBasedOnTargetDir: string | *"."
   templateFile: string | input.compilerConfig.rootDir
-  dynamicConfig:
-    {[=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string}
+  annotationsConfig: {
+    requireTemplate: string | *"require"
+    checkRequirementsTemplate: string | *"checkRequirements"
+    embedFileTemplateName: string | *"embedFile"
+    embedDirTemplateName: string | *"embedDir"
+    [=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string
+  }
   rootDir: string
   srcDirs: list.UniqueItems() & [string, ...string] | *[ "\(rootDir)/src" ]
   binDir: string | "\(rootDir)/bin"
