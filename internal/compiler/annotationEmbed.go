@@ -58,11 +58,13 @@ type embedAnnotationProcessor struct {
 func NewEmbedAnnotationProcessor(context *compileContext) AnnotationProcessorInterface {
 	return &embedAnnotationProcessor{
 		context:  context,
-		embedMap: make(map[string]string),
+		embedMap: nil,
 	}
 }
 
 func (annotationProcessor *embedAnnotationProcessor) Init() error {
+	annotationProcessor.embedMap = make(map[string]string)
+
 	embedFileTemplateName, err :=
 		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {

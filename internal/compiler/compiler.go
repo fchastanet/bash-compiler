@@ -64,6 +64,7 @@ type functionInfoStruct struct {
 type CodeCompilerInterface interface {
 	Init() error
 	Compile(code string) (codeCompiled string, err error)
+	GenerateCode(code string) (generatedCode string, err error)
 }
 
 type compileContext struct {
@@ -109,28 +110,12 @@ func (context *compileContext) Compile(code string) (codeCompiled string, err er
 		return "", err
 	}
 
-	functionsCode, err := context.generateFunctionCode()
+	needAnotherCompilerPass, generatedCode, err := context.generateCode(code)
 	if err != nil {
 		return "", err
 	}
 
-	generatedCode, err := injectFunctionCode(code, functionsCode)
-	if err != nil {
-		return "", err
-	}
-
-	codeBeforePostProcesses := generatedCode
-	newCode := generatedCode
-	for _, annotationProcessor := range context.annotationProcessors {
-		newCode, err = (*annotationProcessor).PostProcess(newCode)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	isCodeHasChanged := newCode != codeBeforePostProcesses
-	generatedCode = newCode
-	if isCodeHasChanged {
+	if needAnotherCompilerPass {
 		generatedCode, err = context.Compile(generatedCode)
 		if err != nil {
 			return "", err
@@ -138,6 +123,52 @@ func (context *compileContext) Compile(code string) (codeCompiled string, err er
 	}
 
 	return generatedCode, nil
+}
+
+func (context *compileContext) GenerateCode(code string) (
+	generatedCode string,
+	err error,
+) {
+	for _, annotationProcessor := range context.annotationProcessors {
+		err = (*annotationProcessor).Init()
+		if logger.FancyHandleError(err) {
+			return "", err
+		}
+	}
+	var functionNames []string = utils.MapKeys(context.functionsMap)
+	for _, functionName := range functionNames {
+		functionInfoStruct := context.functionsMap[functionName]
+		functionInfoStruct.Inserted = false
+		context.functionsMap[functionName] = functionInfoStruct
+	}
+	_, generatedCode, err = context.generateCode(code)
+	return generatedCode, err
+}
+
+func (context *compileContext) generateCode(code string) (
+	needAnotherCompilerPass bool,
+	generatedCode string,
+	err error,
+) {
+	functionsCode, err := context.generateFunctionCode()
+	if err != nil {
+		return false, "", err
+	}
+
+	generatedCode, err = injectFunctionCode(code, functionsCode)
+	if err != nil {
+		return false, "", err
+	}
+
+	newCode := generatedCode
+	for _, annotationProcessor := range context.annotationProcessors {
+		newCode, err = (*annotationProcessor).PostProcess(newCode)
+		if err != nil {
+			return false, "", err
+		}
+	}
+
+	return newCode != generatedCode, newCode, nil
 }
 
 func (context *compileContext) functionsAnalysis(code string) (err error) {

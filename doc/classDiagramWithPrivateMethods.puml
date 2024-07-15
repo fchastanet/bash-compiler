@@ -40,6 +40,7 @@ namespace compiler {
     interface CodeCompilerInterface  {
         + Init() error
         + Compile(code string) (string, error)
+        + GenerateCode(code string) (string, error)
 
     }
     class compileContext << (S,Aquamarine) >> {
@@ -49,10 +50,13 @@ namespace compiler {
         - config model.CompilerConfig
         - annotationProcessors []*AnnotationProcessorInterface
 
+        - generateCode(code string) (bool, string, error)
+        - functionsAnalysis(code string) error
         - renderEachFunctionAsTemplate() error
         - isNonFrameworkFunction(functionName string) bool
         - nonFrameworkFunctionRegexpCompile()
         - generateFunctionCode() (string, error)
+        - insertFunctionsCode(functionNames []string, buffer *bytes.Buffer, insertPosition InsertPosition) error
         - retrieveAllFunctionsContent() (bool, error)
         - retrieveEachFunctionPath() (bool, error)
         - extractUniqueFrameworkFunctions(code string) bool
@@ -60,6 +64,7 @@ namespace compiler {
 
         + Init() error
         + Compile(code string) (string, error)
+        + GenerateCode(code string) (string, error)
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
@@ -233,7 +238,7 @@ namespace model {
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
-        + DynamicConfig Dictionary
+        + AnnotationsConfig Dictionary
         + TargetFile string
         + RelativeRootDirBasedOnTargetDir string
         + CommandDefinitionFiles []string

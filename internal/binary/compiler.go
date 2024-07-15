@@ -76,7 +76,7 @@ func (codeCompilerContext *CodeCompilerContext) Compile(
 		return "", err
 	}
 
-	// Compile
+	// Compile to get functions loaded once
 	codeCompiled, err = codeCompiler.Compile(code)
 	if logger.FancyHandleError(err) {
 		return "", err
