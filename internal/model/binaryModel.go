@@ -66,7 +66,7 @@ func ExpandStringList(values []string) []string {
 }
 
 type CompilerConfig struct {
-	DynamicConfig                   Dictionary `yaml:"dynamicConfig"`
+	AnnotationsConfig               Dictionary `yaml:"annotationsConfig"`
 	TargetFile                      string     `yaml:"targetFile"`
 	RelativeRootDirBasedOnTargetDir string     `yaml:"relativeRootDirBasedOnTargetDir"`
 	CommandDefinitionFiles          []string   `yaml:"commandDefinitionFiles"`

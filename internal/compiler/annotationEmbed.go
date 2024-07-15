@@ -64,14 +64,14 @@ func NewEmbedAnnotationProcessor(context *compileContext) AnnotationProcessorInt
 
 func (annotationProcessor *embedAnnotationProcessor) Init() error {
 	embedFileTemplateName, err :=
-		annotationProcessor.context.config.DynamicConfig.GetStringValue("embedFileTemplateName")
+		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}
 	annotationProcessor.embedFileTemplateName = embedFileTemplateName
 
 	embedDirTemplateName, err :=
-		annotationProcessor.context.config.DynamicConfig.GetStringValue("embedDirTemplateName")
+		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}
