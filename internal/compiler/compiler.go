@@ -227,46 +227,47 @@ func (context *compileContext) nonFrameworkFunctionRegexpCompile() {
 func (context *compileContext) generateFunctionCode() (code string, err error) {
 	var functionNames []string = utils.MapKeys(context.functionsMap)
 	sort.Strings(functionNames) // ensure to generate functions always in the same order
-	var bufferFirst bytes.Buffer
-	var bufferMiddle bytes.Buffer
-	var bufferLast bytes.Buffer
-	for _, functionName := range functionNames {
-		functionInfo := context.functionsMap[functionName]
-		if !functionInfo.SourceCodeLoaded {
-			slog.Warn("Function source code not loaded", "functionName", functionName)
-			continue
-		}
-		slog.Debug("Append ", "SourceCodeLen", len(functionInfo.SourceCode), "InsertPosition", functionInfo.InsertPosition)
-		switch functionInfo.InsertPosition {
-		case InsertPositionFirst:
-			_, err = bufferFirst.Write([]byte(functionInfo.SourceCode))
-		case InsertPositionMiddle:
-			_, err = bufferMiddle.Write([]byte(functionInfo.SourceCode))
-		case InsertPositionLast:
-			_, err = bufferLast.Write([]byte(functionInfo.SourceCode))
-		}
-		if err != nil {
-			return "", err
-		}
-	}
+
 	var finalBuffer bytes.Buffer
-	slog.Debug("Append ", "bufferFirstLen", bufferFirst.Len())
-	_, err = finalBuffer.Write(bufferFirst.Bytes())
+	err = context.insertFunctionsCode(functionNames, &finalBuffer, InsertPositionFirst)
 	if err != nil {
 		return "", err
 	}
-	slog.Debug("Append ", "bufferMiddleLen", bufferMiddle.Len())
-	_, err = finalBuffer.Write(bufferMiddle.Bytes())
+	err = context.insertFunctionsCode(functionNames, &finalBuffer, InsertPositionMiddle)
 	if err != nil {
 		return "", err
 	}
-	slog.Debug("Append ", "bufferLastLen", bufferLast.Len())
-	_, err = finalBuffer.Write(bufferLast.Bytes())
+	err = context.insertFunctionsCode(functionNames, &finalBuffer, InsertPositionLast)
 	if err != nil {
 		return "", err
 	}
 	slog.Debug("Final Buffer ", "finalBufferLen", finalBuffer.Len())
 	return finalBuffer.String(), nil
+}
+
+func (context *compileContext) insertFunctionsCode(
+	functionNames []string,
+	buffer *bytes.Buffer,
+	insertPosition InsertPosition,
+) error {
+	for _, functionName := range functionNames {
+		functionInfo := context.functionsMap[functionName]
+		if functionInfo.Inserted || functionInfo.InsertPosition != insertPosition {
+			continue
+		}
+		if !functionInfo.SourceCodeLoaded {
+			slog.Warn("Function source code not loaded", "functionName", functionName)
+			continue
+		}
+		slog.Debug("Append ", "SourceCodeLen", len(functionInfo.SourceCode), "InsertPosition", functionInfo.InsertPosition)
+		_, err := buffer.Write([]byte(functionInfo.SourceCode))
+		if err != nil {
+			return err
+		}
+		functionInfo.Inserted = true
+		context.functionsMap[functionName] = functionInfo
+	}
+	return nil
 }
 
 func (context *compileContext) retrieveAllFunctionsContent() (
