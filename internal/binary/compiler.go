@@ -77,8 +77,14 @@ func (codeCompilerContext *CodeCompilerContext) Compile(
 	}
 
 	// Compile to get functions loaded once
-	codeCompiled, err = codeCompiler.Compile(code)
+	_, err = codeCompiler.Compile(code)
 	if logger.FancyHandleError(err) {
+		return "", err
+	}
+
+	// Generate code with all functions that has been loaded
+	codeCompiled, err = codeCompiler.GenerateCode(code)
+	if err != nil {
 		return "", err
 	}
 
