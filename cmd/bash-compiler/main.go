@@ -20,7 +20,7 @@ import (
 var errToGetCurrentFilename = errors.New("Unable to get the current filename")
 
 type cli struct {
-	YamlFile              YamlFile    `arg:"" help:"Yaml file" type:"path"`
+	YamlFiles             YamlFiles   `arg:"" help:"Yaml files" type:"path"`
 	TargetDir             Directory   `short:"t" optional:"" help:"Directory that will contain generated files"`
 	Version               VersionFlag `short:"v" name:"version" help:"Print version information and quit"`
 	KeepIntermediateFiles bool        `short:"k" help:"Keep intermediate files in target directory"`
@@ -31,11 +31,16 @@ type cli struct {
 
 type VersionFlag string
 type Directory string
-type YamlFile string
+type YamlFiles []string
 
-func (yamlFile *YamlFile) Validate() error {
-	yamlFilePath := string(*yamlFile)
-	return files.FileExists(yamlFilePath)
+func (yamlFiles *YamlFiles) Validate() error {
+	for _, yamlFile := range *yamlFiles {
+		err := files.FileExists(yamlFile)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (v VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
@@ -103,7 +108,14 @@ func main() {
 	slog.Info("main", "COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
-	binaryModelFilePath := string(cli.YamlFile)
+	for _, binaryModelFilePath := range cli.YamlFiles {
+		err = compileBinaryModel(&cli, string(binaryModelFilePath))
+		logger.Check(err)
+	}
+
+}
+
+func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
 	referenceDir := filepath.Dir(binaryModelFilePath)
 
@@ -115,7 +127,9 @@ func main() {
 		referenceDir,
 		cli.KeepIntermediateFiles,
 	)
-	logger.Check(err)
+	if logger.FancyHandleError(err) {
+		return err
+	}
 
 	// Save resulting file
 	targetFile := model.ExpandStringValue(
@@ -123,6 +137,10 @@ func main() {
 	)
 
 	err = os.WriteFile(targetFile, []byte(codeCompiled), files.UserReadWriteExecutePerm)
-	logger.Check(err)
+	if logger.FancyHandleError(err) {
+		return err
+	}
 	slog.Info("Compiled", "file", targetFile)
+
+	return nil
 }
