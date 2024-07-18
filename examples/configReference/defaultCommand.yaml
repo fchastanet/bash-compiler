@@ -11,7 +11,7 @@ binData:
       license: MIT License
       copyright: copyrightCallback
       definitionFiles:
-        - "${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/optionsDefault.sh"
+        10: "${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/optionsDefault.sh"
       optionGroups:
         zzzGroupGlobalOptionsGroup:
           title: "GLOBAL OPTIONS:"
