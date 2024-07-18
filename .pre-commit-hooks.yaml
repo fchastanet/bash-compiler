@@ -1,0 +1,9 @@
+---
+- id: buildBashBinaries
+  name: build bash binaries
+  entry: bash-compiler
+  language: golang
+  pass_filenames: true
+  fail_fast: true
+  files: /binary-*\.(yml|yaml)$
+  stages: [pre-commit]
