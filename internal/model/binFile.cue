@@ -174,7 +174,16 @@ input: #Schema
 #CommandSchema: {
   mainFile: string | *null
   // command definition files to include
-  definitionFiles: list.UniqueItems() & [string, ...string]
+  definitionFiles:
+    [=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string
+  // check for unique definitionFile
+  _uniqueDefinitionFileName: true
+  _uniqueDefinitionFileName: list.UniqueItems([
+    for _, i in definitionFiles {
+      if i != _|_ {i}
+    }
+  ]) // TODO when feature error ready https://github.com/cue-lang/cue/issues/943
+
   // Options
   options: [...#OptionSchema]
 

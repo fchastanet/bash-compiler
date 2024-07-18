@@ -20,7 +20,7 @@ binData:
       version: "1.0"
       commandName: shellcheckLint
       definitionFiles:
-        - ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh
+        20: ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/shellcheckLint.sh
       mainFile: ${FRAMEWORK_ROOT_DIR}/src/_binaries/shellcheckLint.sh
       help: Lint bash files using shellcheck.
       longDescription:
