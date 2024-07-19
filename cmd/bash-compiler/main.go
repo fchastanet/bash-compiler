@@ -11,6 +11,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/binary"
+	"github.com/fchastanet/bash-compiler/internal/dotenv"
 	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
@@ -98,6 +99,22 @@ func main() {
 	_, err := maxprocs.Set()
 	logger.Check(err)
 
+	// get current dir
+	currentDir, err := os.Getwd()
+	logger.Check(err)
+	os.Setenv("PWD", currentDir)
+
+	// load .bash-compiler file in current directory if exists
+	bashCompilerConfFile := filepath.Join(currentDir, ".bash-compiler")
+	err = files.FileExists(bashCompilerConfFile)
+	if err == nil {
+		slog.Info(fmt.Sprintf("Loading %s", bashCompilerConfFile))
+		err = dotenv.LoadEnvFile(bashCompilerConfFile)
+		logger.Check(err)
+	} else {
+		slog.Warn(".bash-compiler file not available")
+	}
+
 	// parse arguments
 	var cli cli
 	err = parseArgs(&cli)
@@ -109,10 +126,9 @@ func main() {
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
 	for _, binaryModelFilePath := range cli.YamlFiles {
-		err = compileBinaryModel(&cli, string(binaryModelFilePath))
+		err = compileBinaryModel(&cli, binaryModelFilePath)
 		logger.Check(err)
 	}
-
 }
 
 func compileBinaryModel(cli *cli, binaryModelFilePath string) error {

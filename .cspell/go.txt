@@ -1,5 +1,7 @@
 copystructure
 difflib
+dotenv
+envsubst
 errorlint
 exportloopref
 funlen
