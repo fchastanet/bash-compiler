@@ -28,5 +28,6 @@ nolintlint
 prealloc
 promlint
 runtimes
+sloglint
 unconvert
 unparam

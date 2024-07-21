@@ -46,7 +46,6 @@ func ExpandStringValue(value string) string {
 
 func (dic Dictionary) GetStringList(key string) (values []string, err error) {
 	val, ok := dic[key]
-	slog.Debug("dic", "dic", dic)
 	if !ok {
 		return nil, ErrMissingKey(key)
 	}
@@ -163,7 +162,7 @@ func (binaryModelContext *BinaryModelContext) LoadBinaryModel() (err error) {
 	}
 
 	// load command yaml data model
-	slog.Info("Loading", "binaryModelFilePath", binaryModelContext.BinaryModelFilePath)
+	slog.Info("Loading binaryModel", logger.LogFieldFilePath, binaryModelContext.BinaryModelFilePath)
 	binaryModel := BinaryModel{}
 	err = yaml.Unmarshal(resultWriter.Bytes(), &binaryModel)
 	if err != nil {
@@ -196,7 +195,6 @@ func (binaryModelContext *BinaryModelContext) expandVars() {
 
 func NewTemplateContext(binaryModelContext BinaryModelContext) (templateContext *render.Context, err error) {
 	templateDirs := ExpandStringList(binaryModelContext.BinaryModel.CompilerConfig.TemplateDirs)
-	slog.Info("NewTemplateContext", "templateDirs", templateDirs)
 	// load template system
 	myTemplate, templateName, err := render.NewTemplate(
 		templateDirs,

@@ -12,6 +12,22 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/files"
 )
 
+const (
+	LogFieldFunc                   string = "func"
+	LogFieldFilePath               string = "file"
+	LogFieldFilePathExpanded       string = "filePathExpanded"
+	LogFieldDirPath                string = "dirPath"
+	LogFieldDirPathExpanded        string = "dirPathExpanded"
+	LogFieldErr                    string = "err"
+	LogFieldLineNumber             string = "lineNumber"
+	LogFieldLineContent            string = "line"
+	LogFieldTemplateName           string = "templateName"
+	LogFieldTemplateData           string = "templateData"
+	LogFieldAvailableTemplateFiles string = "availableTemplateFiles"
+	LogFieldVariableName           string = "variableName"
+	LogFieldVariableValue          string = "variableValue"
+)
+
 // InitLogger initializes the logger in slog instance
 func InitLogger(level int) {
 	opts := &slog.HandlerOptions{
@@ -43,7 +59,10 @@ func DebugSaveGeneratedFile(
 	if err != nil {
 		return err
 	}
-	slog.Info("KeepIntermediateFiles", "merged config file", targetFile)
+	slog.Debug(
+		"KeepIntermediateFiles - merged config file",
+		LogFieldFilePath, targetFile,
+	)
 	return nil
 }
 
@@ -55,7 +74,7 @@ func DebugCopyGeneratedFile(
 		fmt.Sprintf("%s%s", basename, suffix),
 	)
 	err = os.WriteFile(targetFile, []byte(code), files.UserReadWriteExecutePerm)
-	slog.Info("KeepIntermediateFiles", "merged config file", targetFile)
+	slog.Info("KeepIntermediateFiles - merged config file", LogFieldFilePath, targetFile)
 	return err
 }
 
@@ -66,7 +85,13 @@ func FancyHandleError(err error) bool {
 		// the error happened, 0 = this function, we don't want that.
 		pc, filename, line, _ := runtime.Caller(1)
 
-		slog.Error(fmt.Sprintf("error in %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), filename, line, err))
+		slog.Error(
+			"error",
+			LogFieldFunc, runtime.FuncForPC(pc).Name(),
+			LogFieldFilePath, filename,
+			LogFieldLineNumber, line,
+			LogFieldErr, err,
+		)
 		return true
 	}
 	return false

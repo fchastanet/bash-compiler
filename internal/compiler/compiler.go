@@ -22,6 +22,14 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
+const (
+	LogFieldSourceCodeLen    = "sourceCodeLen"
+	LogFieldInsertPosition   = "insertPosition"
+	LogFieldCode             = "code"
+	LogFieldLength           = "length"
+	LogFieldSourceCodeLoaded = "sourceCodeLoaded"
+)
+
 var errFunctionNotFound = errors.New("Function not found")
 var errAnnotationCastIssue = errors.New("Cannot cast annotation")
 
@@ -207,13 +215,16 @@ func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
 			continue
 		}
 		if functionInfo.SourceCode != "" {
-			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName)
+			slog.Debug("renderEachFunctionAsTemplate", logger.LogFieldFunc, functionName)
 			newCode, err := myTemplateFunctions.RenderFromTemplateContent(
 				context.templateContext, functionInfo.SourceCode)
 			if err != nil {
 				return err
 			}
-			slog.Debug("renderEachFunctionAsTemplate", "functionName", functionName, "code", newCode)
+			slog.Debug("renderEachFunctionAsTemplate",
+				logger.LogFieldFunc, functionName,
+				LogFieldCode, newCode,
+			)
 			functionInfo.SourceCode = newCode
 			for _, annotationProcessor := range context.annotationProcessors {
 				err = (*annotationProcessor).ParseFunction(&functionInfo)
@@ -248,7 +259,10 @@ func (context *compileContext) nonFrameworkFunctionRegexpCompile() {
 		regStr := fmt.Sprint(reg)
 		re, err := regexp.Compile(fmt.Sprint(regStr))
 		if err != nil {
-			slog.Warn("ignored invalid regexp", "regexp", regStr, "error", err)
+			slog.Warn("ignored invalid regexp",
+				logger.LogFieldVariableValue, regStr,
+				logger.LogFieldErr, err,
+			)
 		} else {
 			context.ignoreFunctionsRegexp = append(context.ignoreFunctionsRegexp, re)
 		}
@@ -272,7 +286,7 @@ func (context *compileContext) generateFunctionCode() (code string, err error) {
 	if err != nil {
 		return "", err
 	}
-	slog.Debug("Final Buffer ", "finalBufferLen", finalBuffer.Len())
+	slog.Debug("Final Buffer length", LogFieldLength, finalBuffer.Len())
 	return finalBuffer.String(), nil
 }
 
@@ -287,10 +301,13 @@ func (context *compileContext) insertFunctionsCode(
 			continue
 		}
 		if !functionInfo.SourceCodeLoaded {
-			slog.Warn("Function source code not loaded", "functionName", functionName)
+			slog.Warn("Function source code not loaded", logger.LogFieldFunc, functionName)
 			continue
 		}
-		slog.Debug("Append ", "SourceCodeLen", len(functionInfo.SourceCode), "InsertPosition", functionInfo.InsertPosition)
+		slog.Debug("Append",
+			LogFieldSourceCodeLen, len(functionInfo.SourceCode),
+			LogFieldInsertPosition, functionInfo.InsertPosition,
+		)
 		_, err := buffer.Write([]byte(functionInfo.SourceCode))
 		if err != nil {
 			return err
@@ -310,12 +327,19 @@ func (context *compileContext) retrieveAllFunctionsContent() (
 			continue
 		}
 		functionInfo := context.functionsMap[functionName]
-		slog.Debug("retrieveAllFunctionsContent", "functionName", functionName, "SourceCodeLoaded", functionInfo.SourceCodeLoaded)
+		slog.Debug(
+			"retrieveAllFunctionsContent",
+			logger.LogFieldFunc, functionName,
+			LogFieldSourceCodeLoaded, functionInfo.SourceCodeLoaded,
+		)
 		if functionInfo.SourceCodeLoaded {
-			slog.Debug("Function source code loaded", "functionName", functionName)
+			slog.Debug("Function source code loaded", logger.LogFieldFunc, functionName)
 			continue
 		}
-		slog.Debug("Loading Function source code", "functionName", functionName, "SrcFile", functionInfo.SrcFile)
+		slog.Debug("Loading Function source code from file",
+			logger.LogFieldFunc, functionName,
+			logger.LogFieldFilePath, functionInfo.SrcFile,
+		)
 		fileContent, err := os.ReadFile(functionInfo.SrcFile)
 		if err != nil {
 			return false, err
@@ -361,7 +385,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 		filePath, _, found = context.findFileInSrcDirs(underscoreShFile)
 		if found {
 			if _, ok := context.functionsMap[filePath]; !ok {
-				slog.Debug("Adding file", "file", filePath)
+				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
 				addedFiles = true
 				context.functionsMap[filePath] = functionInfoStruct{
 					FunctionName:         filePath,
@@ -382,7 +406,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 		if found {
 			if _, ok := context.functionsMap[filePath]; !ok {
 				addedFiles = true
-				slog.Debug("Adding file", "file", filePath)
+				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
 				context.functionsMap[filePath] = functionInfoStruct{
 					FunctionName:         filePath,
 					SrcFile:              filePath,
@@ -398,7 +422,10 @@ func (context *compileContext) retrieveEachFunctionPath() (
 	}
 
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
-	slog.Info("Found these", "bashFrameworkFunctions", utils.MapKeys(context.functionsMap))
+	slog.Info("Found these",
+		logger.LogFieldVariableName, "bashFrameworkFunctions",
+		logger.LogFieldVariableValue, utils.MapKeys(context.functionsMap),
+	)
 	return addedFiles, nil
 }
 
@@ -417,7 +444,10 @@ func (context *compileContext) extractUniqueFrameworkFunctions(code string) (new
 		if matches != nil {
 			funcName := string(matches[funcNameGroupIndex])
 			if _, keyExists := context.functionsMap[funcName]; !keyExists {
-				slog.Debug("Found new", "bashFrameworkFunction", funcName)
+				slog.Debug("Found new",
+					logger.LogFieldVariableName, "bashFrameworkFunction",
+					logger.LogFieldVariableValue, funcName,
+				)
 				if context.isNonFrameworkFunction(funcName) {
 					continue
 				}
@@ -447,7 +477,12 @@ func (context *compileContext) findFileInSrcDirs(relativeFilePath string) (
 	for _, srcDir := range context.config.SrcDirs {
 		srcFile := filepath.Join(srcDir, relativeFilePath)
 		srcFileExpanded := os.ExpandEnv(srcFile)
-		slog.Debug("Check if file exists", "srcDir", srcDir, "file", srcFile, "fileExpanded", srcFileExpanded)
+		slog.Debug(
+			"Check if file exists",
+			logger.LogFieldDirPath, srcDir,
+			logger.LogFieldFilePath, srcFile,
+			logger.LogFieldFilePathExpanded, srcFileExpanded,
+		)
 		err := files.FileExists(srcFileExpanded)
 		if err == nil {
 			return srcFileExpanded, srcDir, true
@@ -463,7 +498,7 @@ func convertFunctionNameToPath(functionName string) string {
 func injectFunctionCode(code string, functionsCode string) (newCode string, err error) {
 	var rewrittenCode bytes.Buffer
 	scanner := bufio.NewScanner(strings.NewReader(code))
-	slog.Debug("debugCode", "code", code)
+	slog.Debug("debugCode", LogFieldCode, code)
 	functionDirectiveFound := false
 	for scanner.Scan() {
 		line := scanner.Bytes()
