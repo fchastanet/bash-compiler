@@ -12,6 +12,7 @@ import (
 
 	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/files"
+	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/render"
 )
 
@@ -26,26 +27,37 @@ func ErrFileNotFound(file string, srcDirs []string) error {
 // Eg: {{ include "template.tpl" | indent 4 }}
 func Include(
 	template string, templateData any,
-	templateContext render.Context) string {
+	templateContext render.Context,
+) string {
 	var output string
 	output, _ = MustInclude(template, templateData, templateContext)
 	return output
 }
 
-func MustInclude(templateName string, templateData any,
-	templateContext render.Context) (output string, err error) {
-	slog.Debug("MustInclude", "templateName", templateName, "templateData", templateData)
+func MustInclude(
+	templateName string,
+	templateData any,
+	templateContext render.Context,
+) (output string, err error) {
+	slog.Debug("MustInclude",
+		logger.LogFieldTemplateName, templateName,
+		logger.LogFieldTemplateData, templateData,
+	)
 	templateContext.Data = templateData
 	output, err = templateContext.Render(templateName)
-	if err != nil {
-		log.Fatalf("error: %v", err)
+	if logger.FancyHandleError(err) {
+		return "", err
 	}
 	return code.RemoveFirstShebangLineIfAny(output), err
 }
 
 func includeFile(filePath string) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Debug("includeFile", "filePath", filePath, "filePathExpanded", filePathExpanded)
+	slog.Debug(
+		"includeFile",
+		logger.LogFieldFilePath, filePath,
+		logger.LogFieldFilePathExpanded, filePathExpanded,
+	)
 
 	file, err := os.ReadFile(filePathExpanded)
 	if err != nil {
@@ -72,7 +84,11 @@ func RenderFromTemplateContent(
 
 func includeFileAsTemplate(filePath string, templateContext render.Context) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Info("includeFileAsTemplate", "filePath", filePath, "filePathExpanded", filePathExpanded)
+	slog.Info(
+		"includeFileAsTemplate",
+		logger.LogFieldFilePath, filePath,
+		logger.LogFieldFilePathExpanded, filePathExpanded,
+	)
 
 	file, err := os.ReadFile(filePathExpanded)
 	if err != nil {
@@ -87,7 +103,11 @@ func includeFileAsTemplate(filePath string, templateContext render.Context) stri
 
 func dynamicFile(filePath string, paths []string) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Info("dynamicFile", "filePath", filePath, "filePathExpanded", filePathExpanded)
+	slog.Info(
+		"dynamicFile",
+		logger.LogFieldFilePath, filePath,
+		logger.LogFieldFilePathExpanded, filePathExpanded,
+	)
 	err := files.FileExists(filePathExpanded)
 	if err == nil {
 		return filePathExpanded
@@ -95,7 +115,13 @@ func dynamicFile(filePath string, paths []string) string {
 	for _, dir := range paths {
 		dirExpanded := os.ExpandEnv(dir)
 		currentPath := path.Join(dirExpanded, filePathExpanded)
-		slog.Info("dynamicFile", "filePath", filePath, "dir", dir, "dirExpanded", dirExpanded, "currentPath", currentPath)
+		slog.Info(
+			"dynamicFile",
+			logger.LogFieldFilePath, filePath,
+			logger.LogFieldDirPath, dir,
+			logger.LogFieldDirPathExpanded, dirExpanded,
+			logger.LogFieldFilePathExpanded, currentPath,
+		)
 		if err := files.FileExists(currentPath); err == nil {
 			return currentPath
 		}

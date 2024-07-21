@@ -81,7 +81,11 @@ func parseArgs(cli *cli) (err error) {
 	if err != nil {
 		return err
 	}
-	slog.Info("parseArgs", "compilerRootDir", compilerRootDir)
+	slog.Info(
+		"parseArgs",
+		logger.LogFieldVariableName, "compilerRootDir",
+		logger.LogFieldVariableValue, compilerRootDir,
+	)
 
 	cli.CompilerRootDir = Directory(compilerRootDir)
 	if cli.TargetDir == "" {
@@ -108,7 +112,7 @@ func main() {
 	bashCompilerConfFile := filepath.Join(currentDir, ".bash-compiler")
 	err = files.FileExists(bashCompilerConfFile)
 	if err == nil {
-		slog.Info(fmt.Sprintf("Loading %s", bashCompilerConfFile))
+		slog.Info("Loading", logger.LogFieldFilePath, bashCompilerConfFile)
 		err = dotenv.LoadEnvFile(bashCompilerConfFile)
 		logger.Check(err)
 	} else {
@@ -122,7 +126,11 @@ func main() {
 	logger.InitLogger(cli.LogLevel)
 
 	// set useful env variables that can be interpolated during template rendering
-	slog.Info("main", "COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	slog.Info(
+		"main",
+		logger.LogFieldVariableName, "COMPILER_ROOT_DIR",
+		logger.LogFieldVariableValue, string(cli.CompilerRootDir),
+	)
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
 	for _, binaryModelFilePath := range cli.YamlFiles {
@@ -156,7 +164,7 @@ func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
 	if logger.FancyHandleError(err) {
 		return err
 	}
-	slog.Info("Compiled", "file", targetFile)
+	slog.Info("Compiled", logger.LogFieldFilePath, targetFile)
 
 	return nil
 }

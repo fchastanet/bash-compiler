@@ -2,7 +2,6 @@ package dotenv
 
 import (
 	"bufio"
-	"fmt"
 	"log/slog"
 	"os"
 	"regexp"
@@ -50,14 +49,20 @@ func scanFile(confFileContent *os.File, variables map[string]string) {
 		}
 		matches := variableSetRegexp.FindStringSubmatch(string(line))
 		if matches == nil {
-			slog.Warn(fmt.Sprintf("Ignore invalid line %d : %s", lineNumber, line))
+			slog.Warn("Ignore invalid line",
+				logger.LogFieldLineNumber, lineNumber,
+				logger.LogFieldLineContent, line,
+			)
 			continue
 		}
 
 		name := matches[variableSetRegexpNameGroupIndex]
 		value := matches[variableSetRegexpValueGroupIndex]
 		if _, ok := variables[name]; ok {
-			slog.Warn(fmt.Sprintf("overwriting variable %s on line %d", name, lineNumber))
+			slog.Warn("overwriting variable",
+				logger.LogFieldLineNumber, lineNumber,
+				logger.LogFieldVariableName, name,
+			)
 		}
 		variables[name] = value
 		lineNumber++
@@ -70,7 +75,11 @@ func interpolateVariables(variables map[string]string) error {
 		if logger.FancyHandleError(err) {
 			return err
 		}
-		slog.Info(fmt.Sprintf("Variable %s interpolated value %s", name, valueInterpolated))
+		slog.Debug(
+			"Variable interpolated value",
+			logger.LogFieldVariableName, name,
+			logger.LogFieldVariableValue, valueInterpolated,
+		)
 		variables[name] = valueInterpolated
 	}
 

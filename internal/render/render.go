@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/fchastanet/bash-compiler/internal/files"
+	"github.com/fchastanet/bash-compiler/internal/logger"
 )
 
 type Context struct {
@@ -41,7 +42,11 @@ func NewTemplate(
 
 	templateBaseFile := path.Base(templateFile)
 	templateName = strings.TrimSuffix(templateBaseFile, filepath.Ext(templateBaseFile))
-	slog.Info("Loaded template", "Name", templateName, "AvailableFile", files)
+	slog.Info(
+		"Loaded template",
+		logger.LogFieldTemplateName, templateName,
+		logger.LogFieldAvailableTemplateFiles, files,
+	)
 
 	myTemplate := template.New(templateName).Option("missingkey=zero").Funcs(funcMap)
 	_, err = myTemplate.ParseFiles(files...)
@@ -61,10 +66,10 @@ func (templateContext Context) RenderFromTemplateName() (code string, err error)
 	return code, err
 }
 
-func (templateContext Context) Render(template string) (string, error) {
+func (templateContext Context) Render(templateName string) (string, error) {
 	var tplWriter bytes.Buffer
-	slog.Debug("Render template", slog.String("template", template))
-	err := templateContext.Template.ExecuteTemplate(&tplWriter, template, templateContext)
+	slog.Debug("Render template", logger.LogFieldTemplateName, templateName)
+	err := templateContext.Template.ExecuteTemplate(&tplWriter, templateName, templateContext)
 	if err != nil {
 		return "", err
 	}
