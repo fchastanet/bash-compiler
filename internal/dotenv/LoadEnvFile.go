@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/a8m/envsubst"
 	"github.com/fchastanet/bash-compiler/internal/logger"
@@ -30,9 +31,6 @@ func LoadEnvFile(confFile string) error {
 		return err
 	}
 
-	for name, value := range variables {
-		os.Setenv(name, value)
-	}
 	return nil
 }
 
@@ -75,12 +73,15 @@ func interpolateVariables(variables map[string]string) error {
 		if logger.FancyHandleError(err) {
 			return err
 		}
+		// remove " or '
+		valueInterpolated = strings.Trim(valueInterpolated, "'\"")
 		slog.Debug(
 			"Variable interpolated value",
 			logger.LogFieldVariableName, name,
 			logger.LogFieldVariableValue, valueInterpolated,
 		)
 		variables[name] = valueInterpolated
+		os.Setenv(name, valueInterpolated)
 	}
 
 	return nil

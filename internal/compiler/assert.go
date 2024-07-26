@@ -1,12 +1,19 @@
 package compiler
 
-import "regexp"
+import (
+	"fmt"
+	"regexp"
+)
+
+const bashFrameworkFunctionRegexpStr = `(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`
 
 var (
-	functionsDirectiveRegexp    = regexp.MustCompile(`^# FUNCTIONS$`)
-	commentRegexp               = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
-	bashFrameworkFunctionRegexp = regexp.MustCompile(
-		`(?P<funcName>([A-Z]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))`)
+	functionsDirectiveRegexp        = regexp.MustCompile(`^# FUNCTIONS$`)
+	commentRegexp                   = regexp.MustCompile(`^[[:blank:]]*(#.*)?$`)
+	bashFrameworkFunctionRegexp     = regexp.MustCompile(bashFrameworkFunctionRegexpStr)
+	fullBashFrameworkFunctionRegexp = regexp.MustCompile(
+		fmt.Sprintf(`^%s$`, bashFrameworkFunctionRegexpStr),
+	)
 )
 
 func IsFunctionDirective(line []byte) bool {
@@ -18,5 +25,5 @@ func IsCommentLine(line []byte) bool {
 }
 
 func IsBashFrameworkFunction(line []byte) bool {
-	return bashFrameworkFunctionRegexp.Match(line)
+	return fullBashFrameworkFunctionRegexp.Match(line)
 }
