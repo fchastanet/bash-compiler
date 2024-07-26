@@ -46,6 +46,12 @@ func ErrDirectoryWasExpected(file string) error {
 	return fmt.Errorf("%w: %s", errDirectoryWasExpected, file)
 }
 
+var errDirectoryMissing = errors.New("Directory path does not exist")
+
+func ErrDirectoryMissing(dir string) error {
+	return fmt.Errorf("%w: %s", errDirectoryMissing, dir)
+}
+
 func FileExists(filePath string) (err error) {
 	stat, err := os.Stat(filePath)
 	if errors.Is(err, os.ErrNotExist) {
@@ -60,7 +66,7 @@ func FileExists(filePath string) (err error) {
 func DirExists(filePath string) (err error) {
 	stat, err := os.Stat(filePath)
 	if errors.Is(err, os.ErrNotExist) {
-		return ErrFilePathMissing(filePath)
+		return ErrDirectoryMissing(filePath)
 	}
 	if !stat.IsDir() {
 		return ErrDirectoryWasExpected(filePath)
@@ -72,6 +78,8 @@ func DirExists(filePath string) (err error) {
 // at dstPath. If the file named by dstPath already exists, it is
 // truncated. The function does not copy the file mode, file
 // permission bits, or file attributes.
+// @todo replace with os.CopyFS when released
+// @see https://github.com/golang/go/issues/62484
 func Copy(srcPath string, dstPath string) (err error) {
 	r, err := os.Open(srcPath)
 	if err != nil {
