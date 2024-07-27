@@ -2,30 +2,31 @@ package generator
 
 import (
 	"github.com/fchastanet/bash-compiler/internal/logger"
-	"github.com/fchastanet/bash-compiler/internal/render"
 )
 
 type CodeGeneratorInterface interface {
 	GenerateCode() (codeCompiled string, err error)
 }
 
+type TemplateRenderingInterface interface {
+	Init(funcMap map[string]interface{}) error
+	RenderFromTemplateName() (code string, err error)
+}
+
 type CodeGeneratorContext struct {
-	yamlFilePath          string
 	targetDir             string
 	binaryModelBaseName   string
 	keepIntermediateFiles bool
-	templateContext       *render.Context
+	templateContext       *TemplateRenderingInterface
 }
 
 func NewCodeGenerator(
-	yamlFilePath string,
 	targetDir string,
 	binaryModelBaseName string,
-	templateContext *render.Context,
+	templateContext *TemplateRenderingInterface,
 	keepIntermediateFiles bool,
 ) CodeGeneratorInterface {
 	return &CodeGeneratorContext{
-		yamlFilePath:          yamlFilePath,
 		targetDir:             targetDir,
 		binaryModelBaseName:   binaryModelBaseName,
 		keepIntermediateFiles: keepIntermediateFiles,
@@ -35,7 +36,7 @@ func NewCodeGenerator(
 
 func (codeGeneratorContext *CodeGeneratorContext) GenerateCode() (codeCompiled string, err error) {
 	// Render code using template
-	code, err := codeGeneratorContext.templateContext.RenderFromTemplateName()
+	code, err := (*codeGeneratorContext.templateContext).RenderFromTemplateName()
 	if err != nil {
 		return "", err
 	}

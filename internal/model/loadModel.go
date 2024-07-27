@@ -1,7 +1,6 @@
 package model
 
 import (
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -11,20 +10,7 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func WriteYamlFile(modelMap map[string]interface{}, tempYamlFile os.File) (err error) {
-	yamlResult, err := yaml.Marshal(modelMap)
-	if err != nil {
-		return err
-	}
-	_, err = tempYamlFile.Write(yamlResult)
-	if err != nil {
-		return err
-	}
-	log.Printf("Temp file containing resulting yaml file : %s\n", tempYamlFile.Name())
-	return nil
-}
-
-func LoadModel(referenceDir string, modelFilePath string, resultMap *map[string]interface{}) (err error) {
+func loadModel(referenceDir string, modelFilePath string, resultMap *map[string]interface{}) (err error) {
 	// read one yaml file
 	referenceDirs := []string{referenceDir}
 	model := map[string]interface{}{}

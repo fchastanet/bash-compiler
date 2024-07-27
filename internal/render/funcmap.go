@@ -1,5 +1,5 @@
-// Package functions
-package functions
+// Package render
+package render
 
 import (
 	"errors"

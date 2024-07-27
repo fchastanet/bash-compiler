@@ -18,7 +18,6 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
-	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 
@@ -216,8 +215,7 @@ func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
 		}
 		if functionInfo.SourceCode != "" {
 			slog.Debug("renderEachFunctionAsTemplate", logger.LogFieldFunc, functionName)
-			newCode, err := myTemplateFunctions.RenderFromTemplateContent(
-				context.templateContext, functionInfo.SourceCode)
+			newCode, err := context.templateContext.RenderFromTemplateContent(functionInfo.SourceCode)
 			if err != nil {
 				return err
 			}
