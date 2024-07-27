@@ -12,7 +12,6 @@ package services {
   BinaryModelServiceInterface )-- [BinaryModelService] : <<implements>>
   [BinaryModelService] ..> BinaryModelInterface : <<uses>>
   [BinaryModelService] ..> TemplateContextInterface : <<uses>>
-  [BinaryModelService] ..> CodeGeneratorInterface : <<uses>>
   [BinaryModelService] ..> CompilerInterface : <<uses>>
 }
 
@@ -22,12 +21,6 @@ package model {
 
 package render {
   TemplateContextInterface )-- [TemplateContext] : <<implements>>
-}
-
-package generator {
-  CodeGeneratorInterface )-- [CodeGenerator] : <<implements>>
-  [CodeGenerator] ..> TemplateRenderingInterface
-  TemplateRenderingInterface )-- [TemplateContext] : <<implements>>
 }
 
 package compiler {

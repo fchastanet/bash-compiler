@@ -14,13 +14,7 @@ namespace compiler {
         + PostProcess(code string) (string, error)
 
     }
-    interface CodeCompilerInterface  {
-        + Init() error
-        + Compile(code string) (string, error)
-        + GenerateCode(code string) (string, error)
-
-    }
-    class compileContext << (S,Aquamarine) >> {
+    class CompileContext << (S,Aquamarine) >> {
         + Init() error
         + Compile(code string) (string, error)
         + GenerateCode(code string) (string, error)
@@ -66,38 +60,18 @@ namespace compiler {
     }
 }
 
-"compiler.CodeCompilerInterface" <|-- "implements""compiler.compileContext"
+"services.CodeCompilerInterface" <|-- "implements""compiler.CompileContext"
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.embedAnnotationProcessor"
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.requireAnnotationProcessor"
 
-"compiler.compileContext""uses" o-- "compiler.AnnotationProcessorInterface"
-"compiler.compileContext""uses" o-- "compiler.functionInfoStruct"
-"compiler.compileContext""uses" o-- "model.CompilerConfig"
-"compiler.compileContext""uses" o-- "regexp.Regexp"
-"compiler.compileContext""uses" o-- "render.Context"
-"compiler.embedAnnotationProcessor""uses" o-- "compiler.compileContext"
+"compiler.CompileContext""uses" o-- "compiler.AnnotationProcessorInterface"
+"compiler.CompileContext""uses" o-- "compiler.functionInfoStruct"
+"compiler.CompileContext""uses" o-- "model.CompilerConfig"
+"compiler.CompileContext""uses" o-- "regexp.Regexp"
+"compiler.CompileContext""uses" o-- "render.Context"
+"compiler.embedAnnotationProcessor""uses" o-- "compiler.CompileContext"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
-"compiler.requireAnnotationProcessor""uses" o-- "compiler.compileContext"
-
-namespace generator {
-    class CodeGeneratorContext << (S,Aquamarine) >> {
-        + GenerateCode() (string, error)
-
-    }
-    interface CodeGeneratorInterface  {
-        + GenerateCode() (string, error)
-
-    }
-    interface TemplateRenderingInterface  {
-        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
-        + RenderFromTemplateName() (string, error)
-
-    }
-}
-
-"generator.CodeGeneratorInterface" <|-- "implements""generator.CodeGeneratorContext"
-
-"generator.CodeGeneratorContext""uses" o-- "generator.TemplateRenderingInterface"
+"compiler.requireAnnotationProcessor""uses" o-- "compiler.CompileContext"
 
 namespace main {
     class Directory << (S,Aquamarine) >> {
@@ -140,7 +114,7 @@ namespace main {
 namespace model {
     class BinaryModel << (S,Aquamarine) >> {
         + CompilerConfig CompilerConfig
-        + Vars utils.Dictionary
+        + Vars structures.Dictionary
         + BinData <font color=blue>interface</font>{}
 
     }
@@ -159,7 +133,7 @@ namespace model {
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
-        + AnnotationsConfig utils.Dictionary
+        + AnnotationsConfig structures.Dictionary
         + TargetFile string
         + RelativeRootDirBasedOnTargetDir string
         + CommandDefinitionFiles []string
@@ -175,8 +149,8 @@ namespace model {
 "model.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
 
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
-"model.BinaryModel""uses" o-- "utils.Dictionary"
-"model.CompilerConfig""uses" o-- "utils.Dictionary"
+"model.BinaryModel""uses" o-- "structures.Dictionary"
+"model.CompilerConfig""uses" o-- "structures.Dictionary"
 
 namespace render {
     class Context << (S,Aquamarine) >> {
@@ -187,25 +161,56 @@ namespace render {
         + RootData <font color=blue>interface</font>{}
         + Data <font color=blue>interface</font>{}
 
+        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
         + Render(templateName string) (string, error)
         + RenderFromTemplateName() (string, error)
         + RenderFromTemplateContent(templateContent string) (string, error)
+
+    }
+    interface TemplateContextInterface  {
         + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
+        + Render(templateName string) (string, error)
+        + RenderFromTemplateName() (string, error)
+        + RenderFromTemplateContent(templateContent string) (string, error)
 
     }
 }
 
-"generator.TemplateRenderingInterface" <|-- "implements""render.Context"
+"render.TemplateContextInterface" <|-- "implements""render.Context"
 
 "render.Context""uses" o-- "template.Template"
 
-namespace utils {
+namespace services {
+    class BinaryModelServiceContext << (S,Aquamarine) >> {
+        + Init() error
+        + Compile() error
+
+    }
+    interface CodeCompilerInterface  {
+        + Init() error
+        + Compile(code string) (string, error)
+        + GenerateCode(code string) (string, error)
+
+    }
+    interface CodeGeneratorInterface  {
+        + GenerateCode() (string, error)
+
+    }
+}
+
+
+"services.BinaryModelServiceContext""uses" o-- "model.BinaryModel"
+"services.BinaryModelServiceContext""uses" o-- "model.BinaryModelContext"
+"services.BinaryModelServiceContext""uses" o-- "render.Context"
+"services.BinaryModelServiceContext""uses" o-- "services.CodeCompilerInterface"
+
+namespace structures {
     class Dictionary << (S,Aquamarine) >> {
         + GetStringValue(key string) (string, error)
         + GetStringList(key string) ([]string, error)
 
     }
-    class utils.Dictionary << (T, #FF7700) >>  {
+    class structures.Dictionary << (T, #FF7700) >>  {
     }
 }
 
@@ -215,5 +220,5 @@ namespace utils {
 "__builtin__.int8" #.. "alias of""compiler.InsertPosition"
 "__builtin__.string" #.. "alias of""main.Directory"
 "__builtin__.string" #.. "alias of""main.VersionFlag"
-"utils.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "alias of""utils.Dictionary"
+"structures.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "alias of""structures.Dictionary"
 @enduml

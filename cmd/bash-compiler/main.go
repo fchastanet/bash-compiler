@@ -10,15 +10,10 @@ import (
 	"runtime"
 
 	"github.com/alecthomas/kong"
-	"github.com/fchastanet/bash-compiler/internal/binary"
-	"github.com/fchastanet/bash-compiler/internal/compiler"
-	"github.com/fchastanet/bash-compiler/internal/generator"
-	"github.com/fchastanet/bash-compiler/internal/model"
-	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/services"
 	"github.com/fchastanet/bash-compiler/internal/utils/dotenv"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
-	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -137,86 +132,17 @@ func main() {
 	)
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
+	// create BinaryModelService
+
 	for _, binaryModelFilePath := range cli.YamlFiles {
-		err = compileBinaryModel(
+		binaryModelService := services.NewBinaryModelService(
 			string(cli.TargetDir),
 			cli.KeepIntermediateFiles,
 			binaryModelFilePath,
 		)
+		err = binaryModelService.Init()
+		logger.Check(err)
+		err = binaryModelService.Compile()
 		logger.Check(err)
 	}
-}
-
-func compileBinaryModel(
-	targetDir string,
-	keepIntermediateFiles bool,
-	binaryModelFilePath string,
-) error {
-	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
-	referenceDir := filepath.Dir(binaryModelFilePath)
-
-	binaryModelContext := model.NewBinaryModel(
-		targetDir,
-		binaryModelFilePath,
-		binaryModelBaseName,
-		referenceDir,
-		keepIntermediateFiles,
-	)
-	binaryModel, err := binaryModelContext.Load()
-	if err != nil {
-		return err
-	}
-	data := make(map[string]interface{})
-	data["binData"] = binaryModel.BinData
-	data["compilerConfig"] = binaryModel.CompilerConfig
-	data["vars"] = binaryModel.Vars
-	templateDirs := structures.ExpandStringList(binaryModel.CompilerConfig.TemplateDirs)
-
-	templateContext := render.NewTemplateContext(
-		templateDirs,
-		binaryModel.CompilerConfig.TemplateFile,
-		data,
-	)
-	err = templateContext.Init(render.FuncMap())
-	if err != nil {
-		return err
-	}
-
-	var templateRendering = generator.TemplateRenderingInterface(templateContext)
-	codeGenerator := generator.NewCodeGenerator(
-		&templateRendering,
-		targetDir,
-		binaryModelBaseName,
-		keepIntermediateFiles,
-	)
-
-	codeCompiler := compiler.NewCompiler(
-		templateContext,
-		binaryModel.CompilerConfig,
-	)
-	err = codeCompiler.Init()
-	if logger.FancyHandleError(err) {
-		return err
-	}
-
-	codeCompiled, err := binary.Render(
-		codeGenerator,
-		codeCompiler,
-	)
-	if logger.FancyHandleError(err) {
-		return err
-	}
-
-	// Save resulting file
-	targetFile := structures.ExpandStringValue(
-		binaryModel.CompilerConfig.TargetFile,
-	)
-
-	err = os.WriteFile(targetFile, []byte(codeCompiled), files.UserReadWriteExecutePerm)
-	if logger.FancyHandleError(err) {
-		return err
-	}
-	slog.Info("Compiled", logger.LogFieldFilePath, targetFile)
-
-	return nil
 }

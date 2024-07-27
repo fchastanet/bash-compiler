@@ -30,7 +30,7 @@ func ErrRequiredFunctionNotFound(functionName string) error {
 const annotationRequireKind string = "require"
 
 type requireAnnotationProcessor struct {
-	context                       *compileContext
+	context                       *CompileContext
 	checkRequirementsTemplateName string
 	requireTemplateName           string
 }
@@ -42,7 +42,7 @@ type requireAnnotation struct {
 	codeAddedOnRequiredFunctions bool
 }
 
-func NewRequireAnnotationProcessor(context *compileContext) AnnotationProcessorInterface {
+func NewRequireAnnotationProcessor(context *CompileContext) AnnotationProcessorInterface {
 	return &requireAnnotationProcessor{
 		context: context,
 	}
