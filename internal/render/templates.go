@@ -9,7 +9,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/fchastanet/bash-compiler/internal/code"
+	"github.com/fchastanet/bash-compiler/internal/utils/bash"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
@@ -46,7 +46,7 @@ func MustInclude(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	return code.RemoveFirstShebangLineIfAny(output), err
+	return bash.RemoveFirstShebangLineIfAny(output), err
 }
 
 func includeFile(filePath string) string {

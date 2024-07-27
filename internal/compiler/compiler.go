@@ -13,9 +13,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/bash"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
@@ -342,7 +342,7 @@ func (context *compileContext) retrieveAllFunctionsContent() (
 		if err != nil {
 			return false, err
 		}
-		functionInfo.SourceCode = code.RemoveFirstShebangLineIfAny(string(fileContent))
+		functionInfo.SourceCode = bash.RemoveFirstShebangLineIfAny(string(fileContent))
 		functionInfo.SourceCodeLoaded = true
 		context.functionsMap[functionName] = functionInfo
 		newFunctionExtracted := context.extractUniqueFrameworkFunctions(functionInfo.SourceCode)
