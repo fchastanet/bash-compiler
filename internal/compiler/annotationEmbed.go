@@ -49,13 +49,13 @@ func (e *duplicatedAsNameError) Error() string {
 }
 
 type embedAnnotationProcessor struct {
-	context               *compileContext
+	context               *CompileContext
 	embedFileTemplateName string
 	embedDirTemplateName  string
 	embedMap              map[string]string
 }
 
-func NewEmbedAnnotationProcessor(context *compileContext) AnnotationProcessorInterface {
+func NewEmbedAnnotationProcessor(context *CompileContext) AnnotationProcessorInterface {
 	return &embedAnnotationProcessor{
 		context:  context,
 		embedMap: nil,
