@@ -449,7 +449,7 @@ build/clean.sh
 Compile bin file
 
 ```bash
-FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler/main.go examples/configReference/shellcheckLint.yaml -t examples/generated -k -d
+FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler examples/configReference/shellcheckLint.yaml -t examples/generated -k -d
 ```
 
 for debugging purpose, manually Transform and validate yaml file using cue
