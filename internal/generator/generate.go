@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 type CodeGeneratorInterface interface {
@@ -21,9 +21,9 @@ type CodeGeneratorContext struct {
 }
 
 func NewCodeGenerator(
+	templateContext *TemplateRenderingInterface,
 	targetDir string,
 	binaryModelBaseName string,
-	templateContext *TemplateRenderingInterface,
 	keepIntermediateFiles bool,
 ) CodeGeneratorInterface {
 	return &CodeGeneratorContext{

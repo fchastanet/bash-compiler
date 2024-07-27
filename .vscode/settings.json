@@ -29,6 +29,7 @@
   },
   "markdown.extension.toc.levels": "2..6",
   "plantuml.server": "http://localhost:8080/",
+  "plantuml.render": "PlantUMLServer",
   "shellcheck.customArgs": ["--source-path=SCRIPTDIR", "--external-sources"],
   "shellcheck.ignorePatterns": {
     "**/*.tpl": true

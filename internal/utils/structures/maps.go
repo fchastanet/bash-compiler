@@ -1,5 +1,4 @@
-// Package utils
-package utils
+package structures
 
 // Keys returns the keys of the map m.
 // The keys will be an indeterminate order.

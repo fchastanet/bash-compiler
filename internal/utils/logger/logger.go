@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/fchastanet/bash-compiler/internal/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
 )
 
 const (
