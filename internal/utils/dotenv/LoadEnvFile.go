@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/a8m/envsubst"
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 var (

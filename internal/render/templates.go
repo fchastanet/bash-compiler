@@ -10,8 +10,8 @@ import (
 	"path"
 
 	"github.com/fchastanet/bash-compiler/internal/code"
-	"github.com/fchastanet/bash-compiler/internal/files"
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 var errFileNotFound = errors.New("File does not exist")

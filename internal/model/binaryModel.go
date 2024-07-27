@@ -6,27 +6,27 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fchastanet/bash-compiler/internal/logger"
-	"github.com/fchastanet/bash-compiler/internal/utils"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 	"github.com/goccy/go-yaml"
 )
 
 type CompilerConfig struct {
-	AnnotationsConfig               utils.Dictionary `yaml:"annotationsConfig"`
-	TargetFile                      string           `yaml:"targetFile"`
-	RelativeRootDirBasedOnTargetDir string           `yaml:"relativeRootDirBasedOnTargetDir"`
-	CommandDefinitionFiles          []string         `yaml:"commandDefinitionFiles"`
-	TemplateFile                    string           `yaml:"templateFile"`
-	TemplateDirs                    []string         `yaml:"templateDirs"`
-	FunctionsIgnoreRegexpList       []string         `yaml:"functionsIgnoreRegexpList"`
-	SrcDirs                         []string         `yaml:"srcDirs"`
-	SrcDirsExpanded                 []string         `yaml:"-"`
+	AnnotationsConfig               structures.Dictionary `yaml:"annotationsConfig"`
+	TargetFile                      string                `yaml:"targetFile"`
+	RelativeRootDirBasedOnTargetDir string                `yaml:"relativeRootDirBasedOnTargetDir"`
+	CommandDefinitionFiles          []string              `yaml:"commandDefinitionFiles"`
+	TemplateFile                    string                `yaml:"templateFile"`
+	TemplateDirs                    []string              `yaml:"templateDirs"`
+	FunctionsIgnoreRegexpList       []string              `yaml:"functionsIgnoreRegexpList"`
+	SrcDirs                         []string              `yaml:"srcDirs"`
+	SrcDirsExpanded                 []string              `yaml:"-"`
 }
 
 type BinaryModel struct {
-	CompilerConfig CompilerConfig   `yaml:"compilerConfig"`
-	Vars           utils.Dictionary `yaml:"vars"`
-	BinData        interface{}      `yaml:"binData"`
+	CompilerConfig CompilerConfig        `yaml:"compilerConfig"`
+	Vars           structures.Dictionary `yaml:"vars"`
+	BinData        interface{}           `yaml:"binData"`
 }
 
 type BinaryModelContext struct {

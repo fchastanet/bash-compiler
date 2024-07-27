@@ -1,9 +1,7 @@
-package utils
+package encoding
 
 import (
-	"bytes"
 	"crypto/md5" //nolint:all
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -22,19 +20,4 @@ func Md5SumFromFile(file *os.File) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", encoder.Sum(nil)), nil
-}
-
-func Base64FromBytes(buffer []byte) string {
-	return base64.StdEncoding.EncodeToString(buffer)
-}
-
-func Base64FromFile(file *os.File) (string, error) {
-	buf := new(bytes.Buffer)
-	encoder := base64.NewEncoder(base64.StdEncoding, buf)
-	if _, err := io.Copy(encoder, file); err != nil {
-		return "", err
-	}
-	encoder.Close()
-
-	return buf.String(), nil
 }

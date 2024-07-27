@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/fchastanet/bash-compiler/internal/logger"
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 )
 
 var (
@@ -121,7 +121,7 @@ func extractRequiredFunctions(code string) ([]string, string) {
 
 func (annotationProcessor *requireAnnotationProcessor) Process() error {
 	functionsMap := annotationProcessor.context.functionsMap
-	var functionNames []string = utils.MapKeys(functionsMap)
+	var functionNames []string = structures.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionStruct := functionsMap[functionName]
 		slog.Debug("addRequireCodeToEachRequiredFunctions", "functionName", functionName)

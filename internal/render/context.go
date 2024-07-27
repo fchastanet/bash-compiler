@@ -9,8 +9,8 @@ import (
 	"text/template"
 
 	"github.com/fchastanet/bash-compiler/internal/code"
-	"github.com/fchastanet/bash-compiler/internal/files"
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 type Context struct {
@@ -20,6 +20,43 @@ type Context struct {
 	TemplateName string
 	RootData     interface{}
 	Data         interface{}
+}
+
+type TemplateContextInterface interface {
+	Init(funcMap map[string]interface{}) error
+	Render(templateName string) (string, error)
+	RenderFromTemplateName() (code string, err error)
+	RenderFromTemplateContent(templateContent string) (codeStr string, err error)
+}
+
+func NewTemplateContext(
+	templateDirs []string,
+	templateFile string,
+	data interface{},
+) (templateContext *Context) {
+	return &Context{
+		TemplateDirs: templateDirs,
+		TemplateFile: templateFile,
+		Template:     nil,
+		TemplateName: "",
+		RootData:     data,
+		Data:         data,
+	}
+}
+
+func (templateContext *Context) Init(funcMap map[string]interface{}) error {
+	// load template system
+	myTemplate, templateName, err := newTemplate(
+		templateContext.TemplateDirs,
+		templateContext.TemplateFile,
+		funcMap,
+	)
+	if err != nil {
+		return err
+	}
+	templateContext.Template = myTemplate
+	templateContext.TemplateName = templateName
+	return nil
 }
 
 func (templateContext *Context) Render(templateName string) (string, error) {
@@ -53,36 +90,6 @@ func (templateContext *Context) RenderFromTemplateContent(templateContent string
 	}
 
 	return code.RemoveFirstShebangLineIfAny(tplWriter.String()), err
-}
-
-func NewTemplateContext(
-	templateDirs []string,
-	templateFile string,
-	data interface{},
-) (templateContext *Context) {
-	return &Context{
-		TemplateDirs: templateDirs,
-		TemplateFile: templateFile,
-		Template:     nil,
-		TemplateName: "",
-		RootData:     data,
-		Data:         data,
-	}
-}
-
-func (templateContext *Context) Init(funcMap map[string]interface{}) error {
-	// load template system
-	myTemplate, templateName, err := newTemplate(
-		templateContext.TemplateDirs,
-		templateContext.TemplateFile,
-		funcMap,
-	)
-	if err != nil {
-		return err
-	}
-	templateContext.Template = myTemplate
-	templateContext.TemplateName = templateName
-	return nil
 }
 
 func newTemplate(

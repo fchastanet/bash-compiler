@@ -12,14 +12,13 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/binary"
 	"github.com/fchastanet/bash-compiler/internal/compiler"
-	"github.com/fchastanet/bash-compiler/internal/dotenv"
-	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/generator"
-	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
-	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils"
+	"github.com/fchastanet/bash-compiler/internal/utils/dotenv"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -139,21 +138,29 @@ func main() {
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
 	for _, binaryModelFilePath := range cli.YamlFiles {
-		err = compileBinaryModel(&cli, binaryModelFilePath)
+		err = compileBinaryModel(
+			string(cli.TargetDir),
+			cli.KeepIntermediateFiles,
+			binaryModelFilePath,
+		)
 		logger.Check(err)
 	}
 }
 
-func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
+func compileBinaryModel(
+	targetDir string,
+	keepIntermediateFiles bool,
+	binaryModelFilePath string,
+) error {
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
 	referenceDir := filepath.Dir(binaryModelFilePath)
 
 	binaryModelContext := model.NewBinaryModel(
-		string(cli.TargetDir),
+		targetDir,
 		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
-		cli.KeepIntermediateFiles,
+		keepIntermediateFiles,
 	)
 	binaryModel, err := binaryModelContext.Load()
 	if err != nil {
@@ -163,24 +170,24 @@ func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
 	data["binData"] = binaryModel.BinData
 	data["compilerConfig"] = binaryModel.CompilerConfig
 	data["vars"] = binaryModel.Vars
-	templateDirs := utils.ExpandStringList(binaryModel.CompilerConfig.TemplateDirs)
+	templateDirs := structures.ExpandStringList(binaryModel.CompilerConfig.TemplateDirs)
 
 	templateContext := render.NewTemplateContext(
 		templateDirs,
 		binaryModel.CompilerConfig.TemplateFile,
 		data,
 	)
-	err = templateContext.Init(myTemplateFunctions.FuncMap())
+	err = templateContext.Init(render.FuncMap())
 	if err != nil {
 		return err
 	}
 
 	var templateRendering = generator.TemplateRenderingInterface(templateContext)
 	codeGenerator := generator.NewCodeGenerator(
-		string(cli.TargetDir),
-		binaryModelBaseName,
 		&templateRendering,
-		cli.KeepIntermediateFiles,
+		targetDir,
+		binaryModelBaseName,
+		keepIntermediateFiles,
 	)
 
 	codeCompiler := compiler.NewCompiler(
@@ -201,7 +208,7 @@ func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
 	}
 
 	// Save resulting file
-	targetFile := utils.ExpandStringValue(
+	targetFile := structures.ExpandStringValue(
 		binaryModel.CompilerConfig.TargetFile,
 	)
 

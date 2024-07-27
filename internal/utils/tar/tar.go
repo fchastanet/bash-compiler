@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 func CreateArchive(

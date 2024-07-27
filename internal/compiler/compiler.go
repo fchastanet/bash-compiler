@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	"github.com/fchastanet/bash-compiler/internal/code"
-	"github.com/fchastanet/bash-compiler/internal/files"
-	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 )
 
 const (
@@ -142,7 +142,7 @@ func (context *compileContext) GenerateCode(code string) (
 			return "", err
 		}
 	}
-	var functionNames []string = utils.MapKeys(context.functionsMap)
+	var functionNames []string = structures.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfoStruct := context.functionsMap[functionName]
 		functionInfoStruct.Inserted = false
@@ -207,7 +207,7 @@ func (context *compileContext) functionsAnalysis(code string) (err error) {
 }
 
 func (context *compileContext) renderEachFunctionAsTemplate() (err error) {
-	var functionNames []string = utils.MapKeys(context.functionsMap)
+	var functionNames []string = structures.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := context.functionsMap[functionName]
 		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
@@ -268,7 +268,7 @@ func (context *compileContext) nonFrameworkFunctionRegexpCompile() {
 }
 
 func (context *compileContext) generateFunctionCode() (code string, err error) {
-	var functionNames []string = utils.MapKeys(context.functionsMap)
+	var functionNames []string = structures.MapKeys(context.functionsMap)
 	sort.Strings(functionNames) // ensure to generate functions always in the same order
 
 	var finalBuffer bytes.Buffer
@@ -319,7 +319,7 @@ func (context *compileContext) insertFunctionsCode(
 func (context *compileContext) retrieveAllFunctionsContent() (
 	newFunctionAdded bool, err error,
 ) {
-	var functionNames []string = utils.MapKeys(context.functionsMap)
+	var functionNames []string = structures.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(functionName) {
 			continue
@@ -358,7 +358,7 @@ func (context *compileContext) retrieveAllFunctionsContent() (
 func (context *compileContext) retrieveEachFunctionPath() (
 	addedFiles bool, err error) {
 	addedFiles = false
-	var functionNames []string = utils.MapKeys(context.functionsMap)
+	var functionNames []string = structures.MapKeys(context.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(functionName) {
 			continue
@@ -422,7 +422,7 @@ func (context *compileContext) retrieveEachFunctionPath() (
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
 	slog.Info("Found these",
 		logger.LogFieldVariableName, "bashFrameworkFunctions",
-		logger.LogFieldVariableValue, utils.MapKeys(context.functionsMap),
+		logger.LogFieldVariableValue, structures.MapKeys(context.functionsMap),
 	)
 	return addedFiles, nil
 }

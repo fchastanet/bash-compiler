@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/fchastanet/bash-compiler/internal/files"
-	"github.com/fchastanet/bash-compiler/internal/logger"
-	"github.com/fchastanet/bash-compiler/internal/tar"
-	"github.com/fchastanet/bash-compiler/internal/utils"
+	"github.com/fchastanet/bash-compiler/internal/utils/encoding"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/tar"
 )
 
 func (annotationProcessor *embedAnnotationProcessor) RenderResource(
@@ -42,11 +42,11 @@ func (annotationProcessor *embedAnnotationProcessor) renderFile(
 	}
 	defer file.Close()
 
-	md5sum, err := utils.Md5SumFromFile(file)
+	md5sum, err := encoding.Md5SumFromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	base64, err := utils.Base64FromFile(file)
+	base64, err := encoding.Base64FromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
@@ -84,7 +84,7 @@ func (annotationProcessor *embedAnnotationProcessor) renderDir(
 	if err != nil {
 		return "", err
 	}
-	md5sum, err := utils.Md5SumFromFile(directoryArchive)
+	md5sum, err := encoding.Md5SumFromFile(directoryArchive)
 	if err != nil {
 		return "", err
 	}
@@ -92,7 +92,7 @@ func (annotationProcessor *embedAnnotationProcessor) renderDir(
 	if err != nil {
 		return "", err
 	}
-	base64, err := utils.Base64FromFile(directoryArchive)
+	base64, err := encoding.Base64FromFile(directoryArchive)
 	if err != nil {
 		return "", err
 	}

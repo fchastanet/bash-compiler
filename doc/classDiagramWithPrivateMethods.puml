@@ -6,29 +6,6 @@ Render Fields: true
 Render Methods: true
 Private Aggregations: true
 end legend
-namespace binary {
-    class CodeCompilerContext << (S,Aquamarine) >> {
-        + BinaryModelContext *model.BinaryModelContext
-        + TemplateContext *render.Context
-        + CodeGenerator *generator.CodeGeneratorInterface
-        + CodeCompiler *compiler.CodeCompilerInterface
-
-        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (string, error)
-
-    }
-    interface CompilerInterface  {
-        + Compile(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (string, error)
-
-    }
-}
-
-"binary.CompilerInterface" <|-- "implements""binary.CodeCompilerContext"
-
-"binary.CodeCompilerContext""uses" o-- "compiler.CodeCompilerInterface"
-"binary.CodeCompilerContext""uses" o-- "generator.CodeGeneratorInterface"
-"binary.CodeCompilerContext""uses" o-- "model.BinaryModelContext"
-"binary.CodeCompilerContext""uses" o-- "render.Context"
-
 namespace compiler {
     interface AnnotationProcessorInterface  {
         + Init() error
@@ -110,7 +87,8 @@ namespace compiler {
     class requireAnnotation << (S,Aquamarine) >> {
         - requiredFunctions []string
         - isRequired bool
-        - isComputed bool
+        - checkRequirementsCodeAdded bool
+        - codeAddedOnRequiredFunctions bool
 
     }
     class requireAnnotationProcessor << (S,Aquamarine) >> {
@@ -119,9 +97,7 @@ namespace compiler {
         - requireTemplateName string
 
         - addRequireCodeToEachRequiredFunctions(functionStruct *functionInfoStruct) error
-        - addCheckRequirementsCodeIfNeeded(functionStruct *functionInfoStruct) error
         - addRequireCode(functionStruct *functionInfoStruct) error
-        - addCheckRequirementsCode(functionStruct *functionInfoStruct, requires []string) error
 
         + Init() error
         + ParseFunction(functionStruct *functionInfoStruct) error
@@ -155,11 +131,10 @@ namespace compiler {
 
 namespace generator {
     class CodeGeneratorContext << (S,Aquamarine) >> {
-        - yamlFilePath string
         - targetDir string
         - binaryModelBaseName string
         - keepIntermediateFiles bool
-        - templateContext *render.Context
+        - templateContext *TemplateRenderingInterface
 
         + GenerateCode() (string, error)
 
@@ -168,11 +143,16 @@ namespace generator {
         + GenerateCode() (string, error)
 
     }
+    interface TemplateRenderingInterface  {
+        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
+        + RenderFromTemplateName() (string, error)
+
+    }
 }
 
 "generator.CodeGeneratorInterface" <|-- "implements""generator.CodeGeneratorContext"
 
-"generator.CodeGeneratorContext""uses" o-- "render.Context"
+"generator.CodeGeneratorContext""uses" o-- "generator.TemplateRenderingInterface"
 
 namespace main {
     class Directory << (S,Aquamarine) >> {
@@ -185,12 +165,12 @@ namespace main {
         + BeforeApply(app *kong.Kong, vars kong.Vars) error
 
     }
-    class YamlFile << (S,Aquamarine) >> {
+    class YamlFiles << (S,Aquamarine) >> {
         + Validate() error
 
     }
     class cli << (S,Aquamarine) >> {
-        + YamlFile YamlFile
+        + YamlFiles YamlFiles
         + TargetDir Directory
         + Version VersionFlag
         + KeepIntermediateFiles bool
@@ -203,42 +183,41 @@ namespace main {
     }
     class main.VersionFlag << (T, #FF7700) >>  {
     }
-    class main.YamlFile << (T, #FF7700) >>  {
+    class main.YamlFiles << (T, #FF7700) >>  {
     }
 }
 
 
 "main.cli""uses" o-- "main.Directory"
 "main.cli""uses" o-- "main.VersionFlag"
-"main.cli""uses" o-- "main.YamlFile"
+"main.cli""uses" o-- "main.YamlFiles"
 
 namespace model {
     class BinaryModel << (S,Aquamarine) >> {
         + CompilerConfig CompilerConfig
-        + Vars Dictionary
+        + Vars utils.Dictionary
         + BinData <font color=blue>interface</font>{}
 
     }
     class BinaryModelContext << (S,Aquamarine) >> {
-        + BinaryModel *BinaryModel
         + TargetDir string
         + BinaryModelFilePath string
         + BinaryModelBaseName string
         + ReferenceDir string
         + KeepIntermediateFiles bool
 
-        - setEnvVars()
-        - expandVars()
+        - setEnvVars(binaryModel *BinaryModel)
+        - expandVars(binaryModel *BinaryModel)
 
-        + LoadBinaryModel() error
+        + Load() (*BinaryModel, error)
 
     }
     interface BinaryModelInterface  {
-        + LoadBinaryModel() error
+        + Load() (*BinaryModel, error)
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
-        + AnnotationsConfig Dictionary
+        + AnnotationsConfig utils.Dictionary
         + TargetFile string
         + RelativeRootDirBasedOnTargetDir string
         + CommandDefinitionFiles []string
@@ -249,41 +228,50 @@ namespace model {
         + SrcDirsExpanded []string
 
     }
-    class Dictionary << (S,Aquamarine) >> {
-        + GetStringValue(key string) (string, error)
-        + GetStringList(key string) ([]string, error)
-
-    }
-    class model.Dictionary << (T, #FF7700) >>  {
-    }
 }
 
 "model.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
 
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
-"model.BinaryModel""uses" o-- "model.Dictionary"
-"model.BinaryModelContext""uses" o-- "model.BinaryModel"
-"model.CompilerConfig""uses" o-- "model.Dictionary"
+"model.BinaryModel""uses" o-- "utils.Dictionary"
+"model.CompilerConfig""uses" o-- "utils.Dictionary"
 
 namespace render {
     class Context << (S,Aquamarine) >> {
+        + TemplateDirs []string
         + Template *template.Template
+        + TemplateFile string
         + TemplateName string
         + RootData <font color=blue>interface</font>{}
         + Data <font color=blue>interface</font>{}
 
+        + Render(templateName string) (string, error)
         + RenderFromTemplateName() (string, error)
-        + Render(template string) (string, error)
+        + RenderFromTemplateContent(templateContent string) (string, error)
+        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
 
     }
 }
 
+"generator.TemplateRenderingInterface" <|-- "implements""render.Context"
 
 "render.Context""uses" o-- "template.Template"
 
+namespace utils {
+    class Dictionary << (S,Aquamarine) >> {
+        + GetStringValue(key string) (string, error)
+        + GetStringList(key string) ([]string, error)
+
+    }
+    class utils.Dictionary << (T, #FF7700) >>  {
+    }
+}
+
+
+
+"__builtin__.[]string" #.. "alias of""main.YamlFiles"
 "__builtin__.int8" #.. "alias of""compiler.InsertPosition"
 "__builtin__.string" #.. "alias of""main.Directory"
 "__builtin__.string" #.. "alias of""main.VersionFlag"
-"__builtin__.string" #.. "alias of""main.YamlFile"
-"model.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "alias of""model.Dictionary"
+"utils.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "alias of""utils.Dictionary"
 @enduml

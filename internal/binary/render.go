@@ -3,7 +3,7 @@ package binary
 import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/generator"
-	"github.com/fchastanet/bash-compiler/internal/logger"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 func Render(
