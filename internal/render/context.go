@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/fchastanet/bash-compiler/internal/code"
+	"github.com/fchastanet/bash-compiler/internal/utils/bash"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
@@ -89,7 +89,7 @@ func (templateContext *Context) RenderFromTemplateContent(templateContent string
 		return "", err
 	}
 
-	return code.RemoveFirstShebangLineIfAny(tplWriter.String()), err
+	return bash.RemoveFirstShebangLineIfAny(tplWriter.String()), err
 }
 
 func newTemplate(
