@@ -1,8 +1,7 @@
-// Package functions
-package functions
+// Package render
+package render
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -13,7 +12,6 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/code"
 	"github.com/fchastanet/bash-compiler/internal/files"
 	"github.com/fchastanet/bash-compiler/internal/logger"
-	"github.com/fchastanet/bash-compiler/internal/render"
 )
 
 var errFileNotFound = errors.New("File does not exist")
@@ -27,7 +25,7 @@ func ErrFileNotFound(file string, srcDirs []string) error {
 // Eg: {{ include "template.tpl" | indent 4 }}
 func Include(
 	template string, templateData any,
-	templateContext render.Context,
+	templateContext Context,
 ) string {
 	var output string
 	output, _ = MustInclude(template, templateData, templateContext)
@@ -37,7 +35,7 @@ func Include(
 func MustInclude(
 	templateName string,
 	templateData any,
-	templateContext render.Context,
+	templateContext Context,
 ) (output string, err error) {
 	slog.Debug("MustInclude",
 		logger.LogFieldTemplateName, templateName,
@@ -66,23 +64,7 @@ func includeFile(filePath string) string {
 	return string(file)
 }
 
-func RenderFromTemplateContent(
-	templateContext *render.Context, templateContent string,
-) (codeStr string, err error) {
-	template, err := templateContext.Template.Parse(templateContent)
-	if err != nil {
-		return "", err
-	}
-	var tplWriter bytes.Buffer
-	err = template.Execute(&tplWriter, templateContext)
-	if err != nil {
-		return "", err
-	}
-
-	return code.RemoveFirstShebangLineIfAny(tplWriter.String()), err
-}
-
-func includeFileAsTemplate(filePath string, templateContext render.Context) string {
+func includeFileAsTemplate(filePath string, templateContext Context) string {
 	filePathExpanded := os.ExpandEnv(filePath)
 	slog.Info(
 		"includeFileAsTemplate",
@@ -90,11 +72,11 @@ func includeFileAsTemplate(filePath string, templateContext render.Context) stri
 		logger.LogFieldFilePathExpanded, filePathExpanded,
 	)
 
-	file, err := os.ReadFile(filePathExpanded)
+	fileContent, err := os.ReadFile(filePathExpanded)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	code, err := RenderFromTemplateContent(&templateContext, string(file))
+	code, err := templateContext.RenderFromTemplateContent(string(fileContent))
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

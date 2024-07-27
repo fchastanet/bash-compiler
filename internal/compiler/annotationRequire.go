@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/fchastanet/bash-compiler/internal/logger"
-	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render/functions"
+	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils"
 )
 

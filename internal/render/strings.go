@@ -1,4 +1,5 @@
-package functions
+// Package render
+package render
 
 import (
 	"regexp"

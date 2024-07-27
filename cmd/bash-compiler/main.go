@@ -11,10 +11,15 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/binary"
+	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/dotenv"
 	"github.com/fchastanet/bash-compiler/internal/files"
+	"github.com/fchastanet/bash-compiler/internal/generator"
 	"github.com/fchastanet/bash-compiler/internal/logger"
 	"github.com/fchastanet/bash-compiler/internal/model"
+	"github.com/fchastanet/bash-compiler/internal/render"
+	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -143,21 +148,61 @@ func compileBinaryModel(cli *cli, binaryModelFilePath string) error {
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
 	referenceDir := filepath.Dir(binaryModelFilePath)
 
-	binaryCompiler := binary.NewCompiler()
-	codeCompiled, err := binaryCompiler.Compile(
+	binaryModelContext := model.NewBinaryModel(
 		string(cli.TargetDir),
 		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
 		cli.KeepIntermediateFiles,
 	)
+	binaryModel, err := binaryModelContext.Load()
+	if err != nil {
+		return err
+	}
+	data := make(map[string]interface{})
+	data["binData"] = binaryModel.BinData
+	data["compilerConfig"] = binaryModel.CompilerConfig
+	data["vars"] = binaryModel.Vars
+	templateDirs := utils.ExpandStringList(binaryModel.CompilerConfig.TemplateDirs)
+
+	templateContext := render.NewTemplateContext(
+		templateDirs,
+		binaryModel.CompilerConfig.TemplateFile,
+		data,
+	)
+	err = templateContext.Init(myTemplateFunctions.FuncMap())
+	if err != nil {
+		return err
+	}
+
+	var templateRendering = generator.TemplateRenderingInterface(templateContext)
+	codeGenerator := generator.NewCodeGenerator(
+		string(cli.TargetDir),
+		binaryModelBaseName,
+		&templateRendering,
+		cli.KeepIntermediateFiles,
+	)
+
+	codeCompiler := compiler.NewCompiler(
+		templateContext,
+		binaryModel.CompilerConfig,
+	)
+	err = codeCompiler.Init()
+	if logger.FancyHandleError(err) {
+		return err
+	}
+
+	codeCompiled, err := binary.Render(
+		codeGenerator,
+		codeCompiler,
+	)
 	if logger.FancyHandleError(err) {
 		return err
 	}
 
 	// Save resulting file
-	targetFile := model.ExpandStringValue(
-		binaryCompiler.BinaryModelContext.BinaryModel.CompilerConfig.TargetFile,
+	targetFile := utils.ExpandStringValue(
+		binaryModel.CompilerConfig.TargetFile,
 	)
 
 	err = os.WriteFile(targetFile, []byte(codeCompiled), files.UserReadWriteExecutePerm)
