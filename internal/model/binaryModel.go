@@ -29,39 +29,23 @@ type BinaryModel struct {
 	BinData        interface{}           `yaml:"binData"`
 }
 
-type BinaryModelContext struct {
-	TargetDir             string
-	BinaryModelFilePath   string
-	BinaryModelBaseName   string
-	ReferenceDir          string
-	KeepIntermediateFiles bool
+type BinaryModelContext struct{}
+
+func NewBinaryModel() *BinaryModelContext {
+	return &BinaryModelContext{}
 }
 
-type BinaryModelInterface interface {
-	Load() (binaryModel *BinaryModel, err error)
-}
-
-func NewBinaryModel(
+func (binaryModelContext *BinaryModelContext) Load(
 	targetDir string,
 	binaryModelFilePath string,
 	binaryModelBaseName string,
 	referenceDir string,
 	keepIntermediateFiles bool,
-) *BinaryModelContext {
-	return &BinaryModelContext{
-		TargetDir:             targetDir,
-		BinaryModelFilePath:   binaryModelFilePath,
-		BinaryModelBaseName:   binaryModelBaseName,
-		ReferenceDir:          referenceDir,
-		KeepIntermediateFiles: keepIntermediateFiles,
-	}
-}
-
-func (binaryModelContext *BinaryModelContext) Load() (_ *BinaryModel, err error) {
+) (_ *BinaryModel, err error) {
 	modelMap := map[string]interface{}{}
 	err = loadModel(
-		binaryModelContext.ReferenceDir,
-		binaryModelContext.BinaryModelFilePath,
+		referenceDir,
+		binaryModelFilePath,
 		&modelMap,
 	)
 	if err != nil {
@@ -78,10 +62,10 @@ func (binaryModelContext *BinaryModelContext) Load() (_ *BinaryModel, err error)
 	if err != nil {
 		return nil, err
 	}
-	if binaryModelContext.KeepIntermediateFiles {
+	if keepIntermediateFiles {
 		err = logger.DebugSaveGeneratedFile(
-			binaryModelContext.TargetDir,
-			binaryModelContext.BinaryModelBaseName,
+			targetDir,
+			binaryModelBaseName,
 			"-1-merged.yaml",
 			tempYamlFile.Name(),
 		)
@@ -95,10 +79,10 @@ func (binaryModelContext *BinaryModelContext) Load() (_ *BinaryModel, err error)
 	if err != nil {
 		return nil, err
 	}
-	if binaryModelContext.KeepIntermediateFiles {
+	if keepIntermediateFiles {
 		err = logger.DebugCopyGeneratedFile(
-			binaryModelContext.TargetDir,
-			binaryModelContext.BinaryModelBaseName,
+			targetDir,
+			binaryModelBaseName,
 			"-2-cue-transformed.yaml",
 			resultWriter.String(),
 		)
@@ -108,7 +92,7 @@ func (binaryModelContext *BinaryModelContext) Load() (_ *BinaryModel, err error)
 	}
 
 	// load command yaml data model
-	slog.Info("Loading binaryModel", logger.LogFieldFilePath, binaryModelContext.BinaryModelFilePath)
+	slog.Info("Loading binaryModel", logger.LogFieldFilePath, binaryModelFilePath)
 	binaryModel := BinaryModel{}
 	err = yaml.Unmarshal(resultWriter.Bytes(), &binaryModel)
 	if err != nil {

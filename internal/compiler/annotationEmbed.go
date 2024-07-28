@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -49,31 +50,34 @@ func (e *duplicatedAsNameError) Error() string {
 }
 
 type embedAnnotationProcessor struct {
-	context               *CompileContext
+	compileContextData    *CompileContextData
+	templateContextData   *render.TemplateContextData
 	embedFileTemplateName string
 	embedDirTemplateName  string
 	embedMap              map[string]string
 }
 
-func NewEmbedAnnotationProcessor(context *CompileContext) AnnotationProcessorInterface {
+func NewEmbedAnnotationProcessor() AnnotationProcessorInterface {
 	return &embedAnnotationProcessor{
-		context:  context,
 		embedMap: nil,
 	}
 }
 
-func (annotationProcessor *embedAnnotationProcessor) Init() error {
+func (annotationProcessor *embedAnnotationProcessor) Init(
+	compileContextData *CompileContextData,
+) error {
+	annotationProcessor.compileContextData = compileContextData
 	annotationProcessor.embedMap = make(map[string]string)
 
 	embedFileTemplateName, err :=
-		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
+		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}
 	annotationProcessor.embedFileTemplateName = embedFileTemplateName
 
 	embedDirTemplateName, err :=
-		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
+		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}
@@ -82,15 +86,23 @@ func (annotationProcessor *embedAnnotationProcessor) Init() error {
 	return nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) ParseFunction(_ *functionInfoStruct) error {
+func (annotationProcessor *embedAnnotationProcessor) ParseFunction(
+	_ *CompileContextData,
+	_ *functionInfoStruct,
+) error {
 	return nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) Process() error {
+func (annotationProcessor *embedAnnotationProcessor) Process(
+	_ *CompileContextData,
+) error {
 	return nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) PostProcess(code string) (string, error) {
+func (annotationProcessor *embedAnnotationProcessor) PostProcess(
+	_ *CompileContextData,
+	code string,
+) (string, error) {
 	var bufferOutput bytes.Buffer
 	embedRegexpResourceGroupIndex := embedRegexp.SubexpIndex("resource")
 	embedRegexpAsNameGroupIndex := embedRegexp.SubexpIndex("asName")

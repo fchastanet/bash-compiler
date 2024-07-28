@@ -135,9 +135,10 @@ func (annotationProcessor *embedAnnotationProcessor) renderTemplate(
 	data map[string]string,
 	templateName string,
 ) (string, error) {
-	annotationProcessor.context.templateContext.Data = data
-	annotationProcessor.context.templateContext.RootData = data
-	return annotationProcessor.context.templateContext.Render(
+	annotationProcessor.templateContextData.Data = data
+	annotationProcessor.templateContextData.RootData = data
+	return annotationProcessor.templateContextData.TemplateContext.Render(
+		annotationProcessor.templateContextData,
 		templateName,
 	)
 }

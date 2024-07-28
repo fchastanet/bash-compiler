@@ -24,25 +24,26 @@ func ErrFileNotFound(file string, srcDirs []string) error {
 // allowing to use filter
 // Eg: {{ include "template.tpl" | indent 4 }}
 func Include(
-	template string, templateData any,
-	templateContext Context,
+	template string,
+	templateData any,
+	templateContextData TemplateContextData,
 ) string {
 	var output string
-	output, _ = MustInclude(template, templateData, templateContext)
+	output, _ = MustInclude(template, templateData, templateContextData)
 	return output
 }
 
 func MustInclude(
 	templateName string,
 	templateData any,
-	templateContext Context,
+	templateContextData TemplateContextData,
 ) (output string, err error) {
 	slog.Debug("MustInclude",
 		logger.LogFieldTemplateName, templateName,
 		logger.LogFieldTemplateData, templateData,
 	)
-	templateContext.Data = templateData
-	output, err = templateContext.Render(templateName)
+	templateContextData.Data = templateData
+	output, err = templateContextData.TemplateContext.Render(&templateContextData, templateName)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
@@ -64,7 +65,10 @@ func includeFile(filePath string) string {
 	return string(file)
 }
 
-func includeFileAsTemplate(filePath string, templateContext Context) string {
+func includeFileAsTemplate(
+	filePath string,
+	templateContextData TemplateContextData,
+) string {
 	filePathExpanded := os.ExpandEnv(filePath)
 	slog.Info(
 		"includeFileAsTemplate",
@@ -76,7 +80,7 @@ func includeFileAsTemplate(filePath string, templateContext Context) string {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	code, err := templateContext.RenderFromTemplateContent(string(fileContent))
+	code, err := templateContextData.TemplateContext.RenderFromTemplateContent(&templateContextData, string(fileContent))
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

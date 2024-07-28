@@ -30,7 +30,7 @@ func ErrRequiredFunctionNotFound(functionName string) error {
 const annotationRequireKind string = "require"
 
 type requireAnnotationProcessor struct {
-	context                       *CompileContext
+	compileContextData            *CompileContextData
 	checkRequirementsTemplateName string
 	requireTemplateName           string
 }
@@ -42,20 +42,21 @@ type requireAnnotation struct {
 	codeAddedOnRequiredFunctions bool
 }
 
-func NewRequireAnnotationProcessor(context *CompileContext) AnnotationProcessorInterface {
-	return &requireAnnotationProcessor{
-		context: context,
-	}
+func NewRequireAnnotationProcessor() AnnotationProcessorInterface {
+	return &requireAnnotationProcessor{}
 }
 
-func (annotationProcessor *requireAnnotationProcessor) Init() error {
+func (annotationProcessor *requireAnnotationProcessor) Init(
+	compileContextData *CompileContextData,
+) error {
+	annotationProcessor.compileContextData = compileContextData
 	checkRequirementsTemplateName, err :=
-		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
+		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
 	if err != nil {
 		return err
 	}
 	requireTemplateName, err :=
-		annotationProcessor.context.config.AnnotationsConfig.GetStringValue("requireTemplate")
+		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplate")
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,10 @@ func (annotationProcessor *requireAnnotationProcessor) Init() error {
 	return nil
 }
 
-func (annotationProcessor *requireAnnotationProcessor) ParseFunction(functionStruct *functionInfoStruct) error {
+func (annotationProcessor *requireAnnotationProcessor) ParseFunction(
+	compileContextData *CompileContextData,
+	functionStruct *functionInfoStruct,
+) error {
 	annotation, err := functionStruct.getRequireAnnotation()
 	if logger.FancyHandleError(err) {
 		return err
@@ -90,7 +94,7 @@ func (annotationProcessor *requireAnnotationProcessor) ParseFunction(functionStr
 			"functionName": functionStruct.FunctionName,
 			"requires":     annotation.requiredFunctions,
 		},
-		*annotationProcessor.context.templateContext,
+		*compileContextData.templateContextData,
 	)
 	if err != nil {
 		return err
@@ -119,17 +123,19 @@ func extractRequiredFunctions(code string) ([]string, string) {
 	return requiredFunctions, newCodeBuffer.String()
 }
 
-func (annotationProcessor *requireAnnotationProcessor) Process() error {
-	functionsMap := annotationProcessor.context.functionsMap
+func (annotationProcessor *requireAnnotationProcessor) Process(
+	compileContextData *CompileContextData,
+) error {
+	functionsMap := compileContextData.functionsMap
 	var functionNames []string = structures.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionStruct := functionsMap[functionName]
 		slog.Debug("addRequireCodeToEachRequiredFunctions", "functionName", functionName)
-		err := annotationProcessor.addRequireCodeToEachRequiredFunctions(&functionStruct)
+		err := annotationProcessor.addRequireCodeToEachRequiredFunctions(compileContextData, &functionStruct)
 		if err != nil {
 			return err
 		}
-		annotationProcessor.context.functionsMap[functionName] = functionStruct
+		compileContextData.functionsMap[functionName] = functionStruct
 	}
 	return nil
 }
@@ -153,6 +159,7 @@ func (functionStruct *functionInfoStruct) getRequireAnnotation() (*requireAnnota
 }
 
 func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequiredFunctions(
+	compileContextData *CompileContextData,
 	functionStruct *functionInfoStruct,
 ) error {
 	requireAnnotation, err := functionStruct.getRequireAnnotation()
@@ -161,18 +168,18 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequi
 	}
 
 	if len(requireAnnotation.requiredFunctions) > 0 {
-		functionsMap := annotationProcessor.context.functionsMap
+		functionsMap := compileContextData.functionsMap
 		for _, requiredFunctionName := range requireAnnotation.requiredFunctions {
 			slog.Debug("Check if required function has been imported", "requiredFunctionName", requiredFunctionName)
 			requiredFunctionStruct, ok := functionsMap[requiredFunctionName]
 			if !ok {
 				return ErrRequiredFunctionNotFound(requiredFunctionName)
 			}
-			err = annotationProcessor.addRequireCode(&requiredFunctionStruct)
+			err = annotationProcessor.addRequireCode(compileContextData, &requiredFunctionStruct)
 			if err != nil {
 				return err
 			}
-			annotationProcessor.context.functionsMap[requiredFunctionName] = requiredFunctionStruct
+			compileContextData.functionsMap[requiredFunctionName] = requiredFunctionStruct
 		}
 		requireAnnotation.codeAddedOnRequiredFunctions = true
 	}
@@ -181,6 +188,7 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequi
 }
 
 func (annotationProcessor *requireAnnotationProcessor) addRequireCode(
+	compileContextData *CompileContextData,
 	functionStruct *functionInfoStruct,
 ) error {
 	myRequiredAnnotation, err := functionStruct.getRequireAnnotation()
@@ -203,7 +211,7 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCode(
 			"code":         functionStruct.SourceCode,
 			"functionName": functionStruct.FunctionName,
 		},
-		*annotationProcessor.context.templateContext,
+		*compileContextData.templateContextData,
 	)
 	if err != nil {
 		return err
@@ -231,6 +239,8 @@ func isCodeContainsFunction(code string, functionName string) error {
 	return ErrRequiredFunctionNotFound(functionName)
 }
 
-func (annotationProcessor *requireAnnotationProcessor) PostProcess(code string) (string, error) {
+func (annotationProcessor *requireAnnotationProcessor) PostProcess(
+	_ *CompileContextData, code string,
+) (string, error) {
 	return code, nil
 }

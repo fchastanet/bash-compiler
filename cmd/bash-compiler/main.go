@@ -6,6 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fchastanet/bash-compiler/internal/compiler"
+	"github.com/fchastanet/bash-compiler/internal/model"
+	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/services"
 	"github.com/fchastanet/bash-compiler/internal/utils/dotenv"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
@@ -50,15 +53,29 @@ func main() {
 	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
 
 	// create BinaryModelService
+	templateContext := render.NewTemplateContext()
+	requireAnnotationProcessor := compiler.NewRequireAnnotationProcessor()
+	embedAnnotationProcessor := compiler.NewEmbedAnnotationProcessor()
+	compiler := compiler.NewCompiler(
+		templateContext,
+		[]*compiler.AnnotationProcessorInterface{
+			&requireAnnotationProcessor,
+			&embedAnnotationProcessor,
+		},
+	)
+	binaryModelService := services.NewBinaryModelService(
+		model.NewBinaryModel(),
+		templateContext,
+		compiler,
+	)
 	for _, binaryModelFilePath := range cli.YamlFiles {
-		binaryModelService := services.NewBinaryModelService(
+		binaryModelServiceContextData, err := binaryModelService.Init(
 			string(cli.TargetDir),
 			cli.KeepIntermediateFiles,
 			binaryModelFilePath,
 		)
-		err = binaryModelService.Init()
 		logger.Check(err)
-		err = binaryModelService.Compile()
+		err = binaryModelService.Compile(binaryModelServiceContextData)
 		logger.Check(err)
 	}
 }
