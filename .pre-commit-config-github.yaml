@@ -160,12 +160,13 @@ repos:
         stages: [pre-commit, pre-push, manual]
 
   - repo: https://github.com/fchastanet/bash-tools-framework
-    rev: 4.0.0
+    rev: 4.0.4
     hooks:
       - id: awkLint
       - id: shellcheckLint
       - id: shellcheckLintGithubAction
       - id: plantuml
+        args: [--same-dir, -f, png, -f, svg, --limit-size, "7000"]
 
   - repo: https://github.com/fchastanet/bash-compiler
     rev: 0.2.0

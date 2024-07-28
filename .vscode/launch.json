@@ -9,7 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "cmd/bash-compiler/main.go",
+      "program": "cmd/bash-compiler",
       "args": [
         "examples/configReference/shellcheckLint.yaml",
         "-t",

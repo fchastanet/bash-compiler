@@ -13,13 +13,17 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-type Context struct {
-	TemplateDirs []string
-	Template     *template.Template
-	TemplateFile string
-	TemplateName string
-	RootData     interface{}
-	Data         interface{}
+type TemplateContext struct {
+}
+
+type TemplateContextData struct {
+	TemplateContext *TemplateContext
+	TemplateDirs    []string
+	TemplateFile    string
+	TemplateName    string
+	Template        *template.Template
+	RootData        interface{}
+	Data            interface{}
 }
 
 type TemplateContextInterface interface {
@@ -29,48 +33,55 @@ type TemplateContextInterface interface {
 	RenderFromTemplateContent(templateContent string) (codeStr string, err error)
 }
 
-func NewTemplateContext(
+func NewTemplateContext() (templateContext *TemplateContext) {
+	return &TemplateContext{}
+}
+
+func (templateContext *TemplateContext) Init(
 	templateDirs []string,
 	templateFile string,
 	data interface{},
-) (templateContext *Context) {
-	return &Context{
-		TemplateDirs: templateDirs,
-		TemplateFile: templateFile,
-		Template:     nil,
-		TemplateName: "",
-		RootData:     data,
-		Data:         data,
+	funcMap map[string]interface{},
+) (*TemplateContextData, error) {
+	templateContextData := &TemplateContextData{
+		TemplateContext: templateContext,
+		TemplateDirs:    templateDirs,
+		TemplateFile:    templateFile,
+		TemplateName:    "",
+		RootData:        data,
+		Data:            data,
 	}
-}
-
-func (templateContext *Context) Init(funcMap map[string]interface{}) error {
 	// load template system
 	myTemplate, templateName, err := newTemplate(
-		templateContext.TemplateDirs,
-		templateContext.TemplateFile,
+		templateContextData.TemplateDirs,
+		templateContextData.TemplateFile,
 		funcMap,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	templateContext.Template = myTemplate
-	templateContext.TemplateName = templateName
-	return nil
+	templateContextData.Template = myTemplate
+	templateContextData.TemplateName = templateName
+	return templateContextData, nil
 }
 
-func (templateContext *Context) Render(templateName string) (string, error) {
+func (templateContext *TemplateContext) Render(
+	templateContextData *TemplateContextData,
+	templateName string,
+) (string, error) {
 	var tplWriter bytes.Buffer
 	slog.Debug("Render template", logger.LogFieldTemplateName, templateName)
-	err := templateContext.Template.ExecuteTemplate(&tplWriter, templateName, templateContext)
+	err := templateContextData.Template.ExecuteTemplate(&tplWriter, templateName, templateContextData)
 	if err != nil {
 		return "", err
 	}
 	return tplWriter.String(), err
 }
 
-func (templateContext *Context) RenderFromTemplateName() (code string, err error) {
-	code, err = templateContext.Render(templateContext.TemplateName)
+func (templateContext *TemplateContext) RenderFromTemplateName(
+	templateContextData *TemplateContextData,
+) (code string, err error) {
+	code, err = templateContext.Render(templateContextData, templateContextData.TemplateName)
 	if err != nil {
 		return "", err
 	}
@@ -78,13 +89,16 @@ func (templateContext *Context) RenderFromTemplateName() (code string, err error
 	return code, err
 }
 
-func (templateContext *Context) RenderFromTemplateContent(templateContent string) (codeStr string, err error) {
-	template, err := templateContext.Template.Parse(templateContent)
+func (templateContext *TemplateContext) RenderFromTemplateContent(
+	templateContextData *TemplateContextData,
+	templateContent string,
+) (codeStr string, err error) {
+	template, err := templateContextData.Template.Parse(templateContent)
 	if err != nil {
 		return "", err
 	}
 	var tplWriter bytes.Buffer
-	err = template.Execute(&tplWriter, templateContext)
+	err = template.Execute(&tplWriter, templateContextData)
 	if err != nil {
 		return "", err
 	}

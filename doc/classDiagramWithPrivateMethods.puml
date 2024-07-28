@@ -8,34 +8,39 @@ Private Aggregations: true
 end legend
 namespace compiler {
     interface AnnotationProcessorInterface  {
-        + Init() error
-        + ParseFunction(functionStruct *functionInfoStruct) error
-        + Process() error
-        + PostProcess(code string) (string, error)
+        + Init(compileContextData *CompileContextData) error
+        + ParseFunction(compileContextData *CompileContextData, functionStruct *functionInfoStruct) error
+        + Process(compileContextData *CompileContextData) error
+        + PostProcess(compileContextData *CompileContextData, code string) (string, error)
 
     }
     class CompileContext << (S,Aquamarine) >> {
-        - templateContext *render.Context
-        - functionsMap <font color=blue>map</font>[string]functionInfoStruct
-        - ignoreFunctionsRegexp []*regexp.Regexp
-        - config model.CompilerConfig
+        - templateContext *render.TemplateContext
         - annotationProcessors []*AnnotationProcessorInterface
 
-        - generateCode(code string) (bool, string, error)
-        - functionsAnalysis(code string) error
-        - renderEachFunctionAsTemplate() error
-        - isNonFrameworkFunction(functionName string) bool
-        - nonFrameworkFunctionRegexpCompile()
-        - generateFunctionCode() (string, error)
-        - insertFunctionsCode(functionNames []string, buffer *bytes.Buffer, insertPosition InsertPosition) error
-        - retrieveAllFunctionsContent() (bool, error)
-        - retrieveEachFunctionPath() (bool, error)
-        - extractUniqueFrameworkFunctions(code string) bool
-        - findFileInSrcDirs(relativeFilePath string) (string, string, bool)
+        - generateCode(compileContextData *CompileContextData, code string) (bool, string, error)
+        - functionsAnalysis(compileContextData *CompileContextData, code string) error
+        - renderEachFunctionAsTemplate(compileContextData *CompileContextData) error
+        - isNonFrameworkFunction(compileContextData *CompileContextData, functionName string) bool
+        - nonFrameworkFunctionRegexpCompile(compileContextData *CompileContextData)
+        - generateFunctionCode(compileContextData *CompileContextData) (string, error)
+        - insertFunctionsCode(compileContextData *CompileContextData, functionNames []string, buffer *bytes.Buffer, insertPosition InsertPosition) error
+        - retrieveAllFunctionsContent(compileContextData *CompileContextData) (bool, error)
+        - retrieveEachFunctionPath(compileContextData *CompileContextData) (bool, error)
+        - extractUniqueFrameworkFunctions(compileContextData *CompileContextData, code string) bool
+        - findFileInSrcDirs(compileContextData *CompileContextData, relativeFilePath string) (string, string, bool)
 
-        + Init() error
-        + Compile(code string) (string, error)
-        + GenerateCode(code string) (string, error)
+        + Init(templateContextData *render.TemplateContextData, config model.CompilerConfig) (*CompileContextData, error)
+        + Compile(compileContextData *CompileContextData, code string) (string, error)
+        + GenerateCode(compileContextData *CompileContextData, code string) (string, error)
+
+    }
+    class CompileContextData << (S,Aquamarine) >> {
+        - compileContext *CompileContext
+        - templateContextData *render.TemplateContextData
+        - config model.CompilerConfig
+        - functionsMap <font color=blue>map</font>[string]functionInfoStruct
+        - ignoreFunctionsRegexp []*regexp.Regexp
 
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
@@ -49,7 +54,8 @@ namespace compiler {
 
     }
     class embedAnnotationProcessor << (S,Aquamarine) >> {
-        - context *CompileContext
+        - compileContextData *CompileContextData
+        - templateContextData *render.TemplateContextData
         - embedFileTemplateName string
         - embedDirTemplateName string
         - embedMap <font color=blue>map</font>[string]string
@@ -58,10 +64,10 @@ namespace compiler {
         - renderDir(asName string, resource string) (string, error)
         - renderTemplate(data <font color=blue>map</font>[string]string, templateName string) (string, error)
 
-        + Init() error
-        + ParseFunction(_ *functionInfoStruct) error
-        + Process() error
-        + PostProcess(code string) (string, error)
+        + Init(compileContextData *CompileContextData) error
+        + ParseFunction(_ *CompileContextData, _ *functionInfoStruct) error
+        + Process(_ *CompileContextData) error
+        + PostProcess(_ *CompileContextData, code string) (string, error)
         + RenderResource(asName string, resource string, lineNumber int) (string, error)
 
     }
@@ -86,17 +92,17 @@ namespace compiler {
 
     }
     class requireAnnotationProcessor << (S,Aquamarine) >> {
-        - context *CompileContext
+        - compileContextData *CompileContextData
         - checkRequirementsTemplateName string
         - requireTemplateName string
 
-        - addRequireCodeToEachRequiredFunctions(functionStruct *functionInfoStruct) error
-        - addRequireCode(functionStruct *functionInfoStruct) error
+        - addRequireCodeToEachRequiredFunctions(compileContextData *CompileContextData, functionStruct *functionInfoStruct) error
+        - addRequireCode(compileContextData *CompileContextData, functionStruct *functionInfoStruct) error
 
-        + Init() error
-        + ParseFunction(functionStruct *functionInfoStruct) error
-        + Process() error
-        + PostProcess(code string) (string, error)
+        + Init(compileContextData *CompileContextData) error
+        + ParseFunction(compileContextData *CompileContextData, functionStruct *functionInfoStruct) error
+        + Process(compileContextData *CompileContextData) error
+        + PostProcess(_ *CompileContextData, code string) (string, error)
 
     }
     class unsupportedEmbeddedResourceError << (S,Aquamarine) >> {
@@ -115,13 +121,16 @@ namespace compiler {
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.requireAnnotationProcessor"
 
 "compiler.CompileContext""uses" o-- "compiler.AnnotationProcessorInterface"
-"compiler.CompileContext""uses" o-- "compiler.functionInfoStruct"
-"compiler.CompileContext""uses" o-- "model.CompilerConfig"
-"compiler.CompileContext""uses" o-- "regexp.Regexp"
-"compiler.CompileContext""uses" o-- "render.Context"
-"compiler.embedAnnotationProcessor""uses" o-- "compiler.CompileContext"
+"compiler.CompileContext""uses" o-- "render.TemplateContext"
+"compiler.CompileContextData""uses" o-- "compiler.CompileContext"
+"compiler.CompileContextData""uses" o-- "compiler.functionInfoStruct"
+"compiler.CompileContextData""uses" o-- "model.CompilerConfig"
+"compiler.CompileContextData""uses" o-- "regexp.Regexp"
+"compiler.CompileContextData""uses" o-- "render.TemplateContextData"
+"compiler.embedAnnotationProcessor""uses" o-- "compiler.CompileContextData"
+"compiler.embedAnnotationProcessor""uses" o-- "render.TemplateContextData"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
-"compiler.requireAnnotationProcessor""uses" o-- "compiler.CompileContext"
+"compiler.requireAnnotationProcessor""uses" o-- "compiler.CompileContextData"
 
 namespace main {
     class Directory << (S,Aquamarine) >> {
@@ -169,20 +178,10 @@ namespace model {
 
     }
     class BinaryModelContext << (S,Aquamarine) >> {
-        + TargetDir string
-        + BinaryModelFilePath string
-        + BinaryModelBaseName string
-        + ReferenceDir string
-        + KeepIntermediateFiles bool
-
         - setEnvVars(binaryModel *BinaryModel)
         - expandVars(binaryModel *BinaryModel)
 
-        + Load() (*BinaryModel, error)
-
-    }
-    interface BinaryModelInterface  {
-        + Load() (*BinaryModel, error)
+        + Load(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*BinaryModel, error)
 
     }
     class CompilerConfig << (S,Aquamarine) >> {
@@ -199,25 +198,28 @@ namespace model {
     }
 }
 
-"model.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
+"services.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
 
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
 "model.BinaryModel""uses" o-- "structures.Dictionary"
 "model.CompilerConfig""uses" o-- "structures.Dictionary"
 
 namespace render {
-    class Context << (S,Aquamarine) >> {
+    class TemplateContext << (S,Aquamarine) >> {
+        + Init(templateDirs []string, templateFile string, data <font color=blue>interface</font>{}, funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) (*TemplateContextData, error)
+        + Render(templateContextData *TemplateContextData, templateName string) (string, error)
+        + RenderFromTemplateName(templateContextData *TemplateContextData) (string, error)
+        + RenderFromTemplateContent(templateContextData *TemplateContextData, templateContent string) (string, error)
+
+    }
+    class TemplateContextData << (S,Aquamarine) >> {
+        + TemplateContext *TemplateContext
         + TemplateDirs []string
-        + Template *template.Template
         + TemplateFile string
         + TemplateName string
+        + Template *template.Template
         + RootData <font color=blue>interface</font>{}
         + Data <font color=blue>interface</font>{}
-
-        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
-        + Render(templateName string) (string, error)
-        + RenderFromTemplateName() (string, error)
-        + RenderFromTemplateContent(templateContent string) (string, error)
 
     }
     interface TemplateContextInterface  {
@@ -229,32 +231,41 @@ namespace render {
     }
 }
 
-"render.TemplateContextInterface" <|-- "implements""render.Context"
 
-"render.Context""uses" o-- "template.Template"
+"render.TemplateContextData""uses" o-- "render.TemplateContext"
+"render.TemplateContextData""uses" o-- "template.Template"
 
 namespace services {
+    interface BinaryModelInterface  {
+        + Load(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModel, error)
+
+    }
     class BinaryModelServiceContext << (S,Aquamarine) >> {
+        - binaryModel BinaryModelInterface
+        - templateContext *render.TemplateContext
+        - codeCompiler CodeCompilerInterface
+
+        - renderBinaryCodeFromTemplate(binaryModelServiceContextData *BinaryModelServiceContextData) (string, error)
+        - renderCode(binaryModelServiceContextData *BinaryModelServiceContextData) (string, error)
+
+        + Init(targetDir string, keepIntermediateFiles bool, binaryModelFilePath string) (*BinaryModelServiceContextData, error)
+        + Compile(binaryModelServiceContextData *BinaryModelServiceContextData) error
+
+    }
+    class BinaryModelServiceContextData << (S,Aquamarine) >> {
+        - binaryModel *model.BinaryModel
+        - compileContextData *compiler.CompileContextData
+        - templateContextData *render.TemplateContextData
         - targetDir string
         - keepIntermediateFiles bool
         - binaryModelFilePath string
         - binaryModelBaseName string
-        - binaryModel *model.BinaryModel
-        - binaryModelContext *model.BinaryModelContext
-        - templateContext *render.Context
-        - codeCompiler CodeCompilerInterface
-
-        - renderBinaryCodeFromTemplate() (string, error)
-        - renderCode() (string, error)
-
-        + Init() error
-        + Compile() error
 
     }
     interface CodeCompilerInterface  {
-        + Init() error
-        + Compile(code string) (string, error)
-        + GenerateCode(code string) (string, error)
+        + Init(templateContextData *render.TemplateContextData, config model.CompilerConfig) (*compiler.CompileContextData, error)
+        + Compile(compileContextData *compiler.CompileContextData, code string) (string, error)
+        + GenerateCode(compileContextData *compiler.CompileContextData, code string) (string, error)
 
     }
     interface CodeGeneratorInterface  {
@@ -264,10 +275,12 @@ namespace services {
 }
 
 
-"services.BinaryModelServiceContext""uses" o-- "model.BinaryModel"
-"services.BinaryModelServiceContext""uses" o-- "model.BinaryModelContext"
-"services.BinaryModelServiceContext""uses" o-- "render.Context"
+"services.BinaryModelServiceContext""uses" o-- "render.TemplateContext"
+"services.BinaryModelServiceContext""uses" o-- "services.BinaryModelInterface"
 "services.BinaryModelServiceContext""uses" o-- "services.CodeCompilerInterface"
+"services.BinaryModelServiceContextData""uses" o-- "compiler.CompileContextData"
+"services.BinaryModelServiceContextData""uses" o-- "model.BinaryModel"
+"services.BinaryModelServiceContextData""uses" o-- "render.TemplateContextData"
 
 namespace structures {
     class Dictionary << (S,Aquamarine) >> {
