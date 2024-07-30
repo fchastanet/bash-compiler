@@ -21,7 +21,7 @@ var (
 	)
 )
 
-var errRequiredFunctionNotFound = errors.New("Required function not found")
+var errRequiredFunctionNotFound = errors.New("required function not found")
 
 func ErrRequiredFunctionNotFound(functionName string) error {
 	return fmt.Errorf("%w: %s in parsed code", errRequiredFunctionNotFound, functionName)
@@ -43,20 +43,18 @@ type requireAnnotation struct {
 }
 
 func NewRequireAnnotationProcessor() AnnotationProcessorInterface {
-	return &requireAnnotationProcessor{}
+	return &requireAnnotationProcessor{} //nolint:exhaustruct // Check Init method
 }
 
 func (annotationProcessor *requireAnnotationProcessor) Init(
 	compileContextData *CompileContextData,
 ) error {
 	annotationProcessor.compileContextData = compileContextData
-	checkRequirementsTemplateName, err :=
-		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
+	checkRequirementsTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
 	if err != nil {
 		return err
 	}
-	requireTemplateName, err :=
-		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplate")
+	requireTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplate")
 	if err != nil {
 		return err
 	}
@@ -105,10 +103,10 @@ func (annotationProcessor *requireAnnotationProcessor) ParseFunction(
 	return nil
 }
 
-func extractRequiredFunctions(code string) ([]string, string) {
+func extractRequiredFunctions(code string) (requiredFunctions []string, newCode string) {
 	var newCodeBuffer bytes.Buffer
 	scanner := bufio.NewScanner(strings.NewReader(code))
-	requiredFunctions := []string{}
+	requiredFunctions = []string{}
 	for scanner.Scan() {
 		line := scanner.Text()
 		matches := requireRegexp.FindStringSubmatch(line)
@@ -120,14 +118,15 @@ func extractRequiredFunctions(code string) ([]string, string) {
 			newCodeBuffer.WriteByte('\n')
 		}
 	}
-	return requiredFunctions, newCodeBuffer.String()
+	newCode = newCodeBuffer.String()
+	return requiredFunctions, newCode
 }
 
 func (annotationProcessor *requireAnnotationProcessor) Process(
 	compileContextData *CompileContextData,
 ) error {
 	functionsMap := compileContextData.functionsMap
-	var functionNames []string = structures.MapKeys(functionsMap)
+	functionNames := structures.MapKeys(functionsMap)
 	for _, functionName := range functionNames {
 		functionStruct := functionsMap[functionName]
 		slog.Debug("addRequireCodeToEachRequiredFunctions", "functionName", functionName)
@@ -142,20 +141,21 @@ func (annotationProcessor *requireAnnotationProcessor) Process(
 
 func (functionStruct *functionInfoStruct) getRequireAnnotation() (*requireAnnotation, error) {
 	annotation, ok := functionStruct.AnnotationMap[annotationRequireKind]
-	if !ok {
-		annotation = requireAnnotation{
+	if annotation == nil || !ok {
+		newAnnotation := requireAnnotation{
 			requiredFunctions:            []string{},
 			isRequired:                   false,
 			checkRequirementsCodeAdded:   false,
 			codeAddedOnRequiredFunctions: false,
 		}
 		functionStruct.AnnotationMap[annotationRequireKind] = annotation
+		return &newAnnotation, nil
 	}
-	requireAnnotation, ok := annotation.(requireAnnotation)
+	castedAnnotation, ok := annotation.(requireAnnotation) //nolint:gocritic,sloppyTypeAssert
 	if !ok {
 		return nil, errAnnotationCastIssue
 	}
-	return &requireAnnotation, nil
+	return &castedAnnotation, nil
 }
 
 func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequiredFunctions(

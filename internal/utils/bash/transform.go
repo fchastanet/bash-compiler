@@ -9,11 +9,9 @@ import (
 	"strings"
 )
 
-var (
-	shebangRegexp = regexp.MustCompile(`^(#!/.*)?$`)
-)
+var shebangRegexp = regexp.MustCompile(`^(#!/.*)?$`)
 
-var errRequiredFunctionNotFound = errors.New("Required function not found")
+var errRequiredFunctionNotFound = errors.New("required function not found")
 
 func ErrRequiredFunctionNotFound(functionName string) error {
 	return fmt.Errorf("%w: %s", errRequiredFunctionNotFound, functionName)
@@ -33,5 +31,6 @@ func RemoveFirstShebangLineIfAny(code string) string {
 		rewrittenCode.WriteByte('\n')
 		lineNumber++
 	}
+
 	return rewrittenCode.String()
 }

@@ -19,7 +19,7 @@ func transformModel(tempYamlFile os.File, resultWriter *bytes.Buffer) (err error
 		return err
 	}
 	defer os.RemoveAll(tempCueFile.Name())
-	_, err = tempCueFile.Write([]byte(binFileCueSchema))
+	_, err = tempCueFile.WriteString(binFileCueSchema)
 	if err != nil {
 		return err
 	}

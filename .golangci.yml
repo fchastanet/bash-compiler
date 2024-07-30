@@ -9,7 +9,7 @@ linters:
   # https://golangci-lint.run/usage/linters/
   enable:
     - cyclop # Go linter that checks if package imports are in a list of acceptable packages
-    # - depguard # Go linter that checks if package imports are in a list of acceptable packages
+    - depguard # Go linter that checks if package imports are in a list of acceptable packages
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, , , _, := f())
     - dupl # Tool for code clone detection
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
@@ -39,8 +39,107 @@ linters:
     - unparam # Reports unused function parameters
     - whitespace # Tool for detection of leading and trailing whitespace
     - sloglint
+    - staticcheck
+    - gofumpt
+    - copyloopvar # Copyloopvar is a linter detects places where loop variables are copied.
+    - exhaustruct # Checks if all structure fields are initialized.
+    - predeclared # Find code that shadows one of Go's predeclared identifiers.
+    - goconst # Finds repeated strings that could be replaced by a constant.
+    - gosimple
+    - gosec
+    - govet
+    - perfsprint
+    - stylecheck
+    - tagalign
+    - usestdlibvars
+  disable:
+    # TODO later
+    - errcheck # Errcheck is a program for checking for unchecked errors in Go code. These unchecked errors can be critical bugs in some cases.
+    - nlreturn # missing auto fixer
+    - testifylint # use this library ?
+    - unused # reports false positives with parameters ignored using _
 
 linters-settings:
+  unused:
+    # Mark all struct fields that have been written to as used.
+    # Default: true
+    field-writes-are-uses: true
+    # Treat IncDec statement (e.g. `i++` or `i--`) as both read and write operation instead of just write.
+    # Default: false
+    post-statements-are-reads: true
+    # Mark all exported identifiers as used.
+    # Default: true
+    exported-is-used: false
+    # Mark all exported fields as used.
+    # default: true
+    exported-fields-are-used: false
+    # Mark all function parameters as used.
+    # default: true
+    parameters-are-used: false
+    # Mark all local variables as used.
+    # default: true
+    local-variables-are-used: false
+    # Mark all identifiers inside generated files as used.
+    # Default: true
+    generated-is-used: false
+  usestdlibvars:
+    # Suggest the use of http.MethodXX.
+    # Default: true
+    http-method: false
+    # Suggest the use of http.StatusXX.
+    # Default: true
+    http-status-code: false
+    # Suggest the use of time.Weekday.String().
+    # Default: true
+    time-weekday: true
+    # Suggest the use of time.Month.String().
+    # Default: false
+    time-month: true
+    # Suggest the use of time.Layout.
+    # Default: false
+    time-layout: true
+    # Suggest the use of crypto.Hash.String().
+    # Default: false
+    crypto-hash: true
+    # Suggest the use of rpc.DefaultXXPath.
+    # Default: false
+    default-rpc-path: true
+    # Suggest the use of sql.LevelXX.String().
+    # Default: false
+    sql-isolation-level: true
+    # Suggest the use of tls.SignatureScheme.String().
+    # Default: false
+    tls-signature-scheme: true
+    # Suggest the use of constant.Kind.String().
+    # Default: false
+    constant-kind: true
+  predeclared:
+    # Comma-separated list of predeclared identifiers to not report on.
+    # Default: ""
+    ignore: ""
+    # Include method names and field names (i.e., qualified names) in checks.
+    # Default: false
+    q: true
+  errcheck:
+    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+    # Such cases aren't reported by default.
+    # Default: false
+    check-type-assertions: true
+    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
+    # Such cases aren't reported by default.
+    # Default: false
+    check-blank: true
+    # To disable the errcheck built-in exclude list.
+    # See `-excludeonly` option in https://github.com/kisielk/errcheck#excluding-functions for details.
+    # Default: false
+    disable-default-exclusions: true
+    # List of functions to exclude from checking, where each entry is a single function to exclude.
+    # See https://github.com/kisielk/errcheck#excluding-functions for details.
+    # exclude-functions:
+  copyloopvar:
+    # Check all assigning the loop variable to another variable.
+    # Default: false
+    check-alias: true
   funlen:
     lines: 100
     statements: 50
@@ -98,7 +197,48 @@ linters-settings:
     # https://github.com/go-simpler/sloglint?tab=readme-ov-file#forbidden-keys
     # Default: false
     args-on-sep-lines: false
-
+  gocritic:
+    enable-all: true
+    disabled-checks:
+      - paramTypeCombine
+      - ptrToRefParam # it seems *map is necessary
+  depguard:
+    # Rules to apply.
+    #
+    # Variables:
+    # - File Variables
+    #   you can still use and exclamation mark ! in front of a variable to say not to use it.
+    #   Example !$test will match any file that is not a go test file.
+    #
+    #   `$all` - matches all go files
+    #   `$test` - matches all go test files
+    #
+    # - Package Variables
+    #
+    #  `$gostd` - matches all of go's standard library (Pulled from `GOROOT`)
+    #
+    # Default: Only allow $gostd in all files.
+    rules:
+      # Name of a rule.
+      main:
+        # Used to determine the package matching priority.
+        # There are three different modes: `original`, `strict`, and `lax`.
+        # Default: "original"
+        list-mode: lax
+        # List of file globs that will match this list of settings to compare against.
+        # Default: $all
+        # files:
+        #  - "!**/*_a _file.go"
+        # List of allowed packages.
+        allow:
+          - $gostd
+          - github.com/fchastanet
+        # Packages that are not allowed where the value is a suggestion.
+        deny:
+          - pkg: "github.com/sirupsen/logrus"
+            desc: not allowed
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
@@ -108,3 +248,4 @@ issues:
         - gosec
         - funlen
         - noctx
+        - errcheck

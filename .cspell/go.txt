@@ -3,12 +3,14 @@ difflib
 dotenv
 envsubst
 errorlint
+exhaustruct
 exportloopref
 funlen
 Gname
 GOARCH
 gochecknoglobals
 gocover
+gocritic
 gocyclo
 goerr
 gomnd

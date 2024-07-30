@@ -56,17 +56,18 @@ func main() {
 	templateContext := render.NewTemplateContext()
 	requireAnnotationProcessor := compiler.NewRequireAnnotationProcessor()
 	embedAnnotationProcessor := compiler.NewEmbedAnnotationProcessor()
-	compiler := compiler.NewCompiler(
+	compilerService := compiler.NewCompiler(
 		templateContext,
-		[]*compiler.AnnotationProcessorInterface{
-			&requireAnnotationProcessor,
-			&embedAnnotationProcessor,
+		[]compiler.AnnotationProcessorInterface{
+			requireAnnotationProcessor,
+			embedAnnotationProcessor,
 		},
 	)
+	var compilerInterface services.CodeCompilerInterface = compilerService
 	binaryModelService := services.NewBinaryModelService(
 		model.NewBinaryModel(),
 		templateContext,
-		compiler,
+		&compilerInterface,
 	)
 	for _, binaryModelFilePath := range cli.YamlFiles {
 		binaryModelServiceContextData, err := binaryModelService.Init(

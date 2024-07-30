@@ -12,21 +12,25 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-var errToGetCurrentFilename = errors.New("Unable to get the current filename")
+const constMaxScreenSize = 80
+
+var errToGetCurrentFilename = errors.New("unable to get the current filename")
 
 type cli struct {
-	YamlFiles             YamlFiles   `arg:"" help:"Yaml files" type:"path"`
-	TargetDir             Directory   `short:"t" optional:"" help:"Directory that will contain generated files"`
-	Version               VersionFlag `short:"v" name:"version" help:"Print version information and quit"`
-	KeepIntermediateFiles bool        `short:"k" help:"Keep intermediate files in target directory"`
-	Debug                 bool        `short:"d" help:"Set log in debug level"`
+	YamlFiles             YamlFiles   `arg:""                                             help:"Yaml files" type:"path"`
+	TargetDir             Directory   `help:"Directory that will contain generated files" optional:""       short:"t"`
+	Version               VersionFlag `help:"Print version information and quit"          name:"version"    short:"v"`
+	KeepIntermediateFiles bool        `help:"Keep intermediate files in target directory" short:"k"`
+	Debug                 bool        `help:"Set log in debug level"                      short:"d"`
 	LogLevel              int         `hidden:""`
 	CompilerRootDir       Directory   `hidden:""`
 }
 
-type VersionFlag string
-type Directory string
-type YamlFiles []string
+type (
+	VersionFlag string
+	Directory   string
+	YamlFiles   []string
+)
 
 func (yamlFiles *YamlFiles) Validate() error {
 	for _, yamlFile := range *yamlFiles {
@@ -40,7 +44,7 @@ func (yamlFiles *YamlFiles) Validate() error {
 
 func (v VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
 func (v VersionFlag) IsBool() bool                       { return true }
-func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error { //nolint: unparam
+func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error { //nolint:unparam // need to conform to interface
 	fmt.Printf("Bash compiler version %s\n", vars["version"])
 	app.Exit(0)
 	return nil
@@ -58,8 +62,14 @@ func parseArgs(cli *cli) (err error) {
 		kong.Description("From a yaml file describing the bash application, interprets the templates and import the necessary bash functions"),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{
-			Compact: true,
-			Summary: true,
+			NoAppSummary:        false,
+			Summary:             true,
+			Compact:             true,
+			Tree:                false,
+			FlagsLast:           true,
+			Indenter:            kong.LineIndenter,
+			NoExpandSubcommands: true,
+			WrapUpperBound:      constMaxScreenSize,
 		}),
 		kong.Vars{
 			"version": "0.1.0",

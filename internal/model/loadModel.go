@@ -59,6 +59,7 @@ func decodeFile(
 	if err := dec.Decode(myMap); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -68,6 +69,7 @@ func compareObjects(o1 interface{}, o2 interface{}) int {
 	if ok1 && ok2 {
 		return strings.Compare(v1, v2)
 	}
+
 	return 1
 }
 
@@ -82,13 +84,15 @@ func mergeMaps(map1 *map[string]interface{}, map2 *map[string]interface{}) map[s
 		map1v, ok := out[k]
 		if !ok {
 			out[k] = map2v
+
 			continue
 		}
-		if v2, ok := map2v.(map[string]interface{}); ok {
+		if v2, ok := map2v.(map[string]interface{}); ok { //nolint:gocritic,typeAssertChain // simpler to write it without switch
 			// map2v is a map
 			if v1, ok := map1v.(map[string]interface{}); ok {
 				// if map1v is a map  too, we merge with map2v
 				out[k] = mergeMaps(&v1, &v2)
+
 				continue
 			}
 		} else if v2, ok := map2v.([]interface{}); ok {
@@ -105,9 +109,11 @@ func mergeMaps(map1 *map[string]interface{}, map2 *map[string]interface{}) map[s
 				return compareObjects(o1, o2) == 0
 			})
 			out[k] = arr
+
 			continue
 		}
 		out[k] = map2v
 	}
+
 	return out
 }

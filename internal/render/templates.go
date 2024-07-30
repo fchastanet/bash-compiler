@@ -14,7 +14,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-var errFileNotFound = errors.New("File does not exist")
+var errFileNotFound = errors.New("file does not exist")
 
 func ErrFileNotFound(file string, srcDirs []string) error {
 	return fmt.Errorf("%w: %s in any srcDirs %v", errFileNotFound, file, srcDirs)
@@ -22,6 +22,7 @@ func ErrFileNotFound(file string, srcDirs []string) error {
 
 // include allows to include a template
 // allowing to use filter
+
 // Eg: {{ include "template.tpl" | indent 4 }}
 func Include(
 	template string,

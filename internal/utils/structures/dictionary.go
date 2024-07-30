@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-var errMissingKey = errors.New("Invalid key")
+var errMissingKey = errors.New("invalid key")
 
 func ErrMissingKey(key string) error {
 	return fmt.Errorf("%w: %s", errMissingKey, key)
 }
 
-var errInvalidType = errors.New("Invalid type")
+var errInvalidType = errors.New("invalid type")
 
 func ErrInvalidType(myVar interface{}) error {
 	return fmt.Errorf("%w: %T", errInvalidType, myVar)
@@ -53,5 +53,6 @@ func ExpandStringList(values []string) []string {
 	for i := len(values) - 1; i >= 0; i-- {
 		slice[i] = os.ExpandEnv(values[i])
 	}
+
 	return slice
 }
