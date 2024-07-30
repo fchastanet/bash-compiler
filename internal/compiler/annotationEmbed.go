@@ -12,10 +12,8 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-var (
-	embedRegexp = regexp.MustCompile(
-		`(?m)# @embed[ \t]+["']?(?P<resource>[^ \t"']+)["']?[ \t]+(AS|as|As)[ \t]+(?P<asName>[^ \t]+)$`,
-	)
+var embedRegexp = regexp.MustCompile(
+	`(?m)# @embed[ \t]+["']?(?P<resource>[^ \t"']+)["']?[ \t]+(AS|as|As)[ \t]+(?P<asName>[^ \t]+)$`,
 )
 
 type unsupportedEmbeddedResourceError struct {
@@ -58,9 +56,7 @@ type embedAnnotationProcessor struct {
 }
 
 func NewEmbedAnnotationProcessor() AnnotationProcessorInterface {
-	return &embedAnnotationProcessor{
-		embedMap: nil,
-	}
+	return &embedAnnotationProcessor{} //nolint:exhaustruct // Check Init method
 }
 
 func (annotationProcessor *embedAnnotationProcessor) Init(
@@ -69,15 +65,13 @@ func (annotationProcessor *embedAnnotationProcessor) Init(
 	annotationProcessor.compileContextData = compileContextData
 	annotationProcessor.embedMap = make(map[string]string)
 
-	embedFileTemplateName, err :=
-		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
+	embedFileTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}
 	annotationProcessor.embedFileTemplateName = embedFileTemplateName
 
-	embedDirTemplateName, err :=
-		annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
+	embedDirTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
 	if logger.FancyHandleError(err) {
 		return err
 	}

@@ -29,14 +29,16 @@ const (
 	LogFieldSourceCodeLoaded = "sourceCodeLoaded"
 )
 
-var errFunctionNotFound = errors.New("Function not found")
-var errAnnotationCastIssue = errors.New("Cannot cast annotation")
+var (
+	errFunctionNotFound    = errors.New("function not found")
+	errAnnotationCastIssue = errors.New("cannot cast annotation")
+)
 
 func ErrFunctionNotFound(functionName string, srcDirs []string) error {
 	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
 }
 
-var errDuplicatedFunctionsDirective = errors.New("Duplicated FUNCTIONS directive")
+var errDuplicatedFunctionsDirective = errors.New("duplicated FUNCTIONS directive")
 
 func ErrDuplicatedFunctionsDirective() error {
 	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
@@ -60,23 +62,23 @@ type AnnotationProcessorInterface interface {
 type functionInfoStruct struct {
 	FunctionName         string
 	SrcFile              string // "" if not computed yet
+	SourceCode           string // the src file content
+	AnnotationMap        map[string]interface{}
 	Inserted             bool
 	InsertPosition       InsertPosition
-	SourceCode           string // the src file content
 	SourceCodeLoaded     bool
 	SourceCodeAsTemplate bool
-	AnnotationMap        map[string]interface{}
 }
 
 type CompileContext struct {
 	templateContext      *render.TemplateContext
-	annotationProcessors []*AnnotationProcessorInterface
+	annotationProcessors []AnnotationProcessorInterface
 }
 
 type CompileContextData struct {
 	compileContext        *CompileContext
 	templateContextData   *render.TemplateContextData
-	config                model.CompilerConfig
+	config                *model.CompilerConfig
 	functionsMap          map[string]functionInfoStruct
 	ignoreFunctionsRegexp []*regexp.Regexp
 }
@@ -84,33 +86,27 @@ type CompileContextData struct {
 // Compile generates code from given model
 func NewCompiler(
 	templateContext *render.TemplateContext,
-	annotationProcessors []*AnnotationProcessorInterface,
-) *CompileContext {
-	return &CompileContext{
+	annotationProcessors []AnnotationProcessorInterface,
+) CompileContext {
+	return CompileContext{
 		templateContext:      templateContext,
 		annotationProcessors: annotationProcessors,
 	}
 }
 
-func (context *CompileContext) Init(
+func (context CompileContext) Init(
 	templateContextData *render.TemplateContextData,
-	config model.CompilerConfig,
+	config *model.CompilerConfig,
 ) (*CompileContextData, error) {
 	compileContextData := &CompileContextData{
-		compileContext:        context,
+		compileContext:        &context,
 		templateContextData:   templateContextData,
 		config:                config,
 		functionsMap:          make(map[string]functionInfoStruct),
 		ignoreFunctionsRegexp: nil,
 	}
-	requireProcessor := NewRequireAnnotationProcessor()
-	embedProcessor := NewEmbedAnnotationProcessor()
-	context.annotationProcessors = []*AnnotationProcessorInterface{
-		&requireProcessor,
-		&embedProcessor,
-	}
 	for _, annotationProcessor := range context.annotationProcessors {
-		err := (*annotationProcessor).Init(compileContextData)
+		err := annotationProcessor.Init(compileContextData)
 		if logger.FancyHandleError(err) {
 			return nil, err
 		}
@@ -119,7 +115,7 @@ func (context *CompileContext) Init(
 	return compileContextData, nil
 }
 
-func (context *CompileContext) Compile(compileContextData *CompileContextData, code string) (codeCompiled string, err error) {
+func (context CompileContext) Compile(compileContextData *CompileContextData, code string) (codeCompiled string, err error) {
 	err = context.functionsAnalysis(compileContextData, code)
 	if err != nil {
 		return "", err
@@ -140,11 +136,11 @@ func (context *CompileContext) Compile(compileContextData *CompileContextData, c
 	return generatedCode, nil
 }
 
-func (context *CompileContext) GenerateCode(compileContextData *CompileContextData, code string) (
+func (context CompileContext) GenerateCode(compileContextData *CompileContextData, code string) (
 	generatedCode string,
 	err error,
 ) {
-	var functionNames []string = structures.MapKeys(compileContextData.functionsMap)
+	functionNames := structures.MapKeys(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfoStruct := compileContextData.functionsMap[functionName]
 		functionInfoStruct.Inserted = false
@@ -154,7 +150,7 @@ func (context *CompileContext) GenerateCode(compileContextData *CompileContextDa
 	return generatedCode, err
 }
 
-func (context *CompileContext) generateCode(compileContextData *CompileContextData, code string) (
+func (context CompileContext) generateCode(compileContextData *CompileContextData, code string) (
 	needAnotherCompilerPass bool,
 	generatedCode string,
 	err error,
@@ -171,7 +167,7 @@ func (context *CompileContext) generateCode(compileContextData *CompileContextDa
 
 	newCode := generatedCode
 	for _, annotationProcessor := range context.annotationProcessors {
-		newCode, err = (*annotationProcessor).PostProcess(compileContextData, newCode)
+		newCode, err = annotationProcessor.PostProcess(compileContextData, newCode)
 		if err != nil {
 			return false, "", err
 		}
@@ -180,7 +176,7 @@ func (context *CompileContext) generateCode(compileContextData *CompileContextDa
 	return newCode != generatedCode, newCode, nil
 }
 
-func (context *CompileContext) functionsAnalysis(
+func (context CompileContext) functionsAnalysis(
 	compileContextData *CompileContextData,
 	code string,
 ) (err error) {
@@ -203,7 +199,7 @@ func (context *CompileContext) functionsAnalysis(
 	}
 
 	for _, annotationProcessor := range context.annotationProcessors {
-		err = (*annotationProcessor).Process(compileContextData)
+		err = annotationProcessor.Process(compileContextData)
 		if err != nil {
 			return err
 		}
@@ -211,10 +207,10 @@ func (context *CompileContext) functionsAnalysis(
 	return nil
 }
 
-func (context *CompileContext) renderEachFunctionAsTemplate(
+func (context CompileContext) renderEachFunctionAsTemplate(
 	compileContextData *CompileContextData,
 ) (err error) {
-	var functionNames []string = structures.MapKeys(compileContextData.functionsMap)
+	functionNames := structures.MapKeys(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := compileContextData.functionsMap[functionName]
 		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
@@ -235,7 +231,7 @@ func (context *CompileContext) renderEachFunctionAsTemplate(
 			)
 			functionInfo.SourceCode = newCode
 			for _, annotationProcessor := range context.annotationProcessors {
-				err = (*annotationProcessor).ParseFunction(compileContextData, &functionInfo)
+				err = annotationProcessor.ParseFunction(compileContextData, &functionInfo)
 				if err != nil {
 					return err
 				}
@@ -247,7 +243,7 @@ func (context *CompileContext) renderEachFunctionAsTemplate(
 	return nil
 }
 
-func (context *CompileContext) isNonFrameworkFunction(
+func (context CompileContext) isNonFrameworkFunction(
 	compileContextData *CompileContextData,
 	functionName string,
 ) bool {
@@ -261,7 +257,7 @@ func (context *CompileContext) isNonFrameworkFunction(
 	return false
 }
 
-func (context *CompileContext) nonFrameworkFunctionRegexpCompile(
+func (context CompileContext) nonFrameworkFunctionRegexpCompile(
 	compileContextData *CompileContextData,
 ) {
 	if compileContextData.ignoreFunctionsRegexp != nil {
@@ -269,11 +265,10 @@ func (context *CompileContext) nonFrameworkFunctionRegexpCompile(
 	}
 	compileContextData.ignoreFunctionsRegexp = []*regexp.Regexp{}
 	for _, reg := range compileContextData.config.FunctionsIgnoreRegexpList {
-		regStr := fmt.Sprint(reg)
-		re, err := regexp.Compile(fmt.Sprint(regStr))
+		re, err := regexp.Compile(reg)
 		if err != nil {
 			slog.Warn("ignored invalid regexp",
-				logger.LogFieldVariableValue, regStr,
+				logger.LogFieldVariableValue, reg,
 				logger.LogFieldErr, err,
 			)
 		} else {
@@ -282,13 +277,13 @@ func (context *CompileContext) nonFrameworkFunctionRegexpCompile(
 	}
 }
 
-func (context *CompileContext) generateFunctionCode(
+func (context CompileContext) generateFunctionCode(
 	compileContextData *CompileContextData,
 ) (
 	code string,
 	err error,
 ) {
-	var functionNames []string = structures.MapKeys(compileContextData.functionsMap)
+	functionNames := structures.MapKeys(compileContextData.functionsMap)
 	sort.Strings(functionNames) // ensure to generate functions always in the same order
 
 	var finalBuffer bytes.Buffer
@@ -308,7 +303,7 @@ func (context *CompileContext) generateFunctionCode(
 	return finalBuffer.String(), nil
 }
 
-func (context *CompileContext) insertFunctionsCode(
+func (context CompileContext) insertFunctionsCode(
 	compileContextData *CompileContextData,
 	functionNames []string,
 	buffer *bytes.Buffer,
@@ -327,22 +322,23 @@ func (context *CompileContext) insertFunctionsCode(
 			LogFieldSourceCodeLen, len(functionInfo.SourceCode),
 			LogFieldInsertPosition, functionInfo.InsertPosition,
 		)
-		_, err := buffer.Write([]byte(functionInfo.SourceCode))
+		_, err := buffer.WriteString(functionInfo.SourceCode)
 		if err != nil {
 			return err
 		}
 		functionInfo.Inserted = true
 		compileContextData.functionsMap[functionName] = functionInfo
 	}
+
 	return nil
 }
 
-func (context *CompileContext) retrieveAllFunctionsContent(
+func (context CompileContext) retrieveAllFunctionsContent(
 	compileContextData *CompileContextData,
 ) (
 	newFunctionAdded bool, err error,
 ) {
-	var functionNames []string = structures.MapKeys(compileContextData.functionsMap)
+	functionNames := structures.MapKeys(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(compileContextData, functionName) {
 			continue
@@ -381,12 +377,13 @@ func (context *CompileContext) retrieveAllFunctionsContent(
 	return newFunctionAdded, nil
 }
 
-func (context *CompileContext) retrieveEachFunctionPath(
+func (context CompileContext) retrieveEachFunctionPath(
 	compileContextData *CompileContextData,
 ) (
-	addedFiles bool, err error) {
+	addedFiles bool, err error,
+) {
 	addedFiles = false
-	var functionNames []string = structures.MapKeys(compileContextData.functionsMap)
+	functionNames := structures.MapKeys(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(compileContextData, functionName) {
 			continue
@@ -396,7 +393,7 @@ func (context *CompileContext) retrieveEachFunctionPath(
 			continue
 		}
 		functionRelativePath := convertFunctionNameToPath(functionName)
-		filePath, _, found := context.findFileInSrcDirs(compileContextData, functionRelativePath)
+		filePath, found := context.findFileInSrcDirs(compileContextData, functionRelativePath)
 		if !found {
 			return addedFiles, ErrFunctionNotFound(functionName, compileContextData.config.SrcDirsExpanded)
 		}
@@ -408,7 +405,7 @@ func (context *CompileContext) retrieveEachFunctionPath(
 
 		// check if _.sh in directory of the function is needed to be loaded
 		underscoreShFile := filepath.Join(relativeFilePathDir, "_.sh")
-		filePath, _, found = context.findFileInSrcDirs(compileContextData, underscoreShFile)
+		filePath, found = context.findFileInSrcDirs(compileContextData, underscoreShFile)
 		if found {
 			if _, ok := compileContextData.functionsMap[filePath]; !ok {
 				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
@@ -428,7 +425,7 @@ func (context *CompileContext) retrieveEachFunctionPath(
 
 		// check if ZZZ.sh in directory of the function is needed to be loaded
 		zzzShFile := filepath.Join(relativeFilePathDir, "ZZZ.sh")
-		filePath, _, found = context.findFileInSrcDirs(compileContextData, zzzShFile)
+		filePath, found = context.findFileInSrcDirs(compileContextData, zzzShFile)
 		if found {
 			if _, ok := compileContextData.functionsMap[filePath]; !ok {
 				addedFiles = true
@@ -455,7 +452,7 @@ func (context *CompileContext) retrieveEachFunctionPath(
 	return addedFiles, nil
 }
 
-func (context *CompileContext) extractUniqueFrameworkFunctions(
+func (context CompileContext) extractUniqueFrameworkFunctions(
 	compileContextData *CompileContextData,
 	code string,
 ) (newFunctionAdded bool) {
@@ -499,12 +496,11 @@ func (context *CompileContext) extractUniqueFrameworkFunctions(
 	return newFunctionAdded
 }
 
-//nolint:unparam
-func (context *CompileContext) findFileInSrcDirs(
+func (context CompileContext) findFileInSrcDirs(
 	compileContextData *CompileContextData,
 	relativeFilePath string,
 ) (
-	filePath string, srcDir string, found bool,
+	filePath string, found bool,
 ) {
 	for _, srcDir := range compileContextData.config.SrcDirs {
 		srcFile := filepath.Join(srcDir, relativeFilePath)
@@ -517,10 +513,10 @@ func (context *CompileContext) findFileInSrcDirs(
 		)
 		err := files.FileExists(srcFileExpanded)
 		if err == nil {
-			return srcFileExpanded, srcDir, true
+			return srcFileExpanded, true
 		}
 	}
-	return "", "", false
+	return "", false
 }
 
 func convertFunctionNameToPath(functionName string) string {

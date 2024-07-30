@@ -3,7 +3,6 @@ package encoding
 import (
 	"crypto/md5" //nolint:all
 	"encoding/hex"
-	"fmt"
 	"io"
 	"os"
 )
@@ -19,5 +18,5 @@ func Md5SumFromFile(file *os.File) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%x", encoder.Sum(nil)), nil
+	return hex.EncodeToString(encoder.Sum(nil)), nil
 }

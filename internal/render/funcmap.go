@@ -10,7 +10,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/bash"
 )
 
-var errorNotSupportedType = errors.New("Type not supported")
+var errorNotSupportedType = errors.New("type not supported")
 
 func format(format string, args ...any) string {
 	return fmt.Sprintf(format, args...)
@@ -18,7 +18,7 @@ func format(format string, args ...any) string {
 
 func stringLength(list interface{}) (int, error) {
 	tp := reflect.TypeOf(list).Kind()
-	//nolint:exhaustive
+	//nolint:exhaustive // no need to be more exhaustive
 	switch tp {
 	case reflect.Slice, reflect.Array:
 		l2 := reflect.ValueOf(list)

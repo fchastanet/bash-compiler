@@ -93,7 +93,7 @@ func (binaryModelContext *BinaryModelContext) Load(
 
 	// load command yaml data model
 	slog.Info("Loading binaryModel", logger.LogFieldFilePath, binaryModelFilePath)
-	binaryModel := BinaryModel{}
+	binaryModel := BinaryModel{} //nolint:exhaustruct // load from yaml
 	err = yaml.Unmarshal(resultWriter.Bytes(), &binaryModel)
 	if err != nil {
 		return nil, err

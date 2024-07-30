@@ -11,7 +11,7 @@ func TestFilePathExists(t *testing.T) {
 }
 
 func TestFilePathNotExists(t *testing.T) {
-	assert.Error(t, FilePathExists("files2.go"), "File path does not exist: files2.go")
+	assert.Error(t, FilePathExists("files2.go"), "file path does not exist: files2.go")
 }
 
 func TestFilePathDirExists(t *testing.T) {
@@ -23,11 +23,11 @@ func TestFileExists(t *testing.T) {
 }
 
 func TestFileExistsButDir(t *testing.T) {
-	assert.Error(t, FileExists("testsData"), "A file was expected: testsData")
+	assert.Error(t, FileExists("testsData"), "a file was expected: testsData")
 }
 
 func TestFileNotExists(t *testing.T) {
-	assert.Error(t, FileExists("files2.go"), "File does not exist: files2.go")
+	assert.Error(t, FileExists("files2.go"), "file does not exist: files2.go")
 }
 
 func TestDirExists(t *testing.T) {
@@ -35,11 +35,11 @@ func TestDirExists(t *testing.T) {
 }
 
 func TestDirNotExists(t *testing.T) {
-	assert.Error(t, DirExists("dirNotExists"), "Directory path does not exist: dirNotExists")
+	assert.Error(t, DirExists("dirNotExists"), "directory path does not exist: dirNotExists")
 }
 
 func TestDirExistsNotADirectory(t *testing.T) {
-	assert.Error(t, DirExists("files.go"), "A directory was expected: files.go")
+	assert.Error(t, DirExists("files.go"), "a directory was expected: files.go")
 }
 
 func TestMd5FromFileButDir(t *testing.T) {

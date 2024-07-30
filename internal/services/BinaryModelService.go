@@ -20,7 +20,7 @@ type CodeGeneratorInterface interface {
 type CodeCompilerInterface interface {
 	Init(
 		templateContextData *render.TemplateContextData,
-		config model.CompilerConfig,
+		config *model.CompilerConfig,
 	) (*compiler.CompileContextData, error)
 	Compile(compileContextData *compiler.CompileContextData, code string) (codeCompiled string, err error)
 	GenerateCode(compileContextData *compiler.CompileContextData, code string) (generatedCode string, err error)
@@ -39,7 +39,7 @@ type BinaryModelInterface interface {
 type BinaryModelServiceContext struct {
 	binaryModel     BinaryModelInterface
 	templateContext *render.TemplateContext
-	codeCompiler    CodeCompilerInterface
+	codeCompiler    *CodeCompilerInterface
 }
 
 type BinaryModelServiceContextData struct {
@@ -55,7 +55,7 @@ type BinaryModelServiceContextData struct {
 func NewBinaryModelService(
 	binaryModel BinaryModelInterface,
 	templateContext *render.TemplateContext,
-	codeCompiler CodeCompilerInterface,
+	codeCompiler *CodeCompilerInterface,
 ) (_ *BinaryModelServiceContext) {
 	return &BinaryModelServiceContext{
 		binaryModel:     binaryModel,
@@ -69,27 +69,28 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	keepIntermediateFiles bool,
 	binaryModelFilePath string,
 ) (*BinaryModelServiceContextData, error) {
-	binaryModelServiceContextData := &BinaryModelServiceContextData{
-		targetDir:             targetDir,
-		keepIntermediateFiles: keepIntermediateFiles,
-		binaryModelFilePath:   binaryModelFilePath,
-	}
-	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelServiceContextData.binaryModelFilePath)
-	binaryModelServiceContextData.binaryModelBaseName = binaryModelBaseName
-	referenceDir := filepath.Dir(binaryModelServiceContextData.binaryModelFilePath)
-
+	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
+	referenceDir := filepath.Dir(binaryModelFilePath)
 	// init binary Model
 	binaryModel, err := binaryModelServiceContext.binaryModel.Load(
-		binaryModelServiceContextData.targetDir,
-		binaryModelServiceContextData.binaryModelFilePath,
+		targetDir,
+		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
-		binaryModelServiceContextData.keepIntermediateFiles,
+		keepIntermediateFiles,
 	)
 	if err != nil {
 		return nil, err
 	}
-	binaryModelServiceContextData.binaryModel = binaryModel
+	binaryModelServiceContextData := &BinaryModelServiceContextData{
+		binaryModel:           binaryModel,
+		templateContextData:   nil, // computed later
+		compileContextData:    nil, // computed later
+		targetDir:             targetDir,
+		keepIntermediateFiles: keepIntermediateFiles,
+		binaryModelFilePath:   binaryModelFilePath,
+		binaryModelBaseName:   binaryModelBaseName,
+	}
 
 	// init template context
 	data := make(map[string]interface{})
@@ -110,9 +111,10 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	binaryModelServiceContextData.templateContextData = templateContextData
 
 	// init code compiler
-	compileContextData, err := binaryModelServiceContext.codeCompiler.Init(
+	compilerConfig := &binaryModel.CompilerConfig
+	compileContextData, err := (*binaryModelServiceContext.codeCompiler).Init(
 		templateContextData,
-		binaryModel.CompilerConfig,
+		compilerConfig,
 	)
 	if logger.FancyHandleError(err) {
 		return nil, err
@@ -148,8 +150,9 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderBinaryCodeFrom
 	binaryModelServiceContextData *BinaryModelServiceContextData,
 ) (codeCompiled string, err error) {
 	// Render code using template
-	code, err := (*binaryModelServiceContext.templateContext).RenderFromTemplateName(
+	code, err := (*binaryModelServiceContext.templateContext).Render(
 		binaryModelServiceContextData.templateContextData,
+		binaryModelServiceContextData.templateContextData.TemplateName,
 	)
 	if err != nil {
 		return "", err
@@ -177,7 +180,7 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderCode(
 	}
 
 	// Compile to get functions loaded once
-	_, err = binaryModelServiceContext.codeCompiler.Compile(
+	_, err = (*binaryModelServiceContext.codeCompiler).Compile(
 		binaryModelServiceContextData.compileContextData,
 		code,
 	)
@@ -186,7 +189,7 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderCode(
 	}
 
 	// Generate code with all functions that has been loaded
-	codeCompiled, err = binaryModelServiceContext.codeCompiler.GenerateCode(
+	codeCompiled, err = (*binaryModelServiceContext.codeCompiler).GenerateCode(
 		binaryModelServiceContextData.compileContextData,
 		code,
 	)

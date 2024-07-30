@@ -30,8 +30,11 @@ const (
 
 // InitLogger initializes the logger in slog instance
 func InitLogger(level int) {
+	slogLevel := slog.Level(level)
 	opts := &slog.HandlerOptions{
-		Level: slog.Level(level),
+		AddSource:   slogLevel == slog.LevelDebug,
+		Level:       slogLevel,
+		ReplaceAttr: nil,
 	}
 	handler := slog.NewTextHandler(os.Stderr, opts)
 
@@ -63,6 +66,7 @@ func DebugSaveGeneratedFile(
 		"KeepIntermediateFiles - merged config file",
 		LogFieldFilePath, targetFile,
 	)
+
 	return nil
 }
 
@@ -75,6 +79,7 @@ func DebugCopyGeneratedFile(
 	)
 	err = os.WriteFile(targetFile, []byte(code), files.UserReadWriteExecutePerm)
 	slog.Info("KeepIntermediateFiles - merged config file", LogFieldFilePath, targetFile)
+
 	return err
 }
 
@@ -92,7 +97,9 @@ func FancyHandleError(err error) bool {
 			LogFieldLineNumber, line,
 			LogFieldErr, err,
 		)
+
 		return true
 	}
+
 	return false
 }

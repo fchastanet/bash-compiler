@@ -4,6 +4,7 @@ crashlytics
 distro
 dylib
 ecma
+fumpt
 gitleaks
 gitmodules
 golangci
@@ -12,6 +13,7 @@ gtpl
 logrus
 sbom
 shellcheckrc
+structslop
 tabwidth
 tagname
 unindexed

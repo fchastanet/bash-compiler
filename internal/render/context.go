@@ -13,13 +13,10 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-type TemplateContext struct {
-}
+type TemplateContext struct{}
 
 type TemplateContextData struct {
 	TemplateContext *TemplateContext
-	TemplateDirs    []string
-	TemplateFile    string
 	TemplateName    string
 	Template        *template.Template
 	RootData        interface{}
@@ -43,25 +40,24 @@ func (templateContext *TemplateContext) Init(
 	data interface{},
 	funcMap map[string]interface{},
 ) (*TemplateContextData, error) {
-	templateContextData := &TemplateContextData{
-		TemplateContext: templateContext,
-		TemplateDirs:    templateDirs,
-		TemplateFile:    templateFile,
-		TemplateName:    "",
-		RootData:        data,
-		Data:            data,
-	}
 	// load template system
 	myTemplate, templateName, err := newTemplate(
-		templateContextData.TemplateDirs,
-		templateContextData.TemplateFile,
+		templateDirs,
+		templateFile,
 		funcMap,
 	)
 	if err != nil {
 		return nil, err
 	}
-	templateContextData.Template = myTemplate
-	templateContextData.TemplateName = templateName
+
+	templateContextData := &TemplateContextData{
+		TemplateContext: templateContext,
+		TemplateName:    templateName,
+		Template:        myTemplate,
+		RootData:        data,
+		Data:            data,
+	}
+
 	return templateContextData, nil
 }
 
@@ -93,12 +89,12 @@ func (templateContext *TemplateContext) RenderFromTemplateContent(
 	templateContextData *TemplateContextData,
 	templateContent string,
 ) (codeStr string, err error) {
-	template, err := templateContextData.Template.Parse(templateContent)
+	myTemplate, err := templateContextData.Template.Parse(templateContent)
 	if err != nil {
 		return "", err
 	}
 	var tplWriter bytes.Buffer
-	err = template.Execute(&tplWriter, templateContextData)
+	err = myTemplate.Execute(&tplWriter, templateContextData)
 	if err != nil {
 		return "", err
 	}
@@ -111,7 +107,7 @@ func newTemplate(
 	templateFile string,
 	funcMap template.FuncMap,
 ) (templateInstance *template.Template, templateName string, err error) {
-	var patterns = [3]string{
+	patterns := [3]string{
 		"**/**/*.*",
 		"**/*.*",
 		"*.*",
@@ -122,7 +118,7 @@ func newTemplate(
 			templateDirPatterns = append(templateDirPatterns, filepath.Join(templateDir, pattern))
 		}
 	}
-	files, err := files.MatchPatterns(templateDirPatterns...)
+	myFiles, err := files.MatchPatterns(templateDirPatterns...)
 	if err != nil {
 		return nil, "", err
 	}
@@ -132,11 +128,11 @@ func newTemplate(
 	slog.Info(
 		"Loaded template",
 		logger.LogFieldTemplateName, templateName,
-		logger.LogFieldAvailableTemplateFiles, files,
+		logger.LogFieldAvailableTemplateFiles, myFiles,
 	)
 
 	myTemplate := template.New(templateName).Option("missingkey=zero").Funcs(funcMap)
-	_, err = myTemplate.ParseFiles(files...)
+	_, err = myTemplate.ParseFiles(myFiles...)
 	if err != nil {
 		return nil, "", err
 	}

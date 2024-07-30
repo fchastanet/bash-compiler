@@ -2,7 +2,7 @@
 package files
 
 import (
-	"crypto/md5" //nolint:golint,gosec
+	"crypto/md5" //nolint:golint,gosec // no used for security but for file comparison
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	UserReadWritePerm        os.FileMode = 0600
-	UserReadWriteExecutePerm os.FileMode = 0700
+	UserReadWritePerm        os.FileMode = 0o600
+	UserReadWriteExecutePerm os.FileMode = 0o700
 )
 
-var errFilePathMissing = errors.New("File path does not exist")
+var errFilePathMissing = errors.New("file path does not exist")
 
 func ErrFilePathMissing(file string) error {
 	return fmt.Errorf("%w: %s", errFilePathMissing, file)
@@ -28,25 +28,25 @@ func FilePathExists(filePath string) (err error) {
 	return nil
 }
 
-var errFileMissing = errors.New("File does not exist")
+var errFileMissing = errors.New("file does not exist")
 
 func ErrFileMissing(file string) error {
 	return fmt.Errorf("%w: %s", errFileMissing, file)
 }
 
-var errFileWasExpected = errors.New("A file was expected")
+var errFileWasExpected = errors.New("a file was expected")
 
 func ErrFileWasExpected(file string) error {
 	return fmt.Errorf("%w: %s", errFileWasExpected, file)
 }
 
-var errDirectoryWasExpected = errors.New("A directory was expected")
+var errDirectoryWasExpected = errors.New("a directory was expected")
 
 func ErrDirectoryWasExpected(file string) error {
 	return fmt.Errorf("%w: %s", errDirectoryWasExpected, file)
 }
 
-var errDirectoryMissing = errors.New("Directory path does not exist")
+var errDirectoryMissing = errors.New("directory path does not exist")
 
 func ErrDirectoryMissing(dir string) error {
 	return fmt.Errorf("%w: %s", errDirectoryMissing, dir)
