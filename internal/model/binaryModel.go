@@ -29,13 +29,13 @@ type BinaryModel struct {
 	BinData        interface{}           `yaml:"binData"`
 }
 
-type BinaryModelContext struct{}
+type BinaryModelLoader struct{}
 
-func NewBinaryModel() *BinaryModelContext {
-	return &BinaryModelContext{}
+func NewBinaryModelLoader() *BinaryModelLoader {
+	return &BinaryModelLoader{}
 }
 
-func (binaryModelContext *BinaryModelContext) Load(
+func (binaryModelContext *BinaryModelLoader) Load(
 	targetDir string,
 	binaryModelFilePath string,
 	binaryModelBaseName string,
@@ -105,7 +105,7 @@ func (binaryModelContext *BinaryModelContext) Load(
 	return &binaryModel, err
 }
 
-func (binaryModelContext *BinaryModelContext) setEnvVars(binaryModel *BinaryModel) {
+func (binaryModelContext *BinaryModelLoader) setEnvVars(binaryModel *BinaryModel) {
 	for key, value := range binaryModel.Vars {
 		if val, ok := value.(string); ok {
 			os.Setenv(key, val)
@@ -113,7 +113,7 @@ func (binaryModelContext *BinaryModelContext) setEnvVars(binaryModel *BinaryMode
 	}
 }
 
-func (binaryModelContext *BinaryModelContext) expandVars(binaryModel *BinaryModel) {
+func (binaryModelContext *BinaryModelLoader) expandVars(binaryModel *BinaryModel) {
 	binaryModel.CompilerConfig.SrcDirsExpanded = []string{}
 	for _, srcDir := range binaryModel.CompilerConfig.SrcDirs {
 		binaryModel.CompilerConfig.SrcDirsExpanded = append(

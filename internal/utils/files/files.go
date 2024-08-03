@@ -5,7 +5,6 @@ import (
 	"crypto/md5" //nolint:golint,gosec // no used for security but for file comparison
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 )
@@ -15,50 +14,56 @@ const (
 	UserReadWriteExecutePerm os.FileMode = 0o700
 )
 
-var errFilePathMissing = errors.New("file path does not exist")
+type filePathMissingError struct {
+	error
+	FilePath string
+}
 
-func ErrFilePathMissing(file string) error {
-	return fmt.Errorf("%w: %s", errFilePathMissing, file)
+func (e *filePathMissingError) Error() string {
+	return "file path does not exist: " + e.FilePath
 }
 
 func FilePathExists(filePath string) (err error) {
 	if _, err = os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		return ErrFilePathMissing(filePath)
+		return &filePathMissingError{nil, filePath}
 	}
 	return nil
 }
 
-var errFileMissing = errors.New("file does not exist")
-
-func ErrFileMissing(file string) error {
-	return fmt.Errorf("%w: %s", errFileMissing, file)
+type fileWasExpectedError struct {
+	error
+	File string
 }
 
-var errFileWasExpected = errors.New("a file was expected")
-
-func ErrFileWasExpected(file string) error {
-	return fmt.Errorf("%w: %s", errFileWasExpected, file)
+func (e *fileWasExpectedError) Error() string {
+	return "a file was expected: " + e.File
 }
 
-var errDirectoryWasExpected = errors.New("a directory was expected")
-
-func ErrDirectoryWasExpected(file string) error {
-	return fmt.Errorf("%w: %s", errDirectoryWasExpected, file)
+type directoryWasExpectedError struct {
+	error
+	Directory string
 }
 
-var errDirectoryMissing = errors.New("directory path does not exist")
+func (e *directoryWasExpectedError) Error() string {
+	return "a directory was expected: " + e.Directory
+}
 
-func ErrDirectoryMissing(dir string) error {
-	return fmt.Errorf("%w: %s", errDirectoryMissing, dir)
+type directoryPathMissingError struct {
+	error
+	DirPath string
+}
+
+func (e *directoryPathMissingError) Error() string {
+	return "directory path does not exist: " + e.DirPath
 }
 
 func FileExists(filePath string) (err error) {
 	stat, err := os.Stat(filePath)
 	if errors.Is(err, os.ErrNotExist) {
-		return ErrFileMissing(filePath)
+		return &filePathMissingError{nil, filePath}
 	}
 	if stat.IsDir() {
-		return ErrFileWasExpected(filePath)
+		return &fileWasExpectedError{err, filePath}
 	}
 	return nil
 }
@@ -66,10 +71,10 @@ func FileExists(filePath string) (err error) {
 func DirExists(filePath string) (err error) {
 	stat, err := os.Stat(filePath)
 	if errors.Is(err, os.ErrNotExist) {
-		return ErrDirectoryMissing(filePath)
+		return &directoryPathMissingError{err, filePath}
 	}
 	if !stat.IsDir() {
-		return ErrDirectoryWasExpected(filePath)
+		return &directoryWasExpectedError{nil, filePath}
 	}
 	return nil
 }

@@ -27,7 +27,7 @@ func TestFileExistsButDir(t *testing.T) {
 }
 
 func TestFileNotExists(t *testing.T) {
-	assert.Error(t, FileExists("files2.go"), "file does not exist: files2.go")
+	assert.Error(t, FileExists("files2.go"), "file path does not exist: files2.go")
 }
 
 func TestDirExists(t *testing.T) {

@@ -23,13 +23,6 @@ type TemplateContextData struct {
 	Data            interface{}
 }
 
-type TemplateContextInterface interface {
-	Init(funcMap map[string]interface{}) error
-	Render(templateName string) (string, error)
-	RenderFromTemplateName() (code string, err error)
-	RenderFromTemplateContent(templateContent string) (codeStr string, err error)
-}
-
 func NewTemplateContext() (templateContext *TemplateContext) {
 	return &TemplateContext{}
 }

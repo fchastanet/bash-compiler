@@ -16,7 +16,7 @@ namespace compiler {
     }
     class CompileContext << (S,Aquamarine) >> {
         - templateContext *render.TemplateContext
-        - annotationProcessors []*AnnotationProcessorInterface
+        - annotationProcessors []AnnotationProcessorInterface
 
         - generateCode(compileContextData *CompileContextData, code string) (bool, string, error)
         - functionsAnalysis(compileContextData *CompileContextData, code string) error
@@ -28,9 +28,9 @@ namespace compiler {
         - retrieveAllFunctionsContent(compileContextData *CompileContextData) (bool, error)
         - retrieveEachFunctionPath(compileContextData *CompileContextData) (bool, error)
         - extractUniqueFrameworkFunctions(compileContextData *CompileContextData, code string) bool
-        - findFileInSrcDirs(compileContextData *CompileContextData, relativeFilePath string) (string, string, bool)
+        - findFileInSrcDirs(compileContextData *CompileContextData, relativeFilePath string) (string, bool)
 
-        + Init(templateContextData *render.TemplateContextData, config model.CompilerConfig) (*CompileContextData, error)
+        + Init(templateContextData *render.TemplateContextData, config *model.CompilerConfig) (*CompileContextData, error)
         + Compile(compileContextData *CompileContextData, code string) (string, error)
         + GenerateCode(compileContextData *CompileContextData, code string) (string, error)
 
@@ -38,10 +38,20 @@ namespace compiler {
     class CompileContextData << (S,Aquamarine) >> {
         - compileContext *CompileContext
         - templateContextData *render.TemplateContextData
-        - config model.CompilerConfig
+        - config *model.CompilerConfig
         - functionsMap <font color=blue>map</font>[string]functionInfoStruct
         - ignoreFunctionsRegexp []*regexp.Regexp
 
+    }
+    class annotation << (S,Aquamarine) >> {
+    }
+    class annotationCastError << (S,Aquamarine) >> {
+        + FunctionName string
+
+        + Error() string
+
+    }
+    class annotationProcessor << (S,Aquamarine) >> {
     }
     class compiler.InsertPosition << (T, #FF7700) >>  {
     }
@@ -49,6 +59,12 @@ namespace compiler {
         - lineNumber int
         - asName string
         - resource string
+
+        + Error() string
+
+    }
+    class duplicatedFunctionsDirectiveError << (S,Aquamarine) >> {
+        + LineNumber int
 
         + Error() string
 
@@ -74,14 +90,21 @@ namespace compiler {
     class functionInfoStruct << (S,Aquamarine) >> {
         + FunctionName string
         + SrcFile string
+        + SourceCode string
+        + AnnotationMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}
         + Inserted bool
         + InsertPosition InsertPosition
-        + SourceCode string
         + SourceCodeLoaded bool
         + SourceCodeAsTemplate bool
-        + AnnotationMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}
 
         - getRequireAnnotation() (*requireAnnotation, error)
+
+    }
+    class functionNotFoundError << (S,Aquamarine) >> {
+        + FunctionName string
+        + SrcDirs []string
+
+        + Error() string
 
     }
     class requireAnnotation << (S,Aquamarine) >> {
@@ -105,16 +128,30 @@ namespace compiler {
         + PostProcess(_ *CompileContextData, code string) (string, error)
 
     }
+    class requiredFunctionNotFoundError << (S,Aquamarine) >> {
+        - functionName string
+
+        + Error() string
+
+    }
     class unsupportedEmbeddedResourceError << (S,Aquamarine) >> {
         - asName string
         - resource string
         - lineNumber int
-        - innerError error
 
         + Error() string
 
     }
 }
+"__builtin__.error" *-- "extends""compiler.annotationCastError"
+"__builtin__.error" *-- "extends""compiler.duplicatedAsNameError"
+"__builtin__.error" *-- "extends""compiler.duplicatedFunctionsDirectiveError"
+"compiler.annotationProcessor" *-- "extends""compiler.embedAnnotationProcessor"
+"__builtin__.error" *-- "extends""compiler.functionNotFoundError"
+"compiler.annotation" *-- "extends""compiler.requireAnnotation"
+"compiler.annotationProcessor" *-- "extends""compiler.requireAnnotationProcessor"
+"__builtin__.error" *-- "extends""compiler.requiredFunctionNotFoundError"
+"__builtin__.error" *-- "extends""compiler.unsupportedEmbeddedResourceError"
 
 "services.CodeCompilerInterface" <|-- "implements""compiler.CompileContext"
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.embedAnnotationProcessor"
@@ -131,6 +168,39 @@ namespace compiler {
 "compiler.embedAnnotationProcessor""uses" o-- "render.TemplateContextData"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
 "compiler.requireAnnotationProcessor""uses" o-- "compiler.CompileContextData"
+
+namespace files {
+    class directoryPathMissingError << (S,Aquamarine) >> {
+        + DirPath string
+
+        + Error() string
+
+    }
+    class directoryWasExpectedError << (S,Aquamarine) >> {
+        + Directory string
+
+        + Error() string
+
+    }
+    class filePathMissingError << (S,Aquamarine) >> {
+        + FilePath string
+
+        + Error() string
+
+    }
+    class fileWasExpectedError << (S,Aquamarine) >> {
+        + File string
+
+        + Error() string
+
+    }
+}
+"__builtin__.error" *-- "extends""files.directoryPathMissingError"
+"__builtin__.error" *-- "extends""files.directoryWasExpectedError"
+"__builtin__.error" *-- "extends""files.filePathMissingError"
+"__builtin__.error" *-- "extends""files.fileWasExpectedError"
+
+
 
 namespace main {
     class Directory << (S,Aquamarine) >> {
@@ -157,6 +227,10 @@ namespace main {
         + CompilerRootDir Directory
 
     }
+    class getCurrentFilenameError << (S,Aquamarine) >> {
+        + Error() string
+
+    }
     class main.Directory << (T, #FF7700) >>  {
     }
     class main.VersionFlag << (T, #FF7700) >>  {
@@ -164,6 +238,7 @@ namespace main {
     class main.YamlFiles << (T, #FF7700) >>  {
     }
 }
+"__builtin__.error" *-- "extends""main.getCurrentFilenameError"
 
 
 "main.cli""uses" o-- "main.Directory"
@@ -177,7 +252,7 @@ namespace model {
         + BinData <font color=blue>interface</font>{}
 
     }
-    class BinaryModelContext << (S,Aquamarine) >> {
+    class BinaryModelLoader << (S,Aquamarine) >> {
         - setEnvVars(binaryModel *BinaryModel)
         - expandVars(binaryModel *BinaryModel)
 
@@ -198,7 +273,7 @@ namespace model {
     }
 }
 
-"services.BinaryModelInterface" <|-- "implements""model.BinaryModelContext"
+"services.BinaryModelLoaderInterface" <|-- "implements""model.BinaryModelLoader"
 
 "model.BinaryModel""uses" o-- "model.CompilerConfig"
 "model.BinaryModel""uses" o-- "structures.Dictionary"
@@ -214,35 +289,42 @@ namespace render {
     }
     class TemplateContextData << (S,Aquamarine) >> {
         + TemplateContext *TemplateContext
-        + TemplateDirs []string
-        + TemplateFile string
         + TemplateName string
         + Template *template.Template
         + RootData <font color=blue>interface</font>{}
         + Data <font color=blue>interface</font>{}
 
     }
-    interface TemplateContextInterface  {
-        + Init(funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
-        + Render(templateName string) (string, error)
-        + RenderFromTemplateName() (string, error)
-        + RenderFromTemplateContent(templateContent string) (string, error)
+    class fileNotFoundError << (S,Aquamarine) >> {
+        + File string
+        + SrcDirs []string
+
+        + Error() string
+
+    }
+    class notSupportedTypeError << (S,Aquamarine) >> {
+        + ObjectType string
+
+        + Error() string
 
     }
 }
+"__builtin__.error" *-- "extends""render.fileNotFoundError"
+"__builtin__.error" *-- "extends""render.notSupportedTypeError"
 
+"services.TemplateContextInterface" <|-- "implements""render.TemplateContext"
 
 "render.TemplateContextData""uses" o-- "render.TemplateContext"
 "render.TemplateContextData""uses" o-- "template.Template"
 
 namespace services {
-    interface BinaryModelInterface  {
+    interface BinaryModelLoaderInterface  {
         + Load(targetDir string, binaryModelFilePath string, binaryModelBaseName string, referenceDir string, keepIntermediateFiles bool) (*model.BinaryModel, error)
 
     }
     class BinaryModelServiceContext << (S,Aquamarine) >> {
-        - binaryModel BinaryModelInterface
-        - templateContext *render.TemplateContext
+        - binaryModelLoader BinaryModelLoaderInterface
+        - templateContext TemplateContextInterface
         - codeCompiler CodeCompilerInterface
 
         - renderBinaryCodeFromTemplate(binaryModelServiceContextData *BinaryModelServiceContextData) (string, error)
@@ -253,7 +335,7 @@ namespace services {
 
     }
     class BinaryModelServiceContextData << (S,Aquamarine) >> {
-        - binaryModel *model.BinaryModel
+        - binaryModelData *model.BinaryModel
         - compileContextData *compiler.CompileContextData
         - templateContextData *render.TemplateContextData
         - targetDir string
@@ -263,21 +345,24 @@ namespace services {
 
     }
     interface CodeCompilerInterface  {
-        + Init(templateContextData *render.TemplateContextData, config model.CompilerConfig) (*compiler.CompileContextData, error)
+        + Init(templateContextData *render.TemplateContextData, config *model.CompilerConfig) (*compiler.CompileContextData, error)
         + Compile(compileContextData *compiler.CompileContextData, code string) (string, error)
         + GenerateCode(compileContextData *compiler.CompileContextData, code string) (string, error)
 
     }
-    interface CodeGeneratorInterface  {
-        + GenerateCode() (string, error)
+    interface TemplateContextInterface  {
+        + Init(templateDirs []string, templateFile string, data <font color=blue>interface</font>{}, funcMap <font color=blue>map</font>[string]<font color=blue>interface</font>{}) (*render.TemplateContextData, error)
+        + Render(templateContextData *render.TemplateContextData, templateName string) (string, error)
+        + RenderFromTemplateName(templateContextData *render.TemplateContextData) (string, error)
+        + RenderFromTemplateContent(templateContextData *render.TemplateContextData, templateContent string) (string, error)
 
     }
 }
 
 
-"services.BinaryModelServiceContext""uses" o-- "render.TemplateContext"
-"services.BinaryModelServiceContext""uses" o-- "services.BinaryModelInterface"
+"services.BinaryModelServiceContext""uses" o-- "services.BinaryModelLoaderInterface"
 "services.BinaryModelServiceContext""uses" o-- "services.CodeCompilerInterface"
+"services.BinaryModelServiceContext""uses" o-- "services.TemplateContextInterface"
 "services.BinaryModelServiceContextData""uses" o-- "compiler.CompileContextData"
 "services.BinaryModelServiceContextData""uses" o-- "model.BinaryModel"
 "services.BinaryModelServiceContextData""uses" o-- "render.TemplateContextData"
@@ -288,11 +373,26 @@ namespace structures {
         + GetStringList(key string) ([]string, error)
 
     }
+    class invalidValueTypeError << (S,Aquamarine) >> {
+        + Value any
+
+        + Error() string
+
+    }
+    class missingKeyError << (S,Aquamarine) >> {
+        + Key string
+
+        + Error() string
+
+    }
     class structures.Dictionary << (T, #FF7700) >>  {
     }
 }
+"__builtin__.error" *-- "extends""structures.invalidValueTypeError"
+"__builtin__.error" *-- "extends""structures.missingKeyError"
 
 
+"structures.invalidValueTypeError""uses" o-- "structures.any"
 
 "__builtin__.[]string" #.. "alias of""main.YamlFiles"
 "__builtin__.int8" #.. "alias of""compiler.InsertPosition"

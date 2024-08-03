@@ -3,7 +3,6 @@ package compiler
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -21,21 +20,30 @@ var (
 	)
 )
 
-var errRequiredFunctionNotFound = errors.New("required function not found")
+type requiredFunctionNotFoundError struct {
+	error
+	functionName string
+}
 
-func ErrRequiredFunctionNotFound(functionName string) error {
-	return fmt.Errorf("%w: %s in parsed code", errRequiredFunctionNotFound, functionName)
+func (e *requiredFunctionNotFoundError) Error() string {
+	msg := "required function not found in parsed code: " + e.functionName
+	if e.error != nil {
+		msg = fmt.Sprintf("%s - inner error:\n%v", msg, e.error)
+	}
+	return msg
 }
 
 const annotationRequireKind string = "require"
 
 type requireAnnotationProcessor struct {
+	annotationProcessor
 	compileContextData            *CompileContextData
 	checkRequirementsTemplateName string
 	requireTemplateName           string
 }
 
 type requireAnnotation struct {
+	annotation
 	requiredFunctions            []string
 	isRequired                   bool
 	checkRequirementsCodeAdded   bool
@@ -140,20 +148,21 @@ func (annotationProcessor *requireAnnotationProcessor) Process(
 }
 
 func (functionStruct *functionInfoStruct) getRequireAnnotation() (*requireAnnotation, error) {
-	annotation, ok := functionStruct.AnnotationMap[annotationRequireKind]
-	if annotation == nil || !ok {
+	annotationObj, ok := functionStruct.AnnotationMap[annotationRequireKind]
+	if annotationObj == nil || !ok {
 		newAnnotation := requireAnnotation{
+			annotation:                   annotation{},
 			requiredFunctions:            []string{},
 			isRequired:                   false,
 			checkRequirementsCodeAdded:   false,
 			codeAddedOnRequiredFunctions: false,
 		}
-		functionStruct.AnnotationMap[annotationRequireKind] = annotation
+		functionStruct.AnnotationMap[annotationRequireKind] = annotationObj
 		return &newAnnotation, nil
 	}
-	castedAnnotation, ok := annotation.(requireAnnotation) //nolint:gocritic,sloppyTypeAssert
+	castedAnnotation, ok := annotationObj.(requireAnnotation) //nolint:gocritic,sloppyTypeAssert
 	if !ok {
-		return nil, errAnnotationCastIssue
+		return nil, &annotationCastError{nil, functionStruct.FunctionName}
 	}
 	return &castedAnnotation, nil
 }
@@ -173,7 +182,7 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequi
 			slog.Debug("Check if required function has been imported", "requiredFunctionName", requiredFunctionName)
 			requiredFunctionStruct, ok := functionsMap[requiredFunctionName]
 			if !ok {
-				return ErrRequiredFunctionNotFound(requiredFunctionName)
+				return &requiredFunctionNotFoundError{nil, requiredFunctionName}
 			}
 			err = annotationProcessor.addRequireCode(compileContextData, &requiredFunctionStruct)
 			if err != nil {
@@ -227,7 +236,7 @@ func isCodeContainsFunction(code string, functionName string) error {
 	slog.Debug("isCodeContainsFunction", "functionName", functionName)
 	if matches == nil {
 		slog.Error("isCodeContainsFunction no function regexp match")
-		return ErrRequiredFunctionNotFound(functionName)
+		return &requiredFunctionNotFoundError{nil, functionName}
 	}
 	bashFrameworkFunctionGroupIndex := requiredFunctionRegex.SubexpIndex("bashFrameworkFunction")
 	for _, match := range matches {
@@ -236,7 +245,7 @@ func isCodeContainsFunction(code string, functionName string) error {
 		}
 	}
 	slog.Error("isCodeContainsFunction function does not match", "functionName", functionName)
-	return ErrRequiredFunctionNotFound(functionName)
+	return &requiredFunctionNotFoundError{nil, functionName}
 }
 
 func (annotationProcessor *requireAnnotationProcessor) PostProcess(

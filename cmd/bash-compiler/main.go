@@ -63,11 +63,12 @@ func main() {
 			embedAnnotationProcessor,
 		},
 	)
+	var templateContextInterface services.TemplateContextInterface = templateContext
 	var compilerInterface services.CodeCompilerInterface = compilerService
 	binaryModelService := services.NewBinaryModelService(
-		model.NewBinaryModel(),
-		templateContext,
-		&compilerInterface,
+		model.NewBinaryModelLoader(),
+		templateContextInterface,
+		compilerInterface,
 	)
 	for _, binaryModelFilePath := range cli.YamlFiles {
 		binaryModelServiceContextData, err := binaryModelService.Init(

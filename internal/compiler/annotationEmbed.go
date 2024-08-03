@@ -17,10 +17,10 @@ var embedRegexp = regexp.MustCompile(
 )
 
 type unsupportedEmbeddedResourceError struct {
+	error
 	asName     string
 	resource   string
 	lineNumber int
-	innerError error
 }
 
 func (e *unsupportedEmbeddedResourceError) Error() string {
@@ -28,13 +28,14 @@ func (e *unsupportedEmbeddedResourceError) Error() string {
 		"Embedded resource '%s' - name '%s' on line %d cannot be embedded",
 		e.resource, e.asName, e.lineNumber,
 	)
-	if e.innerError != nil {
-		msg = fmt.Sprintf("%s - inner error:\n%v", msg, e.innerError)
+	if e.error != nil {
+		msg = fmt.Sprintf("%s - inner error:\n%v", msg, e.error)
 	}
 	return msg
 }
 
 type duplicatedAsNameError struct {
+	error
 	lineNumber int
 	asName     string
 	resource   string
@@ -48,6 +49,7 @@ func (e *duplicatedAsNameError) Error() string {
 }
 
 type embedAnnotationProcessor struct {
+	annotationProcessor
 	compileContextData    *CompileContextData
 	templateContextData   *render.TemplateContextData
 	embedFileTemplateName string
@@ -110,11 +112,7 @@ func (annotationProcessor *embedAnnotationProcessor) PostProcess(
 			resource := os.ExpandEnv(strings.Trim(matches[embedRegexpResourceGroupIndex], " \t"))
 			asName := strings.Trim(matches[embedRegexpAsNameGroupIndex], " \t")
 			if _, exists := annotationProcessor.embedMap[asName]; exists {
-				return "", &duplicatedAsNameError{
-					lineNumber: lineNumber,
-					asName:     asName,
-					resource:   resource,
-				}
+				return "", &duplicatedAsNameError{nil, lineNumber, asName, resource}
 			}
 			annotationProcessor.embedMap[asName] = resource
 			embedCode, err := annotationProcessor.RenderResource(
