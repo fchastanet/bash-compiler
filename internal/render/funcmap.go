@@ -2,7 +2,6 @@
 package render
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -10,23 +9,30 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/bash"
 )
 
-var errorNotSupportedType = errors.New("type not supported")
+type notSupportedTypeError struct {
+	error
+	ObjectType string
+}
+
+func (e *notSupportedTypeError) Error() string {
+	return "type not supported : " + e.ObjectType
+}
 
 func format(format string, args ...any) string {
 	return fmt.Sprintf(format, args...)
 }
 
 func stringLength(list interface{}) (int, error) {
-	tp := reflect.TypeOf(list).Kind()
+	tp := reflect.TypeOf(list)
 	//nolint:exhaustive // no need to be more exhaustive
-	switch tp {
+	switch tp.Kind() {
 	case reflect.Slice, reflect.Array:
 		l2 := reflect.ValueOf(list)
 		return l2.Len(), nil
 	case reflect.String:
 		return stringLength(list.(string))
 	default:
-		return 0, errorNotSupportedType
+		return 0, &notSupportedTypeError{nil, tp.String()}
 	}
 }
 

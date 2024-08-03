@@ -1,21 +1,26 @@
 package structures
 
 import (
-	"errors"
 	"fmt"
 	"os"
 )
 
-var errMissingKey = errors.New("invalid key")
-
-func ErrMissingKey(key string) error {
-	return fmt.Errorf("%w: %s", errMissingKey, key)
+type missingKeyError struct {
+	error
+	Key string
 }
 
-var errInvalidType = errors.New("invalid type")
+func (e *missingKeyError) Error() string {
+	return "missing key: " + e.Key
+}
 
-func ErrInvalidType(myVar interface{}) error {
-	return fmt.Errorf("%w: %T", errInvalidType, myVar)
+type invalidValueTypeError struct {
+	error
+	Value any
+}
+
+func (e *invalidValueTypeError) Error() string {
+	return fmt.Sprintf("invalid type: %v", e.Value)
 }
 
 type Dictionary map[string]interface{}
@@ -23,13 +28,13 @@ type Dictionary map[string]interface{}
 func (dic Dictionary) GetStringValue(key string) (value string, err error) {
 	val, ok := dic[key]
 	if !ok {
-		return "", ErrMissingKey(key)
+		return "", &missingKeyError{nil, key}
 	}
 	if value, ok := val.(string); ok {
 		return ExpandStringValue(value), nil
 	}
 
-	return "", ErrInvalidType(value)
+	return "", &invalidValueTypeError{nil, val}
 }
 
 func ExpandStringValue(value string) string {
@@ -39,13 +44,13 @@ func ExpandStringValue(value string) string {
 func (dic Dictionary) GetStringList(key string) (values []string, err error) {
 	val, ok := dic[key]
 	if !ok {
-		return nil, ErrMissingKey(key)
+		return nil, &missingKeyError{nil, key}
 	}
 	if values, ok := val.([]string); ok {
 		return ExpandStringList(values), nil
 	}
 
-	return nil, ErrInvalidType(values)
+	return nil, &invalidValueTypeError{nil, val}
 }
 
 func ExpandStringList(values []string) []string {

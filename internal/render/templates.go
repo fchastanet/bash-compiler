@@ -2,7 +2,6 @@
 package render
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -14,15 +13,18 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
-var errFileNotFound = errors.New("file does not exist")
+type fileNotFoundError struct {
+	error
+	File    string
+	SrcDirs []string
+}
 
-func ErrFileNotFound(file string, srcDirs []string) error {
-	return fmt.Errorf("%w: %s in any srcDirs %v", errFileNotFound, file, srcDirs)
+func (e *fileNotFoundError) Error() string {
+	return fmt.Sprintf("file does not exist: %s in any srcDirs %v", e.File, e.SrcDirs)
 }
 
 // include allows to include a template
 // allowing to use filter
-
 // Eg: {{ include "template.tpl" | indent 4 }}
 func Include(
 	template string,
@@ -114,6 +116,6 @@ func dynamicFile(filePath string, paths []string) string {
 		}
 	}
 
-	log.Fatalf("error: %v", ErrFileNotFound(filePathExpanded, paths))
+	log.Fatalf("error: %v", fileNotFoundError{nil, filePathExpanded, paths})
 	return ""
 }

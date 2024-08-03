@@ -10,13 +10,14 @@ ROOT_DIR="${REAL_SCRIPT_FILE%/*/*}"
 
   go install github.com/jfeliu007/goplantuml/cmd/goplantuml@latest
   goplantuml \
-    -recursive -aggregate-private-members -show-compositions \
-    -show-aliases -show-aggregations -show-connection-labels \
+    -recursive -aggregate-private-members \
+    -hide-connections -show-compositions -show-implementations \
+    -show-aggregations -show-connection-labels \
     -show-options-as-note -hide-private-members -ignore "builtin" . \
     >"${CURRENT_DIR}/classDiagram.puml"
   goplantuml \
     -recursive -aggregate-private-members -show-compositions \
-    -show-aliases -show-aggregations -show-connection-labels \
+    -show-aliases -show-aggregations -show-connection-labels -show-implementations \
     -show-options-as-note -ignore "builtin" . \
     >"${CURRENT_DIR}/classDiagramWithPrivateMethods.puml"
 )

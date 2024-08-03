@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -14,7 +13,13 @@ import (
 
 const constMaxScreenSize = 80
 
-var errToGetCurrentFilename = errors.New("unable to get the current filename")
+type getCurrentFilenameError struct {
+	error
+}
+
+func (e *getCurrentFilenameError) Error() string {
+	return "unable to get the current filename"
+}
 
 type cli struct {
 	YamlFiles             YamlFiles   `arg:""                                             help:"Yaml files" type:"path"`
@@ -79,7 +84,7 @@ func parseArgs(cli *cli) (err error) {
 	// current dir
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		return errToGetCurrentFilename
+		return &getCurrentFilenameError{nil}
 	}
 	compilerRootDir, err := filepath.Abs(filepath.Dir(filename) + "/../..")
 	if err != nil {

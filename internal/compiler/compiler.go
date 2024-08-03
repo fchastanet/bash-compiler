@@ -4,7 +4,6 @@ package compiler
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -29,19 +28,36 @@ const (
 	LogFieldSourceCodeLoaded = "sourceCodeLoaded"
 )
 
-var (
-	errFunctionNotFound    = errors.New("function not found")
-	errAnnotationCastIssue = errors.New("cannot cast annotation")
-)
-
-func ErrFunctionNotFound(functionName string, srcDirs []string) error {
-	return fmt.Errorf("%w: %s in any srcDirs %v", errFunctionNotFound, functionName, srcDirs)
+type functionNotFoundError struct {
+	error
+	FunctionName string
+	SrcDirs      []string
 }
 
-var errDuplicatedFunctionsDirective = errors.New("duplicated FUNCTIONS directive")
+func (e *functionNotFoundError) Error() string {
+	return fmt.Sprintf(
+		"function not found: %s in any srcDirs %v",
+		e.FunctionName,
+		e.SrcDirs,
+	)
+}
 
-func ErrDuplicatedFunctionsDirective() error {
-	return fmt.Errorf("%w", errDuplicatedFunctionsDirective)
+type annotationCastError struct {
+	error
+	FunctionName string
+}
+
+func (e *annotationCastError) Error() string {
+	return "cannot cast annotation on function: " + e.FunctionName
+}
+
+type duplicatedFunctionsDirectiveError struct {
+	error
+	LineNumber int
+}
+
+func (e *duplicatedFunctionsDirectiveError) Error() string {
+	return fmt.Sprintf("duplicated FUNCTIONS directive on line %d", e.LineNumber)
 }
 
 type InsertPosition int8
@@ -58,6 +74,10 @@ type AnnotationProcessorInterface interface {
 	Process(compileContextData *CompileContextData) error
 	PostProcess(compileContextData *CompileContextData, code string) (newCode string, err error)
 }
+
+type annotationProcessor struct{}
+
+type annotation struct{}
 
 type functionInfoStruct struct {
 	FunctionName         string
@@ -377,6 +397,21 @@ func (context CompileContext) retrieveAllFunctionsContent(
 	return newFunctionAdded, nil
 }
 
+func createFunctionInfoStruct(
+	funcName string, srcFile string, insertPosition InsertPosition,
+) functionInfoStruct {
+	return functionInfoStruct{
+		FunctionName:         funcName,
+		SrcFile:              srcFile,
+		Inserted:             false,
+		InsertPosition:       insertPosition,
+		SourceCode:           "",
+		SourceCodeLoaded:     false,
+		SourceCodeAsTemplate: false,
+		AnnotationMap:        make(map[string]interface{}),
+	}
+}
+
 func (context CompileContext) retrieveEachFunctionPath(
 	compileContextData *CompileContextData,
 ) (
@@ -395,7 +430,7 @@ func (context CompileContext) retrieveEachFunctionPath(
 		functionRelativePath := convertFunctionNameToPath(functionName)
 		filePath, found := context.findFileInSrcDirs(compileContextData, functionRelativePath)
 		if !found {
-			return addedFiles, ErrFunctionNotFound(functionName, compileContextData.config.SrcDirsExpanded)
+			return addedFiles, &functionNotFoundError{nil, functionName, compileContextData.config.SrcDirsExpanded}
 		}
 		functionInfo.SrcFile = filePath
 		compileContextData.functionsMap[functionName] = functionInfo
@@ -410,16 +445,9 @@ func (context CompileContext) retrieveEachFunctionPath(
 			if _, ok := compileContextData.functionsMap[filePath]; !ok {
 				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
 				addedFiles = true
-				compileContextData.functionsMap[filePath] = functionInfoStruct{
-					FunctionName:         filePath,
-					SrcFile:              filePath,
-					Inserted:             false,
-					InsertPosition:       InsertPositionFirst,
-					SourceCode:           "",
-					SourceCodeLoaded:     false,
-					SourceCodeAsTemplate: false,
-					AnnotationMap:        make(map[string]interface{}),
-				}
+				compileContextData.functionsMap[filePath] = createFunctionInfoStruct(
+					filePath, filePath, InsertPositionFirst,
+				)
 			}
 		}
 
@@ -430,16 +458,9 @@ func (context CompileContext) retrieveEachFunctionPath(
 			if _, ok := compileContextData.functionsMap[filePath]; !ok {
 				addedFiles = true
 				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
-				compileContextData.functionsMap[filePath] = functionInfoStruct{
-					FunctionName:         filePath,
-					SrcFile:              filePath,
-					Inserted:             false,
-					InsertPosition:       InsertPositionLast,
-					SourceCode:           "",
-					SourceCodeLoaded:     false,
-					SourceCodeAsTemplate: false,
-					AnnotationMap:        make(map[string]interface{}),
-				}
+				compileContextData.functionsMap[filePath] = createFunctionInfoStruct(
+					filePath, filePath, InsertPositionLast,
+				)
 			}
 		}
 	}
@@ -478,16 +499,9 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 					continue
 				}
 
-				compileContextData.functionsMap[funcName] = functionInfoStruct{
-					FunctionName:         funcName,
-					SrcFile:              "",
-					Inserted:             false,
-					InsertPosition:       InsertPositionMiddle,
-					SourceCode:           "",
-					SourceCodeLoaded:     false,
-					SourceCodeAsTemplate: false,
-					AnnotationMap:        make(map[string]interface{}),
-				}
+				compileContextData.functionsMap[funcName] = createFunctionInfoStruct(
+					funcName, "", InsertPositionMiddle,
+				)
 				newFunctionAdded = true
 			}
 		}
@@ -528,11 +542,13 @@ func injectFunctionCode(code string, functionsCode string) (newCode string, err 
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	slog.Debug("debugCode", LogFieldCode, code)
 	functionDirectiveFound := false
+	lineNumber := 0
 	for scanner.Scan() {
 		line := scanner.Bytes()
+		lineNumber++
 		if IsFunctionDirective(line) {
 			if functionDirectiveFound {
-				return "", ErrDuplicatedFunctionsDirective()
+				return "", &duplicatedFunctionsDirectiveError{nil, lineNumber}
 			}
 			rewrittenCode.Write([]byte(functionsCode))
 			functionDirectiveFound = true

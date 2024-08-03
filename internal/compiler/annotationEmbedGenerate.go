@@ -27,7 +27,7 @@ func (annotationProcessor *embedAnnotationProcessor) RenderResource(
 	}
 
 	return "", &unsupportedEmbeddedResourceError{
-		asName, resource, lineNumber, err,
+		err, asName, resource, lineNumber,
 	}
 }
 
