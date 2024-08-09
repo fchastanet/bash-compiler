@@ -87,7 +87,7 @@ func mergeMaps(map1 *map[string]interface{}, map2 *map[string]interface{}) map[s
 
 			continue
 		}
-		if v2, ok := map2v.(map[string]interface{}); ok { //nolint:gocritic,typeAssertChain // simpler to write it without switch
+		if v2, ok := map2v.(map[string]interface{}); ok { //nolint:gocritic // simpler to write it without switch
 			// map2v is a map
 			if v1, ok := map1v.(map[string]interface{}); ok {
 				// if map1v is a map  too, we merge with map2v
