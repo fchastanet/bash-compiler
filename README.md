@@ -269,6 +269,7 @@ Log::logMessage() {
     exit 1
   fi
   # rest of the function content
+}
 ```
 
 The aims of a require are the following:
@@ -360,24 +361,12 @@ _Syntax:_ `# @embed "srcFile" AS "targetFile"`
 
 _Syntax:_ `# @embed "srcDir" AS "targetDir"`
 
-_Syntax:_ `# @embed Namespace::functions AS "myFunction"`
-
 if `@embed` annotation is provided, the file/dir provided will be added inside
 the resulting bin file as a tar gz file(base64 encoded) and automatically
 extracted when executed.
 
-_`@embed` annotation usage example:_
-
-```bash
-#!/usr/bin/env bash
-# @embed "${FRAMEWORK_ROOT_DIR}/bin/otherNeededBinary" as "otherNeededBinary"
-# @embed Backup::file as "backupFile"
-sudo "${embed_file_backupFile}" ...
-"${embed_file_otherNeededBinary}"
-```
-
-The compiler's embed annotation offers the ability to embed files, directories
-or a framework function. `annotationEmbed` allows to:
+The compiler's embed annotation offers the ability to embed files or
+directories. `annotationEmbed` allows to:
 
 - **include a file**(binary or not) as base64 encoded, the file can then be
   extracted using the automatically generated method

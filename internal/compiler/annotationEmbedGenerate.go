@@ -5,13 +5,42 @@ import (
 	"io"
 	"os"
 
+	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/encoding"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/tar"
 )
 
-func (annotationProcessor *embedAnnotationProcessor) RenderResource(
+type annotationEmbedGenerateInterface interface {
+	RenderResource(asName string, resource string, lineNumber int) (string, error)
+}
+
+type annotationEmbedGenerate struct {
+	embedDirTemplateName  string
+	embedFileTemplateName string
+	templateContextData   *render.TemplateContextData
+}
+
+type unsupportedEmbeddedResourceError struct {
+	error
+	asName     string
+	resource   string
+	lineNumber int
+}
+
+func (e *unsupportedEmbeddedResourceError) Error() string {
+	msg := fmt.Sprintf(
+		"Embedded resource '%s' - name '%s' on line %d cannot be embedded",
+		e.resource, e.asName, e.lineNumber,
+	)
+	if e.error != nil {
+		msg = fmt.Sprintf("%s - inner error: %v", msg, e.error)
+	}
+	return msg
+}
+
+func (annotationEmbedGenerate *annotationEmbedGenerate) RenderResource(
 	asName string,
 	resource string,
 	lineNumber int,
@@ -20,9 +49,9 @@ func (annotationProcessor *embedAnnotationProcessor) RenderResource(
 	if err == nil {
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			return annotationProcessor.renderDir(asName, resource)
+			return annotationEmbedGenerate.renderDir(asName, resource)
 		case mode.IsRegular():
-			return annotationProcessor.renderFile(asName, resource, mode)
+			return annotationEmbedGenerate.renderFile(asName, resource, mode)
 		}
 	}
 
@@ -31,7 +60,7 @@ func (annotationProcessor *embedAnnotationProcessor) RenderResource(
 	}
 }
 
-func (annotationProcessor *embedAnnotationProcessor) renderFile(
+func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	asName string,
 	resource string,
 	fileMode os.FileMode,
@@ -57,8 +86,8 @@ func (annotationProcessor *embedAnnotationProcessor) renderFile(
 		"base64":   base64,
 		"md5sum":   md5sum,
 	}
-	code, err := annotationProcessor.renderTemplate(
-		data, annotationProcessor.embedFileTemplateName,
+	code, err := annotationEmbedGenerate.renderTemplate(
+		data, annotationEmbedGenerate.embedFileTemplateName,
 	)
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -66,7 +95,7 @@ func (annotationProcessor *embedAnnotationProcessor) renderFile(
 	return code, nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) renderDir(
+func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	asName string,
 	resource string,
 ) (string, error) {
@@ -102,8 +131,8 @@ func (annotationProcessor *embedAnnotationProcessor) renderDir(
 		"base64": base64,
 		"md5sum": md5sum,
 	}
-	code, err := annotationProcessor.renderTemplate(
-		data, annotationProcessor.embedDirTemplateName,
+	code, err := annotationEmbedGenerate.renderTemplate(
+		data, annotationEmbedGenerate.embedDirTemplateName,
 	)
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -131,14 +160,14 @@ func createDirectoryArchive(directory string, buf io.Writer) error {
 	return nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) renderTemplate(
+func (annotationEmbedGenerate *annotationEmbedGenerate) renderTemplate(
 	data map[string]string,
 	templateName string,
 ) (string, error) {
-	annotationProcessor.templateContextData.Data = data
-	annotationProcessor.templateContextData.RootData = data
-	return annotationProcessor.templateContextData.TemplateContext.Render(
-		annotationProcessor.templateContextData,
+	annotationEmbedGenerate.templateContextData.Data = data
+	annotationEmbedGenerate.templateContextData.RootData = data
+	return annotationEmbedGenerate.templateContextData.TemplateContext.Render(
+		annotationEmbedGenerate.templateContextData,
 		templateName,
 	)
 }

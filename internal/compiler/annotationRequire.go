@@ -160,7 +160,7 @@ func (functionStruct *functionInfoStruct) getRequireAnnotation() (*requireAnnota
 		functionStruct.AnnotationMap[annotationRequireKind] = annotationObj
 		return &newAnnotation, nil
 	}
-	castedAnnotation, ok := annotationObj.(requireAnnotation) //nolint:gocritic,sloppyTypeAssert
+	castedAnnotation, ok := annotationObj.(requireAnnotation) //nolint:gocritic
 	if !ok {
 		return nil, &annotationCastError{nil, functionStruct.FunctionName}
 	}

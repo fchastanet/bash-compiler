@@ -15,6 +15,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/bash"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
@@ -101,6 +102,35 @@ type CompileContextData struct {
 	config                *model.CompilerConfig
 	functionsMap          map[string]functionInfoStruct
 	ignoreFunctionsRegexp []*regexp.Regexp
+}
+
+func compilerValidationError(fieldName string, fieldValue any) error {
+	return &errors.ValidationError{
+		InnerError: nil,
+		Context:    "compiler",
+		FieldName:  fieldName,
+		FieldValue: fieldValue,
+	}
+}
+
+func (context CompileContextData) Validate() error {
+	if context.compileContext == nil {
+		return compilerValidationError("CompileContextData.compileContext", context.compileContext)
+	}
+	if context.templateContextData == nil {
+		return compilerValidationError("CompileContextData.templateContextData", context.templateContextData)
+	}
+	if context.config == nil {
+		return compilerValidationError("CompileContextData.config", context.config)
+	}
+	if context.functionsMap == nil {
+		return compilerValidationError("CompileContextData.functionsMap", context.functionsMap)
+	}
+	if context.ignoreFunctionsRegexp == nil {
+		return compilerValidationError("CompileContextData.ignoreFunctionsRegexp", context.ignoreFunctionsRegexp)
+	}
+
+	return nil
 }
 
 // Compile generates code from given model

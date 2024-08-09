@@ -8,31 +8,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 var embedRegexp = regexp.MustCompile(
 	`(?m)# @embed[ \t]+["']?(?P<resource>[^ \t"']+)["']?[ \t]+(AS|as|As)[ \t]+(?P<asName>[^ \t]+)$`,
 )
-
-type unsupportedEmbeddedResourceError struct {
-	error
-	asName     string
-	resource   string
-	lineNumber int
-}
-
-func (e *unsupportedEmbeddedResourceError) Error() string {
-	msg := fmt.Sprintf(
-		"Embedded resource '%s' - name '%s' on line %d cannot be embedded",
-		e.resource, e.asName, e.lineNumber,
-	)
-	if e.error != nil {
-		msg = fmt.Sprintf("%s - inner error:\n%v", msg, e.error)
-	}
-	return msg
-}
 
 type duplicatedAsNameError struct {
 	error
@@ -43,41 +25,66 @@ type duplicatedAsNameError struct {
 
 func (e *duplicatedAsNameError) Error() string {
 	return fmt.Sprintf(
-		"Embedded resource '%s' - name '%s' is already used on line %d",
+		"Embedded resource '%s' - name '%s' is duplicated on line %d",
 		e.resource, e.asName, e.lineNumber,
 	)
 }
 
 type embedAnnotationProcessor struct {
 	annotationProcessor
-	compileContextData    *CompileContextData
-	templateContextData   *render.TemplateContextData
-	embedFileTemplateName string
-	embedDirTemplateName  string
-	embedMap              map[string]string
+	annotationEmbedGenerate annotationEmbedGenerateInterface
+	embedMap                map[string]string
 }
 
 func NewEmbedAnnotationProcessor() AnnotationProcessorInterface {
 	return &embedAnnotationProcessor{} //nolint:exhaustruct // Check Init method
 }
 
+func validationError(fieldName string, fieldValue any) error {
+	return &errors.ValidationError{
+		InnerError: nil,
+		Context:    "annotationEmbed",
+		FieldName:  fieldName,
+		FieldValue: fieldValue,
+	}
+}
+
 func (annotationProcessor *embedAnnotationProcessor) Init(
 	compileContextData *CompileContextData,
 ) error {
-	annotationProcessor.compileContextData = compileContextData
+	if compileContextData == nil {
+		return validationError("compileContextData", nil)
+	}
+	err := compileContextData.Validate()
+	if logger.FancyHandleError(err) {
+		return err
+	}
 	annotationProcessor.embedMap = make(map[string]string)
 
-	embedFileTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
+	embedFileTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {
-		return err
+		return &errors.ValidationError{
+			InnerError: err,
+			Context:    "compileContextData.config.AnnotationsConfig",
+			FieldName:  "embedFileTemplateName",
+			FieldValue: nil,
+		}
 	}
-	annotationProcessor.embedFileTemplateName = embedFileTemplateName
 
-	embedDirTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
+	embedDirTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
 	if logger.FancyHandleError(err) {
-		return err
+		return &errors.ValidationError{
+			InnerError: err,
+			Context:    "compileContextData.config.AnnotationsConfig",
+			FieldName:  "embedDirTemplateName",
+			FieldValue: nil,
+		}
 	}
-	annotationProcessor.embedDirTemplateName = embedDirTemplateName
+	annotationProcessor.annotationEmbedGenerate = &annotationEmbedGenerate{
+		embedDirTemplateName:  embedDirTemplateName,
+		embedFileTemplateName: embedFileTemplateName,
+		templateContextData:   compileContextData.templateContextData,
+	}
 
 	return nil
 }
@@ -115,7 +122,7 @@ func (annotationProcessor *embedAnnotationProcessor) PostProcess(
 				return "", &duplicatedAsNameError{nil, lineNumber, asName, resource}
 			}
 			annotationProcessor.embedMap[asName] = resource
-			embedCode, err := annotationProcessor.RenderResource(
+			embedCode, err := annotationProcessor.annotationEmbedGenerate.RenderResource(
 				asName, resource, lineNumber,
 			)
 

@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"io"
 	"log/slog"
 	"path"
 	"path/filepath"
@@ -15,10 +16,15 @@ import (
 
 type TemplateContext struct{}
 
+type templateInterface interface {
+	ExecuteTemplate(wr io.Writer, name string, data any) error
+	Parse(text string) (*template.Template, error)
+}
+
 type TemplateContextData struct {
 	TemplateContext *TemplateContext
 	TemplateName    string
-	Template        *template.Template
+	Template        templateInterface
 	RootData        interface{}
 	Data            interface{}
 }
