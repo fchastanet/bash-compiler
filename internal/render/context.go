@@ -21,8 +21,19 @@ type templateInterface interface {
 	Parse(text string) (*template.Template, error)
 }
 
+type TemplateContextInterface interface {
+	Render(
+		templateContextData *TemplateContextData,
+		templateName string,
+	) (string, error)
+	RenderFromTemplateContent(
+		templateContextData *TemplateContextData,
+		templateContent string,
+	) (codeStr string, err error)
+}
+
 type TemplateContextData struct {
-	TemplateContext *TemplateContext
+	TemplateContext TemplateContextInterface
 	TemplateName    string
 	Template        templateInterface
 	RootData        interface{}
