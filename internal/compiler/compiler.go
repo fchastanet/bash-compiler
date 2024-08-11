@@ -92,7 +92,7 @@ type functionInfoStruct struct {
 }
 
 type CompileContext struct {
-	templateContext      *render.TemplateContext
+	templateContext      render.TemplateContextInterface
 	annotationProcessors []AnnotationProcessorInterface
 }
 
@@ -135,11 +135,9 @@ func (context CompileContextData) Validate() error {
 
 // Compile generates code from given model
 func NewCompiler(
-	templateContext *render.TemplateContext,
 	annotationProcessors []AnnotationProcessorInterface,
 ) CompileContext {
 	return CompileContext{
-		templateContext:      templateContext,
 		annotationProcessors: annotationProcessors,
 	}
 }
@@ -507,6 +505,9 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 	compileContextData *CompileContextData,
 	code string,
 ) (newFunctionAdded bool) {
+	if code == "" {
+		return false
+	}
 	var rewrittenCode bytes.Buffer
 	newFunctionAdded = false
 	funcNameGroupIndex := bashFrameworkFunctionRegexp.SubexpIndex("funcName")
