@@ -57,7 +57,6 @@ func main() {
 	requireAnnotationProcessor := compiler.NewRequireAnnotationProcessor()
 	embedAnnotationProcessor := compiler.NewEmbedAnnotationProcessor()
 	compilerService := compiler.NewCompiler(
-		templateContext,
 		[]compiler.AnnotationProcessorInterface{
 			requireAnnotationProcessor,
 			embedAnnotationProcessor,
