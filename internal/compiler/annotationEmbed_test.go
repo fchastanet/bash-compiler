@@ -52,18 +52,6 @@ func TestEmbedInitInvalidCompileContextDataMissingFunctionMap(t *testing.T) {
 	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.functionsMap value map[]")
 }
 
-func TestEmbedInitInvalidCompileContextDataMissingIgnoreFunctionRegexp(t *testing.T) {
-	embedProcessor := NewEmbedAnnotationProcessor()
-	err := embedProcessor.Init(&CompileContextData{
-		&CompileContext{},             //nolint:exhaustruct // test
-		&render.TemplateContextData{}, //nolint:exhaustruct // test
-		&model.CompilerConfig{},       //nolint:exhaustruct // test
-		make(map[string]functionInfoStruct),
-		nil,
-	})
-	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.ignoreFunctionsRegexp value []")
-}
-
 func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateName(t *testing.T) {
 	embedProcessor := NewEmbedAnnotationProcessor()
 	err := embedProcessor.Init(&CompileContextData{

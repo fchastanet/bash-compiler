@@ -34,7 +34,7 @@ type TemplateContextInterface interface {
 
 type TemplateContextData struct {
 	TemplateContext TemplateContextInterface
-	TemplateName    string
+	TemplateName    *string
 	Template        templateInterface
 	RootData        interface{}
 	Data            interface{}
@@ -62,7 +62,7 @@ func (templateContext *TemplateContext) Init(
 
 	templateContextData := &TemplateContextData{
 		TemplateContext: templateContext,
-		TemplateName:    templateName,
+		TemplateName:    &templateName,
 		Template:        myTemplate,
 		RootData:        data,
 		Data:            data,
@@ -87,7 +87,7 @@ func (templateContext *TemplateContext) Render(
 func (templateContext *TemplateContext) RenderFromTemplateName(
 	templateContextData *TemplateContextData,
 ) (code string, err error) {
-	code, err = templateContext.Render(templateContextData, templateContextData.TemplateName)
+	code, err = templateContext.Render(templateContextData, *templateContextData.TemplateName)
 	if err != nil {
 		return "", err
 	}
