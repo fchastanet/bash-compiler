@@ -48,6 +48,7 @@ func newAnnotationEmbedGenerate(
 	templateContextRenderFunc TemplateContextRenderFunc,
 	templateContextRenderFromTemplateContent TemplateContextRenderFromTemplateContent,
 ) *annotationEmbedGenerate {
+	templateName := "fakeTemplate"
 	return &annotationEmbedGenerate{
 		embedDirTemplateName:  "embedDirTemplateName",
 		embedFileTemplateName: "embedFileTemplateName",
@@ -56,7 +57,7 @@ func newAnnotationEmbedGenerate(
 				templateContextRenderFunc,
 				templateContextRenderFromTemplateContent,
 			},
-			TemplateName: "fakeTemplate",
+			TemplateName: &templateName,
 			Template:     nil,
 			RootData:     nil,
 			Data:         nil,

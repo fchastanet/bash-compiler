@@ -11,19 +11,22 @@ import (
 func newCompiler(
 	templateContextRenderFromTemplateContent TemplateContextRenderFromTemplateContent,
 ) CompileContext {
+	templateContext := templateContextMock{
+		nil,
+		templateContextRenderFromTemplateContent,
+	}
 	compileContext := NewCompiler(
+		&templateContext,
 		[]AnnotationProcessorInterface{},
 	)
+	templateName := "fakeTemplate"
 	compileContext.Init(
 		&render.TemplateContextData{
-			TemplateContext: &templateContextMock{
-				nil,
-				templateContextRenderFromTemplateContent,
-			},
-			TemplateName: "fakeTemplate",
-			Template:     nil,
-			RootData:     nil,
-			Data:         nil,
+			TemplateContext: &templateContext,
+			TemplateName:    &templateName,
+			Template:        nil,
+			RootData:        nil,
+			Data:            nil,
 		},
 		&model.CompilerConfig{}, //nolint:exhaustruct // test
 	)

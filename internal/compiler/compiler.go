@@ -126,18 +126,17 @@ func (context CompileContextData) Validate() error {
 	if context.functionsMap == nil {
 		return compilerValidationError("CompileContextData.functionsMap", context.functionsMap)
 	}
-	if context.ignoreFunctionsRegexp == nil {
-		return compilerValidationError("CompileContextData.ignoreFunctionsRegexp", context.ignoreFunctionsRegexp)
-	}
 
 	return nil
 }
 
 // Compile generates code from given model
 func NewCompiler(
+	templateContext render.TemplateContextInterface,
 	annotationProcessors []AnnotationProcessorInterface,
 ) CompileContext {
 	return CompileContext{
+		templateContext:      templateContext,
 		annotationProcessors: annotationProcessors,
 	}
 }

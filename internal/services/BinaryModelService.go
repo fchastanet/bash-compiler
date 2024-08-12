@@ -168,7 +168,7 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderBinaryCodeFrom
 	// Render code using template
 	code, err := binaryModelServiceContext.templateContext.Render(
 		binaryModelServiceContextData.templateContextData,
-		binaryModelServiceContextData.templateContextData.TemplateName,
+		*binaryModelServiceContextData.templateContextData.TemplateName,
 	)
 	if err != nil {
 		return "", err
