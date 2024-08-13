@@ -19,7 +19,6 @@ type CodeCompilerInterface interface {
 		config *model.CompilerConfig,
 	) (*compiler.CompileContextData, error)
 	Compile(compileContextData *compiler.CompileContextData, code string) (codeCompiled string, err error)
-	GenerateCode(compileContextData *compiler.CompileContextData, code string) (generatedCode string, err error)
 }
 
 type BinaryModelLoaderInterface interface {
@@ -196,22 +195,8 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderCode(
 	}
 
 	// Compile to get functions loaded once
-	_, err = binaryModelServiceContext.codeCompiler.Compile(
+	return binaryModelServiceContext.codeCompiler.Compile(
 		binaryModelServiceContextData.compileContextData,
 		code,
 	)
-	if logger.FancyHandleError(err) {
-		return "", err
-	}
-
-	// Generate code with all functions that has been loaded
-	codeCompiled, err = binaryModelServiceContext.codeCompiler.GenerateCode(
-		binaryModelServiceContextData.compileContextData,
-		code,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return codeCompiled, nil
 }

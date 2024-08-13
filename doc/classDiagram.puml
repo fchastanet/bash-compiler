@@ -1,5 +1,4 @@
 @startuml
-!pragma layout elk
 legend
 <u><b>Legend</b></u>
 Render Aggregations: true
@@ -21,10 +20,11 @@ namespace compiler {
     class CompileContext << (S,Aquamarine) >> {
         + Init(templateContextData *render.TemplateContextData, config *model.CompilerConfig) (*CompileContextData, error)
         + Compile(compileContextData *CompileContextData, code string) (string, error)
-        + GenerateCode(compileContextData *CompileContextData, code string) (string, error)
 
     }
     class CompileContextData << (S,Aquamarine) >> {
+        + Validate() error
+
     }
     class annotation << (S,Aquamarine) >> {
     }
@@ -32,6 +32,14 @@ namespace compiler {
         + FunctionName string
 
         + Error() string
+
+    }
+    class annotationEmbedGenerate << (S,Aquamarine) >> {
+        + RenderResource(asName string, resource string, lineNumber int) (string, error)
+
+    }
+    interface annotationEmbedGenerateInterface  {
+        + RenderResource(asName string, resource string, lineNumber int) (string, error)
 
     }
     class annotationProcessor << (S,Aquamarine) >> {
@@ -53,7 +61,6 @@ namespace compiler {
         + ParseFunction(_ *CompileContextData, _ *functionInfoStruct) error
         + Process(_ *CompileContextData) error
         + PostProcess(_ *CompileContextData, code string) (string, error)
-        + RenderResource(asName string, resource string, lineNumber int) (string, error)
 
     }
     class functionInfoStruct << (S,Aquamarine) >> {
@@ -103,20 +110,36 @@ namespace compiler {
 "__builtin__.error" *-- "extends""compiler.unsupportedEmbeddedResourceError"
 
 "services.CodeCompilerInterface" <|-- "implements""compiler.CompileContext"
+"compiler.annotationEmbedGenerateInterface" <|-- "implements""compiler.annotationEmbedGenerate"
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.embedAnnotationProcessor"
 "compiler.AnnotationProcessorInterface" <|-- "implements""compiler.requireAnnotationProcessor"
 
 "compiler.CompileContext""uses" o-- "compiler.AnnotationProcessorInterface"
-"compiler.CompileContext""uses" o-- "render.TemplateContext"
+"compiler.CompileContext""uses" o-- "render.TemplateContextInterface"
 "compiler.CompileContextData""uses" o-- "compiler.CompileContext"
 "compiler.CompileContextData""uses" o-- "compiler.functionInfoStruct"
 "compiler.CompileContextData""uses" o-- "model.CompilerConfig"
 "compiler.CompileContextData""uses" o-- "regexp.Regexp"
 "compiler.CompileContextData""uses" o-- "render.TemplateContextData"
-"compiler.embedAnnotationProcessor""uses" o-- "compiler.CompileContextData"
-"compiler.embedAnnotationProcessor""uses" o-- "render.TemplateContextData"
+"compiler.annotationEmbedGenerate""uses" o-- "render.TemplateContextData"
+"compiler.embedAnnotationProcessor""uses" o-- "compiler.annotationEmbedGenerateInterface"
 "compiler.functionInfoStruct""uses" o-- "compiler.InsertPosition"
 "compiler.requireAnnotationProcessor""uses" o-- "compiler.CompileContextData"
+
+namespace errors {
+    class ValidationError << (S,Aquamarine) >> {
+        + InnerError error
+        + Context string
+        + FieldName string
+        + FieldValue any
+
+        + Error() string
+
+    }
+}
+
+
+"errors.ValidationError""uses" o-- "errors.any"
 
 namespace files {
     class directoryPathMissingError << (S,Aquamarine) >> {
@@ -234,11 +257,16 @@ namespace render {
 
     }
     class TemplateContextData << (S,Aquamarine) >> {
-        + TemplateContext *TemplateContext
-        + TemplateName string
-        + Template *template.Template
+        + TemplateContext TemplateContextInterface
+        + TemplateName *string
+        + Template templateInterface
         + RootData <font color=blue>interface</font>{}
         + Data <font color=blue>interface</font>{}
+
+    }
+    interface TemplateContextInterface  {
+        + Render(templateContextData *TemplateContextData, templateName string) (string, error)
+        + RenderFromTemplateContent(templateContextData *TemplateContextData, templateContent string) (string, error)
 
     }
     class fileNotFoundError << (S,Aquamarine) >> {
@@ -254,14 +282,20 @@ namespace render {
         + Error() string
 
     }
+    interface templateInterface  {
+        + ExecuteTemplate(wr io.Writer, name string, data any) error
+        + Parse(text string) (*template.Template, error)
+
+    }
 }
 "__builtin__.error" *-- "extends""render.fileNotFoundError"
 "__builtin__.error" *-- "extends""render.notSupportedTypeError"
 
+"render.TemplateContextInterface" <|-- "implements""render.TemplateContext"
 "services.TemplateContextInterface" <|-- "implements""render.TemplateContext"
 
-"render.TemplateContextData""uses" o-- "render.TemplateContext"
-"render.TemplateContextData""uses" o-- "template.Template"
+"render.TemplateContextData""uses" o-- "render.TemplateContextInterface"
+"render.TemplateContextData""uses" o-- "render.templateInterface"
 
 namespace services {
     interface BinaryModelLoaderInterface  {
@@ -278,7 +312,6 @@ namespace services {
     interface CodeCompilerInterface  {
         + Init(templateContextData *render.TemplateContextData, config *model.CompilerConfig) (*compiler.CompileContextData, error)
         + Compile(compileContextData *compiler.CompileContextData, code string) (string, error)
-        + GenerateCode(compileContextData *compiler.CompileContextData, code string) (string, error)
 
     }
     interface TemplateContextInterface  {

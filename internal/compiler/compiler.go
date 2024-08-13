@@ -178,23 +178,21 @@ func (context CompileContext) Compile(compileContextData *CompileContextData, co
 		if err != nil {
 			return "", err
 		}
+	} else {
+		// Generate code with all functions that has been loaded
+		functionNames := structures.MapKeys(compileContextData.functionsMap)
+		for _, functionName := range functionNames {
+			functionInfoStruct := compileContextData.functionsMap[functionName]
+			functionInfoStruct.Inserted = false
+			compileContextData.functionsMap[functionName] = functionInfoStruct
+		}
+		_, generatedCode, err = context.generateCode(compileContextData, code)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return generatedCode, nil
-}
-
-func (context CompileContext) GenerateCode(compileContextData *CompileContextData, code string) (
-	generatedCode string,
-	err error,
-) {
-	functionNames := structures.MapKeys(compileContextData.functionsMap)
-	for _, functionName := range functionNames {
-		functionInfoStruct := compileContextData.functionsMap[functionName]
-		functionInfoStruct.Inserted = false
-		compileContextData.functionsMap[functionName] = functionInfoStruct
-	}
-	_, generatedCode, err = context.generateCode(compileContextData, code)
-	return generatedCode, err
 }
 
 func (context CompileContext) generateCode(compileContextData *CompileContextData, code string) (
