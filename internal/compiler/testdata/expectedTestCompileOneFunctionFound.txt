@@ -1,0 +1,7 @@
+
+
+MyPackage::function() {
+  return 0
+}
+# FUNCTIONS
+MyPackage::function

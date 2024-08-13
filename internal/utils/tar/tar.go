@@ -61,6 +61,14 @@ func addToArchive(
 	relativeDir string,
 	updateFileInfoHeader func(info *tar.Header, fi fs.FileInfo) error,
 ) error {
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		return err
+	}
+	if fileInfo.IsDir() {
+		// skip directories
+		return nil
+	}
 	// Open the file which will be written into the archive
 	file, err := os.Open(filename)
 	if err != nil {

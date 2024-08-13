@@ -1,0 +1,12 @@
+
+
+MyPackage::function() {
+  return 0
+}
+
+
+MyPackage::useDependentFunction() {
+  MyPackage::function
+}
+# FUNCTIONS
+MyPackage::useDependentFunction

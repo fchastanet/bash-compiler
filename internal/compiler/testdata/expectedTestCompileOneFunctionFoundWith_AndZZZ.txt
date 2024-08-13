@@ -1,0 +1,13 @@
+
+
+declare -gx underscoreLoaded=1
+
+
+MyCompletePackage::function() {
+  return 0
+}
+
+
+declare -gx ZZZLoaded=1
+# FUNCTIONS
+MyCompletePackage::function
