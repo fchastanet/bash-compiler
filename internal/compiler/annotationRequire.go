@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 )
@@ -57,14 +58,31 @@ func NewRequireAnnotationProcessor() AnnotationProcessorInterface {
 func (annotationProcessor *requireAnnotationProcessor) Init(
 	compileContextData *CompileContextData,
 ) error {
+	if compileContextData == nil {
+		return validationError("compileContextData", nil)
+	}
+	err := compileContextData.Validate()
+	if logger.FancyHandleError(err) {
+		return err
+	}
 	annotationProcessor.compileContextData = compileContextData
 	checkRequirementsTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
 	if err != nil {
-		return err
+		return &errors.ValidationError{
+			InnerError: err,
+			Context:    "compileContextData.config.AnnotationsConfig",
+			FieldName:  "checkRequirementsTemplateName",
+			FieldValue: nil,
+		}
 	}
 	requireTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplate")
 	if err != nil {
-		return err
+		return &errors.ValidationError{
+			InnerError: err,
+			Context:    "compileContextData.config.AnnotationsConfig",
+			FieldName:  "requireTemplate",
+			FieldValue: nil,
+		}
 	}
 
 	annotationProcessor.checkRequirementsTemplateName = checkRequirementsTemplateName
