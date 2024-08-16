@@ -71,17 +71,17 @@ func TestRequireInitInvalidCompileContextDataMissingRequirementsTemplateName(t *
 func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T) {
 	requireProcessor := NewRequireAnnotationProcessor()
 	err := requireProcessor.Init(&CompileContextData{
-		&CompileContext{},             //nolint:exhaustruct // test
-		&render.TemplateContextData{}, //nolint:exhaustruct // test
-		&model.CompilerConfig{ //nolint:exhaustruct // test
+		compileContext:      &CompileContext{},             //nolint:exhaustruct // test
+		templateContextData: &render.TemplateContextData{}, //nolint:exhaustruct // test
+		config: &model.CompilerConfig{ //nolint:exhaustruct // test
 			AnnotationsConfig: structures.Dictionary{
-				"checkRequirementsTemplateName": "templateName",
+				"checkRequirementsTemplateName": "checkRequirementsTemplate",
 			},
 		},
-		make(map[string]functionInfoStruct),
-		[]*regexp.Regexp{},
+		functionsMap:          make(map[string]functionInfoStruct),
+		ignoreFunctionsRegexp: []*regexp.Regexp{},
 	})
-	assert.Error(t, err, "validation failed invalid value : context compileContextData.config.AnnotationsConfig field requireTemplate value <nil>")
+	assert.Error(t, err, "validation failed invalid value : context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil>")
 }
 
 func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
@@ -92,7 +92,7 @@ func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
 		&model.CompilerConfig{ //nolint:exhaustruct // test
 			AnnotationsConfig: structures.Dictionary{
 				"checkRequirementsTemplateName": "templateName",
-				"requireTemplate":               "template",
+				"requireTemplateName":           "template",
 			},
 		},
 		make(map[string]functionInfoStruct),

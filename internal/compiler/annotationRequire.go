@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"sort"
 	"strings"
 
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
-	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 )
 
 var (
@@ -66,7 +66,7 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 		return err
 	}
 	annotationProcessor.compileContextData = compileContextData
-	checkRequirementsTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplate")
+	checkRequirementsTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplateName")
 	if err != nil {
 		return &errors.ValidationError{
 			InnerError: err,
@@ -75,12 +75,12 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 			FieldValue: nil,
 		}
 	}
-	requireTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplate")
+	requireTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplateName")
 	if err != nil {
 		return &errors.ValidationError{
 			InnerError: err,
 			Context:    "compileContextData.config.AnnotationsConfig",
-			FieldName:  "requireTemplate",
+			FieldName:  "requireTemplateName",
 			FieldValue: nil,
 		}
 	}
@@ -152,7 +152,8 @@ func (annotationProcessor *requireAnnotationProcessor) Process(
 	compileContextData *CompileContextData,
 ) error {
 	functionsMap := compileContextData.functionsMap
-	functionNames := structures.MapKeys(functionsMap)
+	functionNames := getSortedFunctionNamesFromMap(functionsMap)
+	sort.Strings(functionNames)
 	for _, functionName := range functionNames {
 		functionStruct := functionsMap[functionName]
 		slog.Debug("addRequireCodeToEachRequiredFunctions", "functionName", functionName)
