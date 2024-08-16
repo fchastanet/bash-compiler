@@ -29,6 +29,10 @@ const (
 	LogFieldSourceCodeLoaded = "sourceCodeLoaded"
 )
 
+var removeTrailingSpacesRegexp = regexp.MustCompile(
+	`[ \t]+$`,
+)
+
 type functionNotFoundError struct {
 	error
 	FunctionName string
@@ -192,7 +196,19 @@ func (context CompileContext) Compile(compileContextData *CompileContextData, co
 		}
 	}
 
-	return generatedCode, nil
+	return context.formatCode(generatedCode), nil
+}
+
+func (context CompileContext) formatCode(code string) string {
+	var newCodeBuffer bytes.Buffer
+	scanner := bufio.NewScanner(strings.NewReader(code))
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = removeTrailingSpacesRegexp.ReplaceAllLiteralString(line, "")
+		newCodeBuffer.Write([]byte(line))
+		newCodeBuffer.WriteByte('\n')
+	}
+	return newCodeBuffer.String()
 }
 
 func (context CompileContext) generateCode(compileContextData *CompileContextData, code string) (
