@@ -180,7 +180,7 @@ func (context CompileContext) Compile(compileContextData *CompileContextData, co
 		}
 	} else {
 		// Generate code with all functions that has been loaded
-		functionNames := structures.MapKeys(compileContextData.functionsMap)
+		functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 		for _, functionName := range functionNames {
 			functionInfoStruct := compileContextData.functionsMap[functionName]
 			functionInfoStruct.Inserted = false
@@ -255,7 +255,7 @@ func (context CompileContext) functionsAnalysis(
 func (context CompileContext) renderEachFunctionAsTemplate(
 	compileContextData *CompileContextData,
 ) (err error) {
-	functionNames := structures.MapKeys(compileContextData.functionsMap)
+	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := compileContextData.functionsMap[functionName]
 		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
@@ -328,7 +328,7 @@ func (context CompileContext) generateFunctionCode(
 	code string,
 	err error,
 ) {
-	functionNames := structures.MapKeys(compileContextData.functionsMap)
+	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	sort.Strings(functionNames) // ensure to generate functions always in the same order
 
 	var finalBuffer bytes.Buffer
@@ -383,7 +383,7 @@ func (context CompileContext) retrieveAllFunctionsContent(
 ) (
 	newFunctionAdded bool, err error,
 ) {
-	functionNames := structures.MapKeys(compileContextData.functionsMap)
+	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(compileContextData, functionName) {
 			continue
@@ -437,13 +437,19 @@ func createFunctionInfoStruct(
 	}
 }
 
+func getSortedFunctionNamesFromMap(myMap map[string]functionInfoStruct) []string {
+	functionNames := structures.MapKeys(myMap)
+	sort.Strings(functionNames)
+	return functionNames
+}
+
 func (context CompileContext) retrieveEachFunctionPath(
 	compileContextData *CompileContextData,
 ) (
 	addedFiles bool, err error,
 ) {
 	addedFiles = false
-	functionNames := structures.MapKeys(compileContextData.functionsMap)
+	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		if context.isNonFrameworkFunction(compileContextData, functionName) {
 			continue
@@ -493,7 +499,7 @@ func (context CompileContext) retrieveEachFunctionPath(
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
 	slog.Info("Found these",
 		logger.LogFieldVariableName, "bashFrameworkFunctions",
-		logger.LogFieldVariableValue, structures.MapKeys(compileContextData.functionsMap),
+		logger.LogFieldVariableValue, getSortedFunctionNamesFromMap(compileContextData.functionsMap),
 	)
 	return addedFiles, nil
 }
