@@ -17,8 +17,8 @@ input: #Schema
   relativeRootDirBasedOnTargetDir: string | *"."
   templateFile: string | input.compilerConfig.rootDir
   annotationsConfig: {
-    requireTemplate: string | *"require"
-    checkRequirementsTemplate: string | *"checkRequirements"
+    requireTemplateName: string | *"require"
+    checkRequirementsTemplateName: string | *"checkRequirements"
     embedFileTemplateName: string | *"embedFile"
     embedDirTemplateName: string | *"embedDir"
     [=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string
