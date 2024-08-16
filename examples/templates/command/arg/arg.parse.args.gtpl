@@ -71,7 +71,7 @@ fi
 {{ $incrementArg := 0 }}{{/* to avoid parse error after return */}}
 {{end}}{{/* if .unknownArgumentCallbacks */}}
 {{ if eq $incrementArg 1 }}
-((++options_parse_parsedArgIndex))"
+((++options_parse_parsedArgIndex))
 {{ end }}
 
 {{ end }}
