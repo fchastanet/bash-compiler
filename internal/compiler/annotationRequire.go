@@ -27,7 +27,7 @@ type requiredFunctionNotFoundError struct {
 }
 
 func (e *requiredFunctionNotFoundError) Error() string {
-	msg := "required function not found in parsed code: " + e.functionName
+	msg := "required function not found in parsed code (you need to call it at least one time): " + e.functionName
 	if e.error != nil {
 		msg = fmt.Sprintf("%s - inner error:\n%v", msg, e.error)
 	}

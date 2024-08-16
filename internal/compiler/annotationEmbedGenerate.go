@@ -75,6 +75,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
+	file.Seek(0, 0)
 	base64, err := encoding.Base64FromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
