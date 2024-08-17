@@ -24,11 +24,11 @@ while (($# > 0)); do
     -*)
       {{ range .everyOptionCallbacks }}
       # shellcheck disable=SC2317
-      {{ . }} "" "${options_parse_arg}" || argOptDefaultBehavior=$?
+      {{ . }} "${options_parse_arg}" || argOptDefaultBehavior=$?
       {{ end -}}
       {{ if .unknownOptionCallbacks }}
       {{ range .unknownOptionCallbacks }}
-      {{ . }} "" "${options_parse_arg}" || argOptDefaultBehavior=$?
+      {{ . }} "${options_parse_arg}" || argOptDefaultBehavior=$?
       {{ end -}}
       {{ else }}
       if [[ "${argOptDefaultBehavior}" = "0" ]]; then

@@ -247,6 +247,7 @@ input: #Schema
   longDescription:        string | *""
   callbacks:              #callbacks
   unknownOptionCallbacks: #callbacks
+  unknownArgumentCallbacks: #callbacks
   beforeParseCallbacks: #callbacks
   afterParseCallbacks: #callbacks
 }
