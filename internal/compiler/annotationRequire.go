@@ -55,6 +55,10 @@ func NewRequireAnnotationProcessor() AnnotationProcessorInterface {
 	return &requireAnnotationProcessor{} //nolint:exhaustruct // Check Init method
 }
 
+func (annotationProcessor *requireAnnotationProcessor) GetTitle() string {
+	return "RequireAnnotationProcessor"
+}
+
 func (annotationProcessor *requireAnnotationProcessor) Init(
 	compileContextData *CompileContextData,
 ) error {
@@ -89,6 +93,9 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 	annotationProcessor.requireTemplateName = requireTemplateName
 
 	return nil
+}
+
+func (annotationProcessor *requireAnnotationProcessor) Reset() {
 }
 
 func (annotationProcessor *requireAnnotationProcessor) ParseFunction(

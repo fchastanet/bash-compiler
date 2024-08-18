@@ -49,6 +49,10 @@ func validationError(fieldName string, fieldValue any) error {
 	}
 }
 
+func (annotationProcessor *embedAnnotationProcessor) GetTitle() string {
+	return "EmbedAnnotationProcessor"
+}
+
 func (annotationProcessor *embedAnnotationProcessor) Init(
 	compileContextData *CompileContextData,
 ) error {
@@ -87,6 +91,10 @@ func (annotationProcessor *embedAnnotationProcessor) Init(
 	}
 
 	return nil
+}
+
+func (annotationProcessor *embedAnnotationProcessor) Reset() {
+	annotationProcessor.embedMap = make(map[string]string)
 }
 
 func (annotationProcessor *embedAnnotationProcessor) ParseFunction(

@@ -39,11 +39,18 @@ func (annotationProcessor *mockAnnotation) PostProcess(
 	return code, nil
 }
 
+func (annotationProcessor *mockAnnotation) GetTitle() string {
+	return ""
+}
+
+func (annotationProcessor *mockAnnotation) Reset() {
+}
+
 // *******************************************
 // newCompiler
 func newCompiler(
 	templateContextRenderFromTemplateContent TemplateContextRenderFromTemplateContent,
-) CompileContext {
+) *CompileContextData {
 	templateContext := templateContextMock{
 		nil,
 		templateContextRenderFromTemplateContent,
@@ -56,7 +63,7 @@ func newCompiler(
 		[]AnnotationProcessorInterface{&annotation},
 	)
 	templateName := "fakeTemplate"
-	compileContext.Init(
+	compileContextData, _ := compileContext.Init(
 		&render.TemplateContextData{
 			TemplateContext: &templateContext,
 			TemplateName:    &templateName,
@@ -64,13 +71,15 @@ func newCompiler(
 			RootData:        nil,
 			Data:            nil,
 		},
-		&model.CompilerConfig{}, //nolint:exhaustruct // test
+		&model.CompilerConfig{ //nolint:exhaustruct // test
+			KeepIntermediateFiles: false,
+		},
 	)
-	return compileContext
+	return compileContextData
 }
 
 func TestCompileEmptyCode(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			_ string,
@@ -78,8 +87,8 @@ func TestCompileEmptyCode(t *testing.T) {
 			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{}, //nolint:exhaustruct // test
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"",
 	)
 	assert.Equal(t, nil, err)
@@ -87,7 +96,7 @@ func TestCompileEmptyCode(t *testing.T) {
 }
 
 func TestCompileFunctionNotFound(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			_ string,
@@ -95,13 +104,9 @@ func TestCompileFunctionNotFound(t *testing.T) {
 			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"MyPackage::function",
 	)
 	assert.Error(t, err, "function not found: MyPackage::function in any srcDirs []")
@@ -109,7 +114,7 @@ func TestCompileFunctionNotFound(t *testing.T) {
 }
 
 func TestCompileDuplicatedFunctionDirective(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			code string,
@@ -117,16 +122,12 @@ func TestCompileDuplicatedFunctionDirective(t *testing.T) {
 			return code, nil
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{},
-				SrcDirs: []string{
-					"./testdata",
-				},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
+	compilerContextData.config.SrcDirs = []string{
+		"./testdata",
+	}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"# FUNCTIONS\n# FUNCTIONS\nMyPackage::function",
 	)
 	assert.Error(t, err, "duplicated FUNCTIONS directive on line 2")
@@ -134,7 +135,7 @@ func TestCompileDuplicatedFunctionDirective(t *testing.T) {
 }
 
 func TestCompileFunctionIgnoredFunction(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			_ string,
@@ -142,15 +143,11 @@ func TestCompileFunctionIgnoredFunction(t *testing.T) {
 			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{
-					"Ignore::ignoredFunction",
-				},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{
+		"Ignore::ignoredFunction",
+	}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"Ignore::ignoredFunction",
 	)
 	assert.Equal(t, nil, err)
@@ -158,7 +155,7 @@ func TestCompileFunctionIgnoredFunction(t *testing.T) {
 }
 
 func TestCompileOneFunctionFound(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			code string,
@@ -166,16 +163,12 @@ func TestCompileOneFunctionFound(t *testing.T) {
 			return code, nil
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{},
-				SrcDirs: []string{
-					"./testdata",
-				},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
+	compilerContextData.config.SrcDirs = []string{
+		"./testdata",
+	}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"# FUNCTIONS\nMyPackage::function",
 	)
 	assert.Equal(t, err, nil)
@@ -183,7 +176,7 @@ func TestCompileOneFunctionFound(t *testing.T) {
 }
 
 func TestCompileOneFunctionFoundWith_AndZZZ(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			code string,
@@ -191,16 +184,12 @@ func TestCompileOneFunctionFoundWith_AndZZZ(t *testing.T) {
 			return code, nil
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{},
-				SrcDirs: []string{
-					"./testdata",
-				},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
+	compilerContextData.config.SrcDirs = []string{
+		"./testdata",
+	}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"# FUNCTIONS\nMyCompletePackage::function",
 	)
 	assert.Equal(t, err, nil)
@@ -208,7 +197,7 @@ func TestCompileOneFunctionFoundWith_AndZZZ(t *testing.T) {
 }
 
 func TestCompileDependentFunction(t *testing.T) {
-	compilerContext := newCompiler(
+	compilerContextData := newCompiler(
 		func(
 			_ *render.TemplateContextData,
 			code string,
@@ -216,16 +205,12 @@ func TestCompileDependentFunction(t *testing.T) {
 			return code, nil
 		},
 	)
-	resultCode, err := compilerContext.Compile(
-		&CompileContextData{ //nolint:exhaustruct // test
-			config: &model.CompilerConfig{ //nolint:exhaustruct // test
-				FunctionsIgnoreRegexpList: []string{},
-				SrcDirs: []string{
-					"./testdata",
-				},
-			},
-			functionsMap: make(map[string]functionInfoStruct),
-		},
+	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
+	compilerContextData.config.SrcDirs = []string{
+		"./testdata",
+	}
+	resultCode, err := compilerContextData.compileContext.Compile(
+		compilerContextData,
 		"# FUNCTIONS\nMyPackage::useDependentFunction",
 	)
 	assert.Equal(t, err, nil)

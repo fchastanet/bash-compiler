@@ -126,10 +126,14 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	binaryModelServiceContextData.templateContextData = templateContextData
 
 	// init code compiler
-	compilerConfig := &binaryModelData.CompilerConfig
+	compilerConfig := binaryModelData.CompilerConfig
+	compilerConfig.IntermediateFilesCount = 0
+	compilerConfig.TargetDir = targetDir
+	compilerConfig.KeepIntermediateFiles = keepIntermediateFiles
+	compilerConfig.BinaryModelBaseName = binaryModelBaseName
 	compileContextData, err := binaryModelServiceContext.codeCompiler.Init(
 		templateContextData,
-		compilerConfig,
+		&compilerConfig,
 	)
 	if logger.FancyHandleError(err) {
 		return nil, err

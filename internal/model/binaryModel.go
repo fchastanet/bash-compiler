@@ -3,6 +3,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -21,6 +22,26 @@ type CompilerConfig struct {
 	FunctionsIgnoreRegexpList       []string              `yaml:"functionsIgnoreRegexpList"`
 	SrcDirs                         []string              `yaml:"srcDirs"`
 	SrcDirsExpanded                 []string              `yaml:"-"`
+	TargetDir                       string                `yaml:"-"`
+	KeepIntermediateFiles           bool                  `yaml:"-"`
+	BinaryModelFilePath             string                `yaml:"-"`
+	BinaryModelBaseName             string                `yaml:"-"`
+	IntermediateFilesCount          int                   `yaml:"-"`
+}
+
+func (compilerConfig *CompilerConfig) DebugCopyGeneratedFile(
+	code string,
+	suffix string,
+) {
+	if compilerConfig.KeepIntermediateFiles {
+		compilerConfig.IntermediateFilesCount++
+		logger.DebugCopyGeneratedFile(
+			compilerConfig.TargetDir,
+			compilerConfig.BinaryModelBaseName,
+			fmt.Sprintf("-4-compiler-%d%s.sh", compilerConfig.IntermediateFilesCount, suffix),
+			code,
+		)
+	}
 }
 
 type BinaryModel struct {
