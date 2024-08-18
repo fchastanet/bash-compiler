@@ -74,7 +74,9 @@ const (
 )
 
 type AnnotationProcessorInterface interface {
+	GetTitle() string
 	Init(compileContextData *CompileContextData) error
+	Reset()
 	ParseFunction(compileContextData *CompileContextData, functionStruct *functionInfoStruct) error
 	Process(compileContextData *CompileContextData) error
 	PostProcess(compileContextData *CompileContextData, code string) (newCode string, err error)
@@ -166,37 +168,69 @@ func (context CompileContext) Init(
 	return compileContextData, nil
 }
 
-func (context CompileContext) Compile(compileContextData *CompileContextData, code string) (codeCompiled string, err error) {
+func (context CompileContext) Compile(
+	compileContextData *CompileContextData, code string,
+) (codeCompiled string, err error) {
+	_, err = context.computeFunctions(compileContextData, code)
+	if err != nil {
+		return "", err
+	}
+	compileContextData.config.DebugCopyGeneratedFile(code, "-compiler::Compile1")
+
+	context.markAllFunctionsAsNotInserted(compileContextData)
+	_, generatedCode, err := context.generateCode(compileContextData, code)
+	if err != nil {
+		return "", err
+	}
+	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::Compile2")
+
+	for _, annotationProcessor := range context.annotationProcessors {
+		annotationProcessor.Reset()
+		generatedCode, err := annotationProcessor.PostProcess(compileContextData, generatedCode)
+		if err != nil {
+			return "", err
+		}
+		compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-after-"+annotationProcessor.GetTitle())
+	}
+
+	return context.formatCode(generatedCode), nil
+}
+
+func (context CompileContext) computeFunctions(
+	compileContextData *CompileContextData, code string,
+) (codeCompiled string, err error) {
 	err = context.functionsAnalysis(compileContextData, code)
 	if err != nil {
 		return "", err
 	}
 
+	compileContextData.config.DebugCopyGeneratedFile(code, "-compiler::computeFunctions1")
+
 	needAnotherCompilerPass, generatedCode, err := context.generateCode(compileContextData, code)
 	if err != nil {
 		return "", err
 	}
+	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::computeFunctions2")
 
 	if needAnotherCompilerPass {
-		generatedCode, err = context.Compile(compileContextData, generatedCode)
-		if err != nil {
-			return "", err
-		}
-	} else {
-		// Generate code with all functions that has been loaded
-		functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
-		for _, functionName := range functionNames {
-			functionInfoStruct := compileContextData.functionsMap[functionName]
-			functionInfoStruct.Inserted = false
-			compileContextData.functionsMap[functionName] = functionInfoStruct
-		}
-		_, generatedCode, err = context.generateCode(compileContextData, code)
+		generatedCode, err = context.computeFunctions(compileContextData, generatedCode)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return context.formatCode(generatedCode), nil
+	return generatedCode, nil
+}
+
+func (context CompileContext) markAllFunctionsAsNotInserted(
+	compileContextData *CompileContextData,
+) {
+	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
+	for _, functionName := range functionNames {
+		functionInfoStruct := compileContextData.functionsMap[functionName]
+		functionInfoStruct.Inserted = false
+		compileContextData.functionsMap[functionName] = functionInfoStruct
+	}
 }
 
 func (context CompileContext) formatCode(code string) string {
@@ -220,18 +254,22 @@ func (context CompileContext) generateCode(compileContextData *CompileContextDat
 	if err != nil {
 		return false, "", err
 	}
+	compileContextData.config.DebugCopyGeneratedFile(functionsCode, "-compiler::generateCode1")
 
 	generatedCode, err = injectFunctionCode(code, functionsCode)
 	if err != nil {
 		return false, "", err
 	}
+	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::generateCode2")
 
 	newCode := generatedCode
 	for _, annotationProcessor := range context.annotationProcessors {
+		annotationProcessor.Reset()
 		newCode, err = annotationProcessor.PostProcess(compileContextData, newCode)
 		if err != nil {
 			return false, "", err
 		}
+		compileContextData.config.DebugCopyGeneratedFile(newCode, "-after-"+annotationProcessor.GetTitle())
 	}
 
 	return newCode != generatedCode, newCode, nil

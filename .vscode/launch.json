@@ -23,14 +23,16 @@
       }
     },
     {
-      "name": "Launch awkLint",
+      "name": "Launch doc",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
-        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src/_binaries/awkLint/binary-awkLint.yaml",
-        "-d"
+        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src/_binaries/doc/binary-doc.yaml",
+        "-d",
+        "-k",
+        "--target-dir=examples/generated"
       ],
       "cwd": "/home/wsl/fchastanet/bash-compiler",
       "env": {

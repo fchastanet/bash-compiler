@@ -134,6 +134,13 @@ func (annotation *annotationEmbedGenerateMock) RenderResource(_ string, _ string
 	return annotation.GenerateCodeFunc()
 }
 
+func (annotation *annotationEmbedGenerateMock) GetTitle() string {
+	return ""
+}
+
+func (annotation *annotationEmbedGenerateMock) Reset() {
+}
+
 func getEmbedProcessorMocked(generateCodeFunc GenerateCodeFunc) *embedAnnotationProcessor {
 	embedProcessor := &embedAnnotationProcessor{
 		annotationProcessor:     annotationProcessor{},
