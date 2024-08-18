@@ -77,6 +77,9 @@ echo
 echo -e "${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
 {{ end }}
 {{ end }}
+{{ if .defaultValue -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
+{{ end }}
 {{ end }}
 {{ $previousGroupId = $groupId }}
 {{ end -}}
