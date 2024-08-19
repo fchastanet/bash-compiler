@@ -1,5 +1,5 @@
 {{- define "command" -}}
-{{ $context := . }}
+{{- $context := . -}}
 {{ with .Data }}
 # ------------------------------------------
 # Command {{ .functionName }}
@@ -26,7 +26,7 @@
 
 # @description display command options and arguments help for {{ .functionName }}
 {{ .functionName }}Help() {
-  {{ include "command.help" . $context | indent 2 | trim}}
+  {{ include "command.help" . $context | indent 2 | trim }}
 }
 {{end}}
 {{end}}

@@ -1,9 +1,9 @@
 {{- define "require" -}}
-{{ $functionNameUpper := .Data.functionName | snakeCase }}
+{{ $functionNameUpper := .Data.functionName | snakeCase -}}
 {{ $replace := print
    .Data.functionName "() {" "\n"
    "  REQUIRE_FUNCTION_" $functionNameUpper "_LOADED=1" "\n"
 }}
-{{ $regexp := print "(?m)[ \t]*(function[ \t]+|)(" .Data.functionName ")\\(\\)[ \t]*\\{[ \t]*$" }}
+{{- $regexp := print "(?m)[ \t]*(function[ \t]+|)(" .Data.functionName ")\\(\\)[ \t]*\\{[ \t]*$" -}}
 {{ $replace | regexReplaceAll $regexp .Data.code }}
 {{- end }}

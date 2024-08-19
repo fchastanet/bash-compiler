@@ -1,9 +1,9 @@
 {{- define "arg.parse.before" -}}
 {{- with .Data -}}
 {{- if eq .type "StringArray" -}}
-{{ .variableName }}=()
+{{   .variableName }}=()
 {{- else -}}
-{{ .variableName }}=""
+{{   .variableName }}=""
 {{- end -}}
 {{- if or (gt .min 0) (gt .max 0) }}
 local -i options_parse_argParsedCount{{ .variableName | title}}
