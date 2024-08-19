@@ -23,12 +23,12 @@
 
 {{ include "binFile.facade.gtpl" .Data.binData . | trim }}
 
-{{ $mainFunction := .Data.vars.MAIN_FUNCTION_NAME | default "main" -}}
+{{- $mainFunction := .Data.vars.MAIN_FUNCTION_NAME | default "main" }}
 MAIN_FUNCTION_NAME="{{ $mainFunction -}}"
 {{ $mainFunction -}}() {
 {{ include "binFile.hook.main.in.gtpl" . . | trim }}
 {{ if .Data.binData.commands.default.mainFile -}}
-{{ includeFileAsTemplate .Data.binData.commands.default.mainFile $context | removeFirstShebangLineIfAny }}
+{{ includeFileAsTemplate .Data.binData.commands.default.mainFile $context | removeFirstShebangLineIfAny | trim }}
 {{ end -}}
 {{ include "binFile.hook.main.out.gtpl" . . | trim }}
 }

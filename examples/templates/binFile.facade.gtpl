@@ -1,4 +1,4 @@
-{{ $commandsCount := .Data.commands | keys | len }}
+{{- $commandsCount := .Data.commands | keys | len -}}
 {{ if gt $commandsCount 1 }}
 local action="$1"
 shift || true

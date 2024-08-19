@@ -3,9 +3,9 @@
 # {{ .variableName }} min {{ .min }} max {{ .max }}
 {{ if .authorizedValues -}}
 # authorizedValues: {{ .authorizedValuesList | join "|" }}
-{{ end }}
+{{ end -}}
 {{ if .regexp -}}
 # regexp: '{{ .regexp }}'
-{{ end }}
-{{ end }}
+{{ end -}}
+{{ end -}}
 {{ end }}

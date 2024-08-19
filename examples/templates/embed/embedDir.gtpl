@@ -1,5 +1,5 @@
 {{- define "embedDir" -}}
-{{ $targetDir := print "${PERSISTENT_TMPDIR:-/tmp}/" .Data.md5sum "/" .Data.asName }}
+{{- $targetDir := print "${PERSISTENT_TMPDIR:-/tmp}/" .Data.md5sum "/" .Data.asName -}}
 Linux::requireTarCommand
 Compiler::Embed::extractDirFromBase64 \
   {{ $targetDir | quote }} \

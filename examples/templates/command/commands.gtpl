@@ -1,5 +1,5 @@
 {{- define "commands" -}}
-{{ $context := . }}
+{{- $context := . -}}
 {{ range .Data }}
 {{- include "command" . $context -}}
 {{end}}

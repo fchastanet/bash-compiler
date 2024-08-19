@@ -1,13 +1,9 @@
 {{define "command.help"}}
-{{ $context := . -}}
+{{- $context := . -}}
 {{- with .Data }}
-{{- if eq .helpType "function" -}}
-Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
-  "$({{ .help }})"
-{{ else }}
-Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}" \
-  "{{ .help }}"
-{{ end -}}
+Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}SYNOPSIS:${__RESET_COLOR}" \
+  {{ if eq .helpType "function" -}}"$({{ .help }})"{{ else }}"{{ .help }}"{{ end }}
+echo
 echo
 
 # ------------------------------------------
@@ -21,13 +17,15 @@ echo
 # ------------------------------------------
 # usage/options section
 # ------------------------------------------
-optionsAltList=({{ range $index, $option := .options -}}"{{/*
- */}}{{ include "option.help.alts" $option $context | trimAll "\n" -}}" {{ end }}
+optionsAltList=(
+  {{- range $index, $option := .options -}}"
+    {{- include "option.help.alts" $option $context | trim -}}
+  " {{ end }}
 )
 Array::wrap2 " " 80 2 "${__HELP_TITLE_COLOR}USAGE:${__RESET_COLOR}" \
   "{{ .commandName }}" "${optionsAltList[@]}"
 echo
-{{ end }}
+{{- end }}
 
 {{ if .args -}}
 # ------------------------------------------
@@ -38,51 +36,54 @@ echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 {{ range $index, $arg := .args }}
   Array::wrap2 " " 80 2 "  {{ include "arg.help" $arg $context }}"
   {{ if $arg.help -}}
-  {{ $argHelp := splitList "\n" $arg.help -}}
+  {{- $argHelp := splitList "\n" $arg.help -}}
   Array::wrap2 ' ' 76 4 "    " {{/*
     */}}{{ range $line := $argHelp -}}{{/*
-    */}}{{ $line | quote }}{{/*
+    */}}{{   $line | quote }}{{/*
     */}}{{ end }}
   echo
-  {{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
 {{ end -}}
 
 {{ if .options -}}
 # ------------------------------------------
 # options section
 # ------------------------------------------
-{{ $previousGroupId := "" -}}
-{{ $command := . }}
-{{ range $index, $option := .options -}}
-{{ $groupId := default "__default" $option.group -}}
-{{ if ne $groupId $previousGroupId }}
+{{-  $previousGroupId := "" -}}
+{{-  $command := . }}
+{{   range $index, $option := .options -}}
+{{-    $groupId := default "__default" $option.group -}}
+{{     if ne $groupId $previousGroupId -}}
 echo
 echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }}${__RESET_COLOR}"
-{{ end -}}
-echo -e "  {{ include "option.help" $option $context | trimAll "\n" -}}"
-{{ if $option.help -}}
+{{-    end }}
+echo -e "  {{ include "option.help" $option $context | trim -}}"
+{{     if $option.help -}}
 Array::wrap2 ' ' 76 4 "    " {{ $option.help | quote }}
 echo
-{{ end }}
-{{ $valuesLen := (sub (len .authorizedValuesList) 1) }}
-{{ if gt $valuesLen -1 -}}
+{{-    end }}
+{{-    $valuesLen := (sub (len .authorizedValuesList) 1) }}
+{{     if gt $valuesLen -1 -}}
 Array::wrap2 ' ' 76 6 "    Possible values: "
-{{- range $index, $value := .authorizedValuesList }} "{{- $value -}}{{if lt $index $valuesLen}}, {{end}}" {{ end }}
+{{-      range $index, $value := .authorizedValuesList }} "{{- $value -}}{{-
+           if lt $index $valuesLen}}, {{end}}" {{
+         end }}
 echo
-{{ end }}
-{{ if .authorizedValues -}}
-{{ range $index, $value := .authorizedValues -}}
-{{ if ne $value.value $value.help }}
+{{-    end }}
+{{     if .authorizedValues -}}
+{{       range $index, $value := .authorizedValues -}}
+{{         if ne $value.value $value.help -}}
 echo -e "${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
-{{ end }}
-{{ end }}
-{{ if .defaultValue -}}
+{{-        end }}
+{{-      end }}
+{{-    end }}
+{{     if .defaultValue -}}
 Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
-{{ end }}
-{{ end }}
-{{ $previousGroupId = $groupId }}
-{{ end -}}
+echo
+{{     end }}
+{{- $previousGroupId = $groupId -}}
+{{   end -}}
 {{ end -}}
 
 {{ if .longDescription -}}
@@ -90,22 +91,25 @@ Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
 # longDescription section
 # ------------------------------------------
 echo
-{{ if hasSuffix "Function" .longDescription -}}
-{{ .longDescription }}
-{{ else -}}
+echo
+echo -e "${__HELP_TITLE_COLOR}DESCRIPTION:${__RESET_COLOR}"
+{{   if hasSuffix "Function" .longDescription -}}
+{{     .longDescription }}
+{{   else -}}
+{{ $longDescription := .longDescription | trim -}}
 declare -a {{ .functionName }}LongDescription=(
-{{ $longDescriptionList := splitList "\n" .longDescription -}}
-{{ range $line := $longDescriptionList -}}
-{{ if hasPrefix "$'" $line -}}
-{{ $line -}}
-{{ else -}}
-{{ quote $line -}}
-{{ end }}
-{{ end -}}
+{{     $longDescriptionList := splitList "\n" $longDescription -}}
+{{     range $line := $longDescriptionList -}}
+{{       if hasPrefix "$'" $line -}}
+{{         $line -}}
+{{       else -}}
+{{         quote $line -}}
+{{       end }}
+{{     end -}}
 )
 Array::wrap2 ' ' 76 0 "{{ format "${%sLongDescription[@]}" .functionName }}"
 echo
-{{ end -}}
+{{   end -}}
 {{ end -}}
 
 {{ if .version -}}
