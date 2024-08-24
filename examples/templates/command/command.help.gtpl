@@ -39,7 +39,7 @@ echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
   {{- $argHelp := splitList "\n" $arg.help -}}
   Array::wrap2 ' ' 76 4 "    " {{/*
     */}}{{ range $line := $argHelp -}}{{/*
-    */}}{{   $line | quote }}{{/*
+    */}}{{   $line | quote }} {{/*
     */}}{{ end }}
   echo
 {{- end }}
@@ -60,7 +60,11 @@ echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }
 {{-    end }}
 echo -e "  {{ include "option.help" $option $context | trim -}}"
 {{     if $option.help -}}
-Array::wrap2 ' ' 76 4 "    " {{ $option.help | quote }}
+{{- $optionHelp := splitList "\n" $option.help -}}
+Array::wrap2 ' ' 76 4 "    " {{/*
+  */}}{{ range $line := $optionHelp -}}{{/*
+  */}}{{   $line | quote }} {{/*
+  */}}{{ end }}
 echo
 {{-    end }}
 {{-    $valuesLen := (sub (len .authorizedValuesList) 1) }}
