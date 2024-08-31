@@ -1,11 +1,11 @@
 {{- define "arg.oneLineHelp" -}}
 {{- with .Data -}}
-# {{ .variableName }} min {{ .min }} max {{ .max }}
+# Argument {{ .variableName }} min {{ .min }} max {{ .max }}
 {{ if .authorizedValues -}}
-# authorizedValues: {{ .authorizedValuesList | join "|" }}
+# Argument {{ .variableName }} authorizedValues: {{ .authorizedValuesList | join "|" }}
 {{ end -}}
 {{ if .regexp -}}
-# regexp: '{{ .regexp }}'
+# Argument {{ .variableName }} regexp: '{{ .regexp }}'
 {{ end -}}
 {{ end -}}
 {{ end }}

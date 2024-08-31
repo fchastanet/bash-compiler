@@ -26,13 +26,13 @@ fi
 {{    .variableName }}="${options_parse_arg}"
 {{    range .callbacks -}}
 {{      . }} "{{ "${" }}{{ $Data.variableName }}{{ "}" }}" -- "${@:2}"
-{{    end }}
+{{    end -}}
 {{  else -}}
 # shellcheck disable=SC2034
 {{    .variableName }}+=("${options_parse_arg}")
-{{    range .callbacks }}
+{{    range .callbacks -}}
 {{      . }} "{{ "${" }}{{ $Data.variableName }}{{ "[@]}" }}" -- "${@:2}"
-{{    end }}
-{{  end }}
+{{    end -}}
+{{  end -}}
 {{ end -}}
 {{ end -}}
