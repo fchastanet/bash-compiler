@@ -2,7 +2,7 @@
 ${__HELP_OPTION_COLOR}{{/*
 */}}{{ .Data.alts | join "${__HELP_NORMAL}, ${__HELP_OPTION_COLOR}" -}}{{/*
 */}}{{- $type := coalesce .Data.type "Boolean" -}}{{/*
-*/}}{{ if ne $type "Boolean" }} {{ .Data.helpValueName }}{{end -}}{{/*
+*/}}{{ if ne $type "Boolean" }} <{{ .Data.helpValueName }}>{{end -}}{{/*
 */}}${__HELP_NORMAL}{{/*
 */}}{{ if eq .Data.max 1 }} {single}{{ if eq .Data.min 1 }} (mandatory){{ end -}}{{/*
 */}}{{ else }}{{/*
