@@ -60,12 +60,16 @@ echo -e "${__HELP_TITLE_COLOR}{{ (index $command.optionGroups $groupId).title  }
 {{-    end }}
 echo -e "  {{ include "option.help" $option $context | trim -}}"
 {{     if $option.help -}}
-{{- $optionHelp := splitList "\n" $option.help -}}
+{{       if hasSuffix "Function" $option.help -}}
+{{         $option.help }}
+{{       else -}}
+{{-        $optionHelp := splitList "\n" $option.help -}}
 Array::wrap2 ' ' 76 4 "    " {{/*
-  */}}{{ range $line := $optionHelp -}}{{/*
-  */}}{{   $line | quote }} {{/*
-  */}}{{ end }}
+  */}}{{   range $line := $optionHelp -}}{{/*
+  */}}{{     $line | quote }} {{/*
+  */}}{{   end }}
 echo
+{{-      end }}
 {{-    end }}
 {{-    $valuesLen := (sub (len .authorizedValuesList) 1) }}
 {{     if gt $valuesLen -1 -}}
