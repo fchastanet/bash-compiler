@@ -23,6 +23,21 @@
       }
     },
     {
+      "name": "Launch bash-tools dbImport",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "cmd/bash-compiler",
+      "args": [
+        "/home/wsl/fchastanet/bash-tools/src/_binaries/Database/dbImport/binary-dbImport.yaml"
+      ],
+      "cwd": "/home/wsl/fchastanet/bash-compiler",
+      "env": {
+        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
+        "BASH_TOOLS_ROOT_DIR": "/home/wsl/fchastanet/bash-tools"
+      }
+    },
+    {
       "name": "Launch doc",
       "type": "go",
       "request": "launch",
