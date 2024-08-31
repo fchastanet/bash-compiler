@@ -3,7 +3,11 @@ package render
 
 import (
 	"fmt"
+	"log/slog"
 	"reflect"
+	"sort"
+	"strconv"
+	"strings"
 
 	sprig "github.com/Masterminds/sprig/v3"
 	"github.com/fchastanet/bash-compiler/internal/utils/bash"
@@ -36,11 +40,52 @@ func stringLength(list interface{}) (int, error) {
 	}
 }
 
+func sortCallbacks(list []interface{}) (interface{}, error) {
+	slog.Error("sortCallbacks1", "list", list)
+	sort.SliceStable(list, func(i int, j int) bool {
+		priorityA := i
+		if valA, okA := list[i].(string); okA {
+			priorityA = arrayDefaultValue(strings.Split(valA, "@"), 1, i)
+		}
+		priorityB := j
+		if valB, okB := list[j].(string); okB {
+			priorityB = arrayDefaultValue(strings.Split(valB, "@"), 1, j)
+		}
+		return priorityA < priorityB
+	})
+	slog.Error("sortCallbacks2", "list", list)
+	list2 := make([]string, len(list))
+	for _, elem := range list {
+		file, ok := elem.(string)
+		if !ok {
+			continue
+		}
+		slog.Error("sortCallbacks2.1.0", "file", file)
+		split := strings.Split(file, "@")
+		slog.Error("sortCallbacks2.1.1", "split", split)
+		list2 = append(list2, split[0])
+		slog.Error("sortCallbacks2.1.2", "finalFile", split[0])
+	}
+	slog.Error("sortCallbacks3", "list", list2)
+	return list2, nil
+}
+
+func arrayDefaultValue(list []string, i int, defaultValue int) int {
+	if len(list) >= i+1 {
+		if number, err := strconv.Atoi(list[i]); err == nil {
+			return number
+		}
+	}
+	return defaultValue
+}
+
 func FuncMap() map[string]interface{} {
 	funcMap := sprig.FuncMap()
 	// string functions
 	funcMap["len"] = stringLength
 	funcMap["format"] = format
+	// callbacks
+	funcMap["sortCallbacks"] = sortCallbacks
 	// templates functions
 	funcMap["include"] = Include
 	funcMap["includeFile"] = includeFile

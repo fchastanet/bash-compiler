@@ -19,7 +19,8 @@
   Log::displayDebug "Command ${SCRIPT_NAME} - parse arguments: ${BASH_FRAMEWORK_ARGV[*]}"
   Log::displayDebug "Command ${SCRIPT_NAME} - parse filtered arguments: ${BASH_FRAMEWORK_ARGV_FILTERED[*]}"
   {{include "command.parse" . $context | indent 2 | trim}} || return $?
-  {{ range $callback := .callbacks -}}
+  {{ $sortedCallbacks := .callbacks | sortCallbacks -}}
+  {{ range $callback := $sortedCallbacks -}}
   {{ $callback }}
   {{ end }}
 }

@@ -33,7 +33,7 @@ input: #Schema
 
 #defaultValueSchema: null | int | string
 
-#functionName: =~"^([A-Za-z0-9_]+(::)?[A-Za-z0-9_]+)$"
+#functionName: =~"^([A-Za-z0-9_]+(::)?[A-Za-z0-9_]+)(@[0-9]+)?$"
 
 #callbacks: list.UniqueItems() & [...#functionName] | *[]
 
