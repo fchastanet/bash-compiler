@@ -73,7 +73,7 @@ func includeFileAsTemplate(
 	templateContextData TemplateContextData,
 ) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Info(
+	slog.Debug(
 		"includeFileAsTemplate",
 		logger.LogFieldFilePath, filePath,
 		logger.LogFieldFilePathExpanded, filePathExpanded,
@@ -92,7 +92,7 @@ func includeFileAsTemplate(
 
 func dynamicFile(filePath string, paths []string) string {
 	filePathExpanded := os.ExpandEnv(filePath)
-	slog.Info(
+	slog.Debug(
 		"dynamicFile",
 		logger.LogFieldFilePath, filePath,
 		logger.LogFieldFilePathExpanded, filePathExpanded,
@@ -104,7 +104,7 @@ func dynamicFile(filePath string, paths []string) string {
 	for _, dir := range paths {
 		dirExpanded := os.ExpandEnv(dir)
 		currentPath := path.Join(dirExpanded, filePathExpanded)
-		slog.Info(
+		slog.Debug(
 			"dynamicFile",
 			logger.LogFieldFilePath, filePath,
 			logger.LogFieldDirPath, dir,

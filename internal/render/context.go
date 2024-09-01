@@ -135,7 +135,7 @@ func newTemplate(
 
 	templateBaseFile := path.Base(templateFile)
 	templateName = strings.TrimSuffix(templateBaseFile, filepath.Ext(templateBaseFile))
-	slog.Info(
+	slog.Debug(
 		"Loaded template",
 		logger.LogFieldTemplateName, templateName,
 		logger.LogFieldAvailableTemplateFiles, myFiles,

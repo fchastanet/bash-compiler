@@ -1,9 +1,10 @@
 package model
 
 import (
-	"log"
+	"log/slog"
 	"os"
 
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/goccy/go-yaml"
 )
 
@@ -16,6 +17,6 @@ func writeYamlFile(modelMap map[string]interface{}, tempYamlFile os.File) (err e
 	if err != nil {
 		return err
 	}
-	log.Printf("Temp file containing resulting yaml file : %s\n", tempYamlFile.Name())
+	slog.Debug("Temp file containing resulting yaml file", logger.LogFieldFilePath, tempYamlFile.Name())
 	return nil
 }

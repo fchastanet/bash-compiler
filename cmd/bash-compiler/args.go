@@ -90,7 +90,7 @@ func parseArgs(cli *cli) (err error) {
 	if err != nil {
 		return err
 	}
-	slog.Info(
+	slog.Debug(
 		"parseArgs",
 		logger.LogFieldVariableName, "compilerRootDir",
 		logger.LogFieldVariableValue, compilerRootDir,
