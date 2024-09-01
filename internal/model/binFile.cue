@@ -219,6 +219,7 @@ input: #Schema
 
   // Copyright
   copyright: string | *""
+  copyrightBeginYear: number | *""
 
   // Option Groups
   optionGroups: {
