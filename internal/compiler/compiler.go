@@ -551,7 +551,7 @@ func (context CompileContext) retrieveEachFunctionPath(
 	}
 
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
-	slog.Info("Found these",
+	slog.Debug("Found these",
 		logger.LogFieldVariableName, "bashFrameworkFunctions",
 		logger.LogFieldVariableValue, getSortedFunctionNamesFromMap(compileContextData.functionsMap),
 	)

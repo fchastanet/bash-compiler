@@ -3,10 +3,11 @@ package model
 import (
 	"bytes"
 	_ "embed"
-	"log"
+	"log/slog"
 	"os"
 
 	sidekick "cuelang.org/go/cmd/cue/cmd"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 //go:embed binFile.cue
@@ -24,8 +25,7 @@ func transformModel(tempYamlFile os.File, resultWriter *bytes.Buffer) (err error
 		return err
 	}
 
-	log.Printf("Temp file containing cue file : %s\n", tempCueFile.Name())
-
+	slog.Debug("Temp file containing cue file", logger.LogFieldFilePath, tempCueFile.Name())
 	// transform using cue
 	cmd, err := sidekick.New([]string{
 		"export",

@@ -3,7 +3,6 @@ package render
 
 import (
 	"fmt"
-	"log/slog"
 	"reflect"
 	"sort"
 	"strconv"
@@ -41,7 +40,6 @@ func stringLength(list interface{}) (int, error) {
 }
 
 func sortCallbacks(list []interface{}) (interface{}, error) {
-	slog.Error("sortCallbacks1", "list", list)
 	sort.SliceStable(list, func(i int, j int) bool {
 		priorityA := i
 		if valA, okA := list[i].(string); okA {
@@ -53,20 +51,15 @@ func sortCallbacks(list []interface{}) (interface{}, error) {
 		}
 		return priorityA < priorityB
 	})
-	slog.Error("sortCallbacks2", "list", list)
 	list2 := make([]string, len(list))
 	for _, elem := range list {
 		file, ok := elem.(string)
 		if !ok {
 			continue
 		}
-		slog.Error("sortCallbacks2.1.0", "file", file)
 		split := strings.Split(file, "@")
-		slog.Error("sortCallbacks2.1.1", "split", split)
 		list2 = append(list2, split[0])
-		slog.Error("sortCallbacks2.1.2", "finalFile", split[0])
 	}
-	slog.Error("sortCallbacks3", "list", list2)
 	return list2, nil
 }
 

@@ -45,7 +45,7 @@ func main() {
 	logger.InitLogger(cli.LogLevel)
 
 	// set useful env variables that can be interpolated during template rendering
-	slog.Info(
+	slog.Debug(
 		"main",
 		logger.LogFieldVariableName, "COMPILER_ROOT_DIR",
 		logger.LogFieldVariableValue, string(cli.CompilerRootDir),
@@ -70,7 +70,11 @@ func main() {
 		templateContextInterface,
 		compilerInterface,
 	)
+	defaultLogger := slog.Default()
 	for _, binaryModelFilePath := range cli.YamlFiles {
+		slog.SetDefault(defaultLogger.With(
+			"binaryModelFilePath", binaryModelFilePath,
+		))
 		binaryModelServiceContextData, err := binaryModelService.Init(
 			string(cli.TargetDir),
 			cli.KeepIntermediateFiles,
