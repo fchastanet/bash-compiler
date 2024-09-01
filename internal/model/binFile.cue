@@ -248,6 +248,7 @@ input: #Schema
   callbacks:              #callbacks
   unknownOptionCallbacks: #callbacks
   unknownArgumentCallbacks: #callbacks
+  everyArgumentCallbacks: #callbacks
   beforeParseCallbacks: #callbacks
   afterParseCallbacks: #callbacks
 }
