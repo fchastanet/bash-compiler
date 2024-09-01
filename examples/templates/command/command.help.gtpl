@@ -1,8 +1,16 @@
 {{define "command.help"}}
 {{- $context := . -}}
 {{- with .Data }}
-Array::wrap2 ' ' 80 0 "${__HELP_TITLE_COLOR}SYNOPSIS:${__RESET_COLOR}" \
-  {{ if eq .helpType "function" -}}"$({{ .help }})"{{ else }}"{{ .help }}"{{ end }}
+echo -e "${__HELP_TITLE_COLOR}SYNOPSIS:${__RESET_COLOR}"
+{{   if hasSuffix "Function" .help -}}
+{{     .help }}
+{{   else -}}
+  {{- $synopsis := splitList "\n" .help -}}
+  Array::wrap2 ' ' 76 4 "    " {{/*
+    */}}{{ range $line := $synopsis -}}{{/*
+    */}}{{   $line | quote }} {{/*
+    */}}{{ end }}
+  {{ end }}
 echo
 echo
 
@@ -35,14 +43,18 @@ echo
 echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 {{ range $index, $arg := .args }}
   Array::wrap2 " " 80 2 "  {{ include "arg.help" $arg $context }}"
-  {{ if $arg.help -}}
+{{   if $arg.help -}}
+{{     if hasSuffix "Function" $arg.help -}}
+{{       $arg.help }}
+{{     else -}}
   {{- $argHelp := splitList "\n" $arg.help -}}
   Array::wrap2 ' ' 76 4 "    " {{/*
     */}}{{ range $line := $argHelp -}}{{/*
     */}}{{   $line | quote }} {{/*
     */}}{{ end }}
   echo
-{{- end }}
+{{-    end }}
+{{-  end }}
 {{- end }}
 {{ end -}}
 
