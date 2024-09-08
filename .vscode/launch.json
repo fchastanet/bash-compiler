@@ -59,9 +59,9 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "cmd/bash-compiler/main.go",
+      "program": "cmd/bash-compiler",
       "args": [
-        "/home/wsl/fchastanet/bash-dev-env/src/_binaries/AwsDefaultConfig/AwsDefaultConfig.yaml",
+        "/home/wsl/fchastanet/bash-dev-env/src/_binaries/AwsDefaultConfig/AwsDefaultConfig-binary.yaml",
         "-t",
         "examples/generated",
         "-k"
