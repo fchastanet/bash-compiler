@@ -12,7 +12,7 @@ import (
 var (
 	matchFirstCap  = regexp.MustCompile("(.)([A-Z][a-z]+)")
 	matchAllCap    = regexp.MustCompile("([a-z0-9])([A-Z])")
-	matchAllColons = regexp.MustCompile("([A-Za-z0-9])::([a-zA-Z0-9])")
+	matchAllColons = regexp.MustCompile("::")
 )
 
 func ToSnakeCase(str string) string {
