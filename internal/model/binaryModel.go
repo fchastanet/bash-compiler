@@ -64,10 +64,13 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	keepIntermediateFiles bool,
 ) (_ *BinaryModel, err error) {
 	modelMap := map[string]interface{}{}
+	loadedFiles := map[string]string{}
 	err = loadModel(
 		referenceDir,
 		binaryModelFilePath,
 		&modelMap,
+		&loadedFiles,
+		"",
 	)
 	if err != nil {
 		return nil, err

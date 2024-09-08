@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -10,7 +11,31 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func loadModel(referenceDir string, modelFilePath string, resultMap *map[string]interface{}) (err error) {
+type circularDependencyError struct {
+	error
+	dependency string
+	oldParent  string
+	newParent  string
+}
+
+func (e *circularDependencyError) Error() string {
+	return fmt.Sprintf(
+		"Circular dependency '%s' - loaded twice by '%s' and '%s'",
+		e.dependency, e.oldParent, e.newParent,
+	)
+}
+
+func loadModel(
+	referenceDir string,
+	modelFilePath string,
+	resultMap *map[string]interface{},
+	loadedFiles *map[string]string,
+	parentFile string,
+) (err error) {
+	if previousParentFile, exists := (*loadedFiles)[modelFilePath]; exists {
+		// TODO create circular dependency error
+		return &circularDependencyError{nil, modelFilePath, previousParentFile, parentFile}
+	}
 	// read one yaml file
 	referenceDirs := []string{referenceDir}
 	model := map[string]interface{}{}
@@ -18,6 +43,7 @@ func loadModel(referenceDir string, modelFilePath string, resultMap *map[string]
 	if err != nil {
 		return err
 	}
+	(*loadedFiles)[modelFilePath] = parentFile
 
 	if _, ok := model["extends"]; ok {
 		extends := model["extends"].([]interface{})
@@ -33,7 +59,7 @@ func loadModel(referenceDir string, modelFilePath string, resultMap *map[string]
 			}
 
 			extendsMap := map[string]interface{}{}
-			err = decodeFile(fileAbs, referenceDirs, &extendsMap)
+			err = loadModel(referenceDir, fileAbs, &extendsMap, loadedFiles, modelFilePath)
 			if err != nil {
 				return err
 			}
