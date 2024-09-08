@@ -567,7 +567,6 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 	}
 	var rewrittenCode bytes.Buffer
 	newFunctionAdded = false
-	funcNameGroupIndex := bashFrameworkFunctionRegexp.SubexpIndex("funcName")
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -575,9 +574,8 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 		if IsCommentLine(line) {
 			continue
 		}
-		matches := bashFrameworkFunctionRegexp.FindSubmatch(line)
-		if matches != nil {
-			funcName := string(matches[funcNameGroupIndex])
+		matches := bashFrameworkFunctionRegexp.FindAllString(string(line), -1)
+		for _, funcName := range matches {
 			if _, keyExists := compileContextData.functionsMap[funcName]; !keyExists {
 				slog.Debug("Found new",
 					logger.LogFieldVariableName, "bashFrameworkFunction",
