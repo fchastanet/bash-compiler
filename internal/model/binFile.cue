@@ -50,21 +50,10 @@ input: #Schema
   functionName: #functionName | *"\(variableName)Function"
 
   // Authorized values (if null ignore)
-  authorizedValues: *([
-    if (authorizedValuesList != _|_) {
-      for opt in authorizedValuesList {
-        {
-          value: "\(opt)"
-          help: "\(opt)"
-        }
-      }
-    }
-  ]) | null | [...{
+  authorizedValues?: null | [...{
     value: strings.MinRunes(1)
-    help:  strings.MinRunes(0)
+    help?:  strings.MinRunes(0)
   }]
-
-  authorizedValuesList: *[] | null | [...=~"^.+$"]
 
   // Default Value of the argument (if null default value following
   // the type, eg: [] for StringArray)
@@ -119,19 +108,10 @@ input: #Schema
   callbacks: #callbacks
 
   // Authorized values (if null ignore)
-  authorizedValues: *([
-    if (authorizedValuesList != _|_) for opt in authorizedValuesList {
-      {
-        value: "\(opt)"
-        help: "\(opt)"
-      }
-    }
-  ]) | null | [...{
+  authorizedValues?: null | [...{
     value: strings.MinRunes(1)
-    help:  strings.MinRunes(0)
+    help?:  strings.MinRunes(0)
   }]
-
-  authorizedValuesList: *[] | null | [...=~"^.+$"]
 
   regexp: *([
     if (type == "Boolean") {null}

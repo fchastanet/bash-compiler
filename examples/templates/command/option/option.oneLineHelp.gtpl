@@ -2,8 +2,9 @@
 {{- with .Data -}}
 # {{ .variableName }} alts {{ .alts | join "|" }}
 # type: {{ .type }} min {{ .min }} max {{ .max }}
-{{ if .authorizedValuesList -}}
-# authorizedValues: {{ .authorizedValuesList | join "|" }}
+{{ if .authorizedValues -}}
+# authorizedValues: {{ $sep := ""
+  -}}{{- range .authorizedValues}}{{$sep}}{{.value}}{{$sep = "|"}}{{- end }}
 {{ end }}
 {{ if .regexp -}}
 # regexp: '{{ .regexp }}'

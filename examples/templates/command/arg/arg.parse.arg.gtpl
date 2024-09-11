@@ -2,9 +2,11 @@
 {{- $context := . -}}
 {{- with .Data -}}
 {{- $Data := . -}}
-{{  if .authorizedValuesList -}}
-if [[ ! "${options_parse_arg}" =~ {{ .authorizedValuesList | join "|" }} ]]; then
-  Log::displayError "Command ${SCRIPT_NAME} - Argument {{ .name }} - value '${options_parse_arg}' is not part of authorized values({{ .authorizedValuesList | join ", " }})"
+{{  if .authorizedValues -}}
+{{- $sep := "" -}}
+if [[ ! "${options_parse_arg}" =~ {{ range .authorizedValues}}{{$sep}}{{.value}}{{$sep = "|"}}{{- end }} ]]; then
+  Log::displayError "Command ${SCRIPT_NAME} - Argument {{ .name }} - value '${options_parse_arg}' is not part of authorized values({{-
+  $sep := "" -}}{{- range .authorizedValues}}{{$sep}}{{.value}}{{$sep = ", "}}{{- end }})"
   return 1
 fi
 {{  end -}}
