@@ -12,9 +12,10 @@
     Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - a value needs to be specified"
     return 1
   fi
-  {{   if .authorizedValuesList -}}
-  if [[ ! "$1" =~ {{ .authorizedValuesList | join "|" }} ]]; then
-    Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values({{ .authorizedValuesList }})"
+  {{   if .authorizedValues -}}
+  if [[ ! "$1" =~ {{ $sep := "" -}}{{- range .authorizedValues}}{{$sep}}{{.value}}{{$sep = "|"}}{{- end }} ]]; then
+    Log::displayError "Command ${SCRIPT_NAME} - Option ${options_parse_arg} - value '$1' is not part of authorized values({{-
+      $sep := "" -}}{{- range .authorizedValues}}{{$sep}}{{.value}}{{$sep = ", "}}{{- end }})"
     return 1
   fi
   {{   end -}}

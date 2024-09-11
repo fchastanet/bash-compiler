@@ -42,19 +42,32 @@ echo
 echo
 echo -e "${__HELP_TITLE_COLOR}ARGUMENTS:${__RESET_COLOR}"
 {{ range $index, $arg := .args }}
-  Array::wrap2 " " 80 2 "  {{ include "arg.help" $arg $context }}"
+Array::wrap2 " " 80 2 "  {{ include "arg.help" $arg $context | trim -}}"
 {{   if $arg.help -}}
 {{     if hasSuffix "Function" $arg.help -}}
 {{       $arg.help }}
 {{     else -}}
-  {{- $argHelp := splitList "\n" $arg.help -}}
-  Array::wrap2 ' ' 76 4 "    " {{/*
-    */}}{{ range $line := $argHelp -}}{{/*
-    */}}{{   $line | quote }} {{/*
-    */}}{{ end }}
-  echo
+{{-      $argHelp := splitList "\n" $arg.help -}}
+Array::wrap2 ' ' 76 4 "    " {{/*
+  */}}{{ range $line := $argHelp -}}{{/*
+  */}}{{   $line | quote }} {{/*
+  */}}{{ end }}
+echo
 {{-    end }}
 {{-  end }}
+{{   if .authorizedValues -}}
+{{-    $valuesLen := (sub (len .authorizedValues) 1) }}
+{{     if gt $valuesLen -1 -}}
+echo "    Possible values:"
+{{       range $index, $value := .authorizedValues -}}
+{{         if (or (not $value.help) (eq $value.value $value.help)) -}}
+echo -e "      - ${__OPTION_COLOR}{{ $value.value }}${__RESET_COLOR}"
+{{         else -}}
+echo -e "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+{{-        end }}
+{{-      end }}
+{{-    end }}
+{{-   end }}
 {{- end }}
 {{ end -}}
 
@@ -83,18 +96,16 @@ Array::wrap2 ' ' 76 4 "    " {{/*
 echo
 {{-      end }}
 {{-    end }}
-{{-    $valuesLen := (sub (len .authorizedValuesList) 1) }}
-{{     if gt $valuesLen -1 -}}
-Array::wrap2 ' ' 76 6 "    Possible values: "
-{{-      range $index, $value := .authorizedValuesList }} "{{- $value -}}{{-
-           if lt $index $valuesLen}}, {{end}}" {{
-         end }}
-echo
-{{-    end }}
 {{     if .authorizedValues -}}
-{{       range $index, $value := .authorizedValues -}}
-{{         if ne $value.value $value.help -}}
-echo -e "${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+{{-      $valuesLen := (sub (len .authorizedValues) 1) }}
+{{       if gt $valuesLen -1 -}}
+echo "    Possible values: "
+{{-        range $index, $value := .authorizedValues }}
+{{           if and (not $value.help) (not (eq $value.value $value.help)) -}}
+echo -e "      - ${__OPTION_COLOR}{{ $value.value }}${__RESET_COLOR}"
+{{-          else -}}
+echo -e "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+{{-          end -}}
 {{-        end }}
 {{-      end }}
 {{-    end }}
