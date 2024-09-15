@@ -2,30 +2,43 @@
 package files
 
 import (
+	"os"
 	"path/filepath"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
-func MatchFullDirectory(directory string) (files []string, err error) {
-	directoryGlob := filepath.Join(directory, "**")
-	return MatchPatterns(directoryGlob)
+func MatchFullDirectoryRelative(directory string) (files []string, err error) {
+	return MatchPatternRelative(directory, "**/*")
 }
 
-// NewAtLevel Initializes logger with provided level
-func MatchPatterns(patterns ...string) (files []string, err error) {
+func MatchPatternRelative(directory string, pattern string) (files []string, err error) {
+	return doublestar.Glob(
+		os.DirFS(directory),
+		pattern,
+		doublestar.WithFailOnIOErrors(),
+		doublestar.WithFilesOnly(),
+		doublestar.WithNoFollow(),
+	)
+}
+
+func MatchPatterns(directory string, patterns ...string) (files []string, err error) {
+	filesList := []string{}
 	for _, pattern := range patterns {
-		patternFiles, err := matchPattern(pattern)
+		list, err := matchPattern(directory, pattern)
 		if err != nil {
-			return nil, err
+			return []string{}, err
 		}
-		files = append(files, patternFiles...)
+		filesList = append(filesList, list...)
 	}
-	return files, err
+	return filesList, nil
 }
 
-func matchPattern(pattern string) (files []string, err error) {
-	files, err = filepath.Glob(pattern)
-	if err != nil {
-		return nil, err
-	}
-	return files, err
+func matchPattern(directory string, pattern string) (files []string, err error) {
+	return doublestar.FilepathGlob(
+		filepath.Join(directory, pattern),
+		doublestar.WithFailOnIOErrors(),
+		doublestar.WithFilesOnly(),
+		doublestar.WithNoFollow(),
+	)
 }

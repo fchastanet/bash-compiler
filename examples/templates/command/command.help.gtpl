@@ -63,8 +63,9 @@ echo "    Possible values:"
 {{         if (or (not $value.help) (eq $value.value $value.help)) -}}
 echo -e "      - ${__OPTION_COLOR}{{ $value.value }}${__RESET_COLOR}"
 {{         else -}}
-echo -e "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
-{{-        end }}
+Array::wrap2 ' ' 76 8 "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+echo
+{{        end -}}
 {{-      end }}
 {{-    end }}
 {{-   end }}
@@ -104,7 +105,8 @@ echo "    Possible values: "
 {{           if and (not $value.help) (not (eq $value.value $value.help)) -}}
 echo -e "      - ${__OPTION_COLOR}{{ $value.value }}${__RESET_COLOR}"
 {{-          else -}}
-echo -e "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+Array::wrap2 ' ' 76 8 "      - ${__OPTION_COLOR}{{ $value.value }}:${__RESET_COLOR} {{ $value.help }}"
+echo
 {{-          end -}}
 {{-        end }}
 {{-      end }}
