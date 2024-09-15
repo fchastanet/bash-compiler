@@ -1,12 +1,13 @@
 module github.com/fchastanet/bash-compiler
 
-go 1.21.9
+go 1.23.1
 
 require (
 	cuelang.org/go v0.9.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/a8m/envsubst v1.4.2
 	github.com/alecthomas/kong v0.9.0
+	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/goccy/go-yaml v1.11.3
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/text v0.15.0

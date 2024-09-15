@@ -55,6 +55,29 @@ func ReproducibleTarOptions(info *tar.Header, _ fs.FileInfo) error {
 	return nil
 }
 
+func getFileHeader(
+	fileInfo fs.FileInfo,
+	relativeDir string,
+) (header *tar.Header, err error) {
+	filename := fileInfo.Name()
+	// Create a tar Header from the FileInfo data
+	header, err = tar.FileInfoHeader(fileInfo, filename)
+	if err != nil {
+		return nil, err
+	}
+	// relative paths are used to preserve the directory paths in each file path
+	if filepath.IsAbs(filename) {
+		relativePath, err := filepath.Rel(relativeDir, filename)
+		if err != nil {
+			return nil, err
+		}
+		header.Name = relativePath
+	} else {
+		header.Name = filename
+	}
+	return header, nil
+}
+
 func addToArchive(
 	tw *tar.Writer,
 	filename string,
@@ -76,25 +99,11 @@ func addToArchive(
 	}
 	defer file.Close()
 
-	// Get FileInfo about our file providing file size, mode, etc.
-	info, err := file.Stat()
+	header, err := getFileHeader(fileInfo, relativeDir)
 	if err != nil {
 		return err
 	}
-
-	// Create a tar Header from the FileInfo data
-	header, err := tar.FileInfoHeader(info, info.Name())
-	if err != nil {
-		return err
-	}
-	// relative paths are used to preserve the directory paths in each file path
-	relativePath, err := filepath.Rel(relativeDir, filename)
-	if err != nil {
-		return err
-	}
-	header.Name = relativePath
-
-	err = updateFileInfoHeader(header, info)
+	err = updateFileInfoHeader(header, fileInfo)
 	if err != nil {
 		return err
 	}

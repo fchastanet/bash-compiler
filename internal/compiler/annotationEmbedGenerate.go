@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 
 	"github.com/fchastanet/bash-compiler/internal/render"
@@ -104,6 +105,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
+	slog.Info("Create directory archive", "sourceDir", resource, "targetFile", directoryArchive)
 	err = createDirectoryArchive(resource, directoryArchive)
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -142,7 +144,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 }
 
 func createDirectoryArchive(directory string, buf io.Writer) error {
-	filesList, err := files.MatchFullDirectory(directory)
+	filesList, err := files.MatchPatterns(directory, "**/*")
 	if logger.FancyHandleError(err) {
 		return err
 	}

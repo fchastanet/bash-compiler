@@ -14,7 +14,7 @@ linters:
     - dupl # Tool for code clone detection
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
     - exhaustive # check exhaustiveness of enum switch statements
-    - exportloopref # checks for pointers to enclosing loop variables
+    - copyloopvar # detects places where loop variables are copied.
     - funlen # Tool for detection of long functions
     - gochecknoglobals # A global variable is a variable declared in package scope and that can be read and written to by any function within the package.
     - gocritic # Provides diagnostics that check for bugs, performance and style issues.
@@ -67,9 +67,6 @@ linters-settings:
     # Treat IncDec statement (e.g. `i++` or `i--`) as both read and write operation instead of just write.
     # Default: false
     post-statements-are-reads: true
-    # Mark all exported identifiers as used.
-    # Default: true
-    exported-is-used: false
     # Mark all exported fields as used.
     # default: true
     exported-fields-are-used: false

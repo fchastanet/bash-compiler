@@ -55,13 +55,31 @@
       }
     },
     {
-      "name": "Launch Bash-dev-env AwsDefaultConfig",
+      "name": "Launch Bash-tools-framework shellcheckLint",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
-        "/home/wsl/fchastanet/bash-dev-env/src/_binaries/AwsDefaultConfig/AwsDefaultConfig-binary.yaml",
+        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src/_binaries/shellcheckLint/shellcheckLint-binary.yaml",
+        "-t",
+        "examples/generated",
+        "-k"
+      ],
+      "cwd": "/home/wsl/fchastanet/bash-compiler",
+      "env": {
+        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
+        "BASH_DEV_ENV_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env"
+      }
+    },
+    {
+      "name": "Launch Bash-dev-env install",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "cmd/bash-compiler",
+      "args": [
+        "/home/wsl/fchastanet/bash-dev-env/src/_tools/install/install-binary.yaml",
         "-t",
         "examples/generated",
         "-k"

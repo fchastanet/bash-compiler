@@ -117,20 +117,13 @@ func newTemplate(
 	templateFile string,
 	funcMap template.FuncMap,
 ) (templateInstance *template.Template, templateName string, err error) {
-	patterns := [3]string{
-		"**/**/*.*",
-		"**/*.*",
-		"*.*",
-	}
-	templateDirPatterns := make([]string, len(templateDirs)*len(patterns))
+	filesList := []string{}
 	for _, templateDir := range templateDirs {
-		for _, pattern := range patterns {
-			templateDirPatterns = append(templateDirPatterns, filepath.Join(templateDir, pattern))
+		myFiles, err := files.MatchPatterns(templateDir, "**/*")
+		if err != nil {
+			return nil, "", err
 		}
-	}
-	myFiles, err := files.MatchPatterns(templateDirPatterns...)
-	if err != nil {
-		return nil, "", err
+		filesList = append(filesList, myFiles...)
 	}
 
 	templateBaseFile := path.Base(templateFile)
@@ -138,11 +131,11 @@ func newTemplate(
 	slog.Debug(
 		"Loaded template",
 		logger.LogFieldTemplateName, templateName,
-		logger.LogFieldAvailableTemplateFiles, myFiles,
+		logger.LogFieldAvailableTemplateFiles, filesList,
 	)
 
 	myTemplate := template.New(templateName).Option("missingkey=zero").Funcs(funcMap)
-	_, err = myTemplate.ParseFiles(myFiles...)
+	_, err = myTemplate.ParseFiles(filesList...)
 	if err != nil {
 		return nil, "", err
 	}
