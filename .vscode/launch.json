@@ -61,7 +61,7 @@
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
-        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src/_binaries/shellcheckLint/shellcheckLint-binary.yaml",
+        "/home/wsl/fchastanet/bash-dev-env/src/_installScripts/Composer/Composer-binary.yaml",
         "-t",
         "examples/generated",
         "-k"

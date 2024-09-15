@@ -57,9 +57,9 @@ func ReproducibleTarOptions(info *tar.Header, _ fs.FileInfo) error {
 
 func getFileHeader(
 	fileInfo fs.FileInfo,
+	filename string,
 	relativeDir string,
 ) (header *tar.Header, err error) {
-	filename := fileInfo.Name()
 	// Create a tar Header from the FileInfo data
 	header, err = tar.FileInfoHeader(fileInfo, filename)
 	if err != nil {
@@ -99,7 +99,7 @@ func addToArchive(
 	}
 	defer file.Close()
 
-	header, err := getFileHeader(fileInfo, relativeDir)
+	header, err := getFileHeader(fileInfo, filename, relativeDir)
 	if err != nil {
 		return err
 	}
