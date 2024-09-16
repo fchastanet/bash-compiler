@@ -8,9 +8,13 @@ import (
 	"gotest.tools/v3/assert"
 )
 
-const shouldNotBeCalledCodeStr = "should not be called"
+const (
+	shouldNotBeCalledCodeStr = "should not be called"
+	expectedTransformedCode  = "transformed code"
+	asNameLabel              = "asName"
+)
 
-var shouldNotBeCalledError = unsupportedEmbeddedResourceError{nil, "asName", "resource", 12}
+var shouldNotBeCalledError = unsupportedEmbeddedResourceError{nil, asNameLabel, "resource", 12}
 
 type TemplateContextRenderFunc func(
 	templateContextData *render.TemplateContextData,
@@ -74,22 +78,23 @@ func TestRenderResourceNotFound(t *testing.T) {
 			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
 		},
 	)
-	code, err := embedGenerate.RenderResource("asName", "resource", 1)
-	assert.Error(t, err, "Embedded resource 'resource' - name 'asName' on line 1 cannot be embedded - inner error: stat resource: no such file or directory")
+	code, err := embedGenerate.RenderResource(asNameLabel, "resource", 1)
+	assert.Error(t, err, "Embedded resource 'resource' - "+
+		"name 'asName' on line 1 cannot be embedded - inner error: stat resource: no such file or directory")
 	assert.Equal(t, "", code)
 }
 
-func TestRenderResourceFile(t *testing.T) {
-	embedGenerate := newAnnotationEmbedGenerate(
+func createEmbedGenerate(t *testing.T, result string, expectedTemplateName string) *annotationEmbedGenerate {
+	return newAnnotationEmbedGenerate(
 		func(
 			templateContextData *render.TemplateContextData,
 			templateName string,
 		) (string, error) {
 			rootDataMap, ok := templateContextData.RootData.(map[string]string)
 			assert.Equal(t, true, ok)
-			assert.Equal(t, "asName", rootDataMap["asName"])
-			assert.Equal(t, "embedFileTemplateName", templateName)
-			return "transformed code", nil
+			assert.Equal(t, asNameLabel, rootDataMap[asNameLabel])
+			assert.Equal(t, expectedTemplateName, templateName)
+			return result, nil
 		},
 		func(
 			_ *render.TemplateContextData,
@@ -98,33 +103,20 @@ func TestRenderResourceFile(t *testing.T) {
 			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
 		},
 	)
-	code, err := embedGenerate.RenderResource("asName", "annotationEmbed.go", 1)
+}
+
+func TestRenderResourceFile(t *testing.T) {
+	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, "embedFileTemplateName")
+	code, err := embedGenerate.RenderResource(asNameLabel, "annotationEmbed.go", 1)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, "transformed code", code)
+	assert.Equal(t, expectedTransformedCode, code)
 }
 
 func TestRenderResourceDir(t *testing.T) {
-	embedGenerate := newAnnotationEmbedGenerate(
-		func(
-			templateContextData *render.TemplateContextData,
-			templateName string,
-		) (string, error) {
-			rootDataMap, ok := templateContextData.RootData.(map[string]string)
-			assert.Equal(t, true, ok)
-			assert.Equal(t, "asName", rootDataMap["asName"])
-			assert.Equal(t, "embedDirTemplateName", templateName)
-			return "transformed code", nil
-		},
-		func(
-			_ *render.TemplateContextData,
-			_ string,
-		) (string, error) {
-			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
-		},
-	)
+	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, "embedDirTemplateName")
 	pwd, err := os.Getwd()
 	assert.Equal(t, err, nil)
-	code, err := embedGenerate.RenderResource("asName", pwd, 1)
+	code, err := embedGenerate.RenderResource(asNameLabel, pwd, 1)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, "transformed code", code)
+	assert.Equal(t, expectedTransformedCode, code)
 }

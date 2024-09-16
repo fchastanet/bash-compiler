@@ -8,7 +8,7 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func writeYamlFile(modelMap map[string]interface{}, tempYamlFile os.File) (err error) {
+func writeYamlFile(modelMap map[string]any, tempYamlFile os.File) (err error) {
 	yamlResult, err := yaml.Marshal(modelMap)
 	if err != nil {
 		return err

@@ -15,40 +15,40 @@ type mockAnnotation struct {
 	annotation
 }
 
-func (annotationProcessor *mockAnnotation) Init(
+func (*mockAnnotation) Init(
 	_ *CompileContextData,
 ) error {
 	return nil
 }
 
-func (annotationProcessor *mockAnnotation) ParseFunction(
+func (*mockAnnotation) ParseFunction(
 	_ *CompileContextData, _ *functionInfoStruct,
 ) error {
 	return nil
 }
 
-func (annotationProcessor *mockAnnotation) Process(
+func (*mockAnnotation) Process(
 	_ *CompileContextData,
 ) error {
 	return nil
 }
 
-func (annotationProcessor *mockAnnotation) PostProcess(
+func (*mockAnnotation) PostProcess(
 	_ *CompileContextData, code string,
 ) (newCode string, err error) {
 	return code, nil
 }
 
-func (annotationProcessor *mockAnnotation) GetTitle() string {
+func (*mockAnnotation) GetTitle() string {
 	return ""
 }
 
-func (annotationProcessor *mockAnnotation) Reset() {
+func (*mockAnnotation) Reset() {
 }
 
 // *******************************************
 // newCompiler
-func newCompiler(
+func newMockedCompiler(
 	templateContextRenderFromTemplateContent TemplateContextRenderFromTemplateContent,
 ) *CompileContextData {
 	templateContext := templateContextMock{
@@ -78,141 +78,78 @@ func newCompiler(
 	return compileContextData
 }
 
-func TestCompileEmptyCode(t *testing.T) {
-	compilerContextData := newCompiler(
+func compile(
+	inputCode string,
+	functionsIgnoreRegexpList []string,
+	failTestIfRenderCallbackCalled bool,
+	srcDirs []string,
+) (codeCompiled string, err error) {
+	compilerContextData := newMockedCompiler(
 		func(
 			_ *render.TemplateContextData,
-			_ string,
+			code string,
 		) (string, error) {
-			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
+			if failTestIfRenderCallbackCalled {
+				return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
+			}
+			return code, nil
 		},
 	)
-	resultCode, err := compilerContextData.compileContext.Compile(
+	compilerContextData.config.FunctionsIgnoreRegexpList = functionsIgnoreRegexpList
+	compilerContextData.config.SrcDirs = srcDirs
+	return compilerContextData.compileContext.Compile(
 		compilerContextData,
-		"",
+		inputCode,
 	)
+}
+
+func TestCompileEmptyCode(t *testing.T) {
+	resultCode, err := compile("", []string{}, true, []string{})
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "", resultCode)
 }
 
 func TestCompileFunctionNotFound(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			_ string,
-		) (string, error) {
-			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
-		"MyPackage::function",
-	)
+	resultCode, err := compile("MyPackage::function", []string{}, true, []string{})
 	assert.Error(t, err, "function not found: MyPackage::function in any srcDirs []")
 	assert.Equal(t, "", resultCode)
 }
 
 func TestCompileDuplicatedFunctionDirective(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			code string,
-		) (string, error) {
-			return code, nil
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
-	compilerContextData.config.SrcDirs = []string{
-		"./testdata",
-	}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
+	resultCode, err := compile(
 		"# FUNCTIONS\n# FUNCTIONS\nMyPackage::function",
+		[]string{}, false, []string{"./testdata"},
 	)
 	assert.Error(t, err, "duplicated FUNCTIONS directive on line 2")
 	assert.Equal(t, "", resultCode)
 }
 
 func TestCompileFunctionIgnoredFunction(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			_ string,
-		) (string, error) {
-			return shouldNotBeCalledCodeStr, &shouldNotBeCalledError
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{
+	resultCode, err := compile("Ignore::ignoredFunction", []string{
 		"Ignore::ignoredFunction",
-	}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
-		"Ignore::ignoredFunction",
-	)
+	}, true, []string{"./testdata"})
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Ignore::ignoredFunction\n", resultCode)
 }
 
 func TestCompileOneFunctionFound(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			code string,
-		) (string, error) {
-			return code, nil
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
-	compilerContextData.config.SrcDirs = []string{
-		"./testdata",
-	}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
-		"# FUNCTIONS\nMyPackage::function",
-	)
+	resultCode, err := compile("# FUNCTIONS\nMyPackage::function", []string{}, false, []string{"./testdata"})
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileOneFunctionFound.txt")
 }
 
 func TestCompileOneFunctionFoundWith_AndZZZ(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			code string,
-		) (string, error) {
-			return code, nil
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
-	compilerContextData.config.SrcDirs = []string{
-		"./testdata",
-	}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
+	resultCode, err := compile(
 		"# FUNCTIONS\nMyCompletePackage::function",
+		[]string{}, false, []string{"./testdata"},
 	)
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileOneFunctionFoundWith_AndZZZ.txt")
 }
 
 func TestCompileDependentFunction(t *testing.T) {
-	compilerContextData := newCompiler(
-		func(
-			_ *render.TemplateContextData,
-			code string,
-		) (string, error) {
-			return code, nil
-		},
-	)
-	compilerContextData.config.FunctionsIgnoreRegexpList = []string{}
-	compilerContextData.config.SrcDirs = []string{
-		"./testdata",
-	}
-	resultCode, err := compilerContextData.compileContext.Compile(
-		compilerContextData,
-		"# FUNCTIONS\nMyPackage::useDependentFunction",
-	)
+	resultCode, err := compile(
+		"# FUNCTIONS\nMyPackage::useDependentFunction", []string{}, false, []string{"./testdata"})
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileDependentFunction.txt")
 }

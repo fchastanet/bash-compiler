@@ -16,11 +16,11 @@ func RemoveFirstShebangLineIfAny(code string) string {
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		if lineNumber == 1 && shebangRegexp.Match(line) {
-			rewrittenCode.WriteByte('\n')
+			rewrittenCode.WriteByte('\n') //revive:disable-line
 			continue
 		}
-		rewrittenCode.Write(line)
-		rewrittenCode.WriteByte('\n')
+		rewrittenCode.Write(line)     //revive:disable-line
+		rewrittenCode.WriteByte('\n') //revive:disable-line
 		lineNumber++
 	}
 

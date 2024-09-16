@@ -5,5 +5,6 @@
   language: golang
   pass_filenames: true
   fail_fast: true
+  always_run: true
   files: /-binary\.(yml|yaml)$
   stages: [pre-commit]

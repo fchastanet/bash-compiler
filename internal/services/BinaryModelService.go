@@ -35,8 +35,8 @@ type TemplateContextInterface interface {
 	Init(
 		templateDirs []string,
 		templateFile string,
-		data interface{},
-		funcMap map[string]interface{},
+		data any,
+		funcMap map[string]any,
 	) (*render.TemplateContextData, error)
 	Render(
 		templateContextData *render.TemplateContextData,
@@ -108,7 +108,7 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	}
 
 	// init template context
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	data["binData"] = binaryModelData.BinData
 	data["compilerConfig"] = binaryModelData.CompilerConfig
 	data["vars"] = binaryModelData.Vars

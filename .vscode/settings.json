@@ -34,9 +34,12 @@
   "shellcheck.ignorePatterns": {
     "**/*.tpl": true
   },
-  "go.lintTool": "golangci-lint",
-  "go.lintFlags": ["--fast"],
-  "go.coverOnSave": true,
+  "go.lintTool": "revive",
+  "go.lintFlags": [
+    "--exclude vendor/...",
+    "--config=${workspaceRoot}/config.toml"
+  ],
+  "go.coverOnSave": false,
   "go.coverageDecorator": {
     "type": "highlight",
     "coveredHighlightColor": "rgba(64,128,128,0.5)",

@@ -1,6 +1,6 @@
 module github.com/fchastanet/bash-compiler
 
-go 1.23.1
+go 1.22.5
 
 require (
 	cuelang.org/go v0.9.1

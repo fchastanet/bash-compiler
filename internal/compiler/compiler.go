@@ -90,7 +90,7 @@ type functionInfoStruct struct {
 	FunctionName         string
 	SrcFile              string // "" if not computed yet
 	SourceCode           string // the src file content
-	AnnotationMap        map[string]interface{}
+	AnnotationMap        map[string]any
 	Inserted             bool
 	InsertPosition       InsertPosition
 	SourceCodeLoaded     bool
@@ -222,7 +222,7 @@ func (context CompileContext) computeFunctions(
 	return generatedCode, nil
 }
 
-func (context CompileContext) markAllFunctionsAsNotInserted(
+func (CompileContext) markAllFunctionsAsNotInserted(
 	compileContextData *CompileContextData,
 ) {
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
@@ -233,7 +233,7 @@ func (context CompileContext) markAllFunctionsAsNotInserted(
 	}
 }
 
-func (context CompileContext) formatCode(code string) string {
+func (CompileContext) formatCode(code string) string {
 	var newCodeBuffer bytes.Buffer
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	for scanner.Scan() {
@@ -356,7 +356,7 @@ func (context CompileContext) isNonFrameworkFunction(
 	return false
 }
 
-func (context CompileContext) nonFrameworkFunctionRegexpCompile(
+func (CompileContext) nonFrameworkFunctionRegexpCompile(
 	compileContextData *CompileContextData,
 ) {
 	if compileContextData.ignoreFunctionsRegexp != nil {
@@ -402,7 +402,7 @@ func (context CompileContext) generateFunctionCode(
 	return finalBuffer.String(), nil
 }
 
-func (context CompileContext) insertFunctionsCode(
+func (CompileContext) insertFunctionsCode(
 	compileContextData *CompileContextData,
 	functionNames []string,
 	buffer *bytes.Buffer,
@@ -487,7 +487,7 @@ func createFunctionInfoStruct(
 		SourceCode:           "",
 		SourceCodeLoaded:     false,
 		SourceCodeAsTemplate: false,
-		AnnotationMap:        make(map[string]interface{}),
+		AnnotationMap:        make(map[string]any),
 	}
 }
 
@@ -596,7 +596,7 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 	return newFunctionAdded
 }
 
-func (context CompileContext) findFileInSrcDirs(
+func (CompileContext) findFileInSrcDirs(
 	compileContextData *CompileContextData,
 	relativeFilePath string,
 ) (

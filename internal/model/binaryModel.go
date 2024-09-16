@@ -47,7 +47,7 @@ func (compilerConfig *CompilerConfig) DebugCopyGeneratedFile(
 type BinaryModel struct {
 	CompilerConfig CompilerConfig        `yaml:"compilerConfig"`
 	Vars           structures.Dictionary `yaml:"vars"`
-	BinData        interface{}           `yaml:"binData"`
+	BinData        any                   `yaml:"binData"`
 }
 
 type BinaryModelLoader struct{}
@@ -63,7 +63,7 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	referenceDir string,
 	keepIntermediateFiles bool,
 ) (_ *BinaryModel, err error) {
-	modelMap := map[string]interface{}{}
+	modelMap := map[string]any{}
 	loadedFiles := map[string]string{}
 	err = loadModel(
 		referenceDir,
@@ -129,7 +129,7 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	return &binaryModel, err
 }
 
-func (binaryModelContext *BinaryModelLoader) setEnvVars(binaryModel *BinaryModel) {
+func (*BinaryModelLoader) setEnvVars(binaryModel *BinaryModel) {
 	for key, value := range binaryModel.Vars {
 		if val, ok := value.(string); ok {
 			os.Setenv(key, val)
@@ -137,7 +137,7 @@ func (binaryModelContext *BinaryModelLoader) setEnvVars(binaryModel *BinaryModel
 	}
 }
 
-func (binaryModelContext *BinaryModelLoader) expandVars(binaryModel *BinaryModel) {
+func (*BinaryModelLoader) expandVars(binaryModel *BinaryModel) {
 	binaryModel.CompilerConfig.SrcDirsExpanded = []string{}
 	for _, srcDir := range binaryModel.CompilerConfig.SrcDirs {
 		binaryModel.CompilerConfig.SrcDirsExpanded = append(

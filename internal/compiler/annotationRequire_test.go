@@ -15,19 +15,27 @@ import (
 func TestRequireInitCompileContextDataNil(t *testing.T) {
 	requireProcessor := NewRequireAnnotationProcessor()
 	err := requireProcessor.Init(nil)
-	assert.Error(t, err, "validation failed invalid value : context annotationEmbed field compileContextData value <nil>")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context annotationEmbed field compileContextData value <nil>")
 }
 
 func TestRequireInitEmptyCompileContextData(t *testing.T) {
 	requireProcessor := NewRequireAnnotationProcessor()
 	err := requireProcessor.Init(&CompileContextData{}) //nolint:exhaustruct // test
-	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.compileContext value <nil>")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compiler field CompileContextData.compileContext value <nil>")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingTemplateContextData(t *testing.T) {
 	requireProcessor := NewRequireAnnotationProcessor()
-	err := requireProcessor.Init(&CompileContextData{&CompileContext{}, nil, nil, nil, nil}) //nolint:exhaustruct // test
-	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.templateContextData value <nil>")
+	err := requireProcessor.Init(
+		&CompileContextData{
+			&CompileContext{},
+			nil, nil, nil, nil,
+		},
+	) //exhaustruct:ignore
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compiler field CompileContextData.templateContextData value <nil>")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingConfig(t *testing.T) {
@@ -41,7 +49,8 @@ func TestRequireInitInvalidCompileContextDataMissingConfig(t *testing.T) {
 			nil,
 		},
 	)
-	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.config value <nil>")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compiler field CompileContextData.config value <nil>")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingFunctionMap(t *testing.T) {
@@ -53,7 +62,8 @@ func TestRequireInitInvalidCompileContextDataMissingFunctionMap(t *testing.T) {
 		nil,
 		nil,
 	})
-	assert.Error(t, err, "validation failed invalid value : context compiler field CompileContextData.functionsMap value map[]")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compiler field CompileContextData.functionsMap value map[]")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingRequirementsTemplateName(t *testing.T) {
@@ -65,7 +75,8 @@ func TestRequireInitInvalidCompileContextDataMissingRequirementsTemplateName(t *
 		make(map[string]functionInfoStruct),
 		[]*regexp.Regexp{},
 	})
-	assert.Error(t, err, "validation failed invalid value : context compileContextData.config.AnnotationsConfig field checkRequirementsTemplateName value <nil>")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compileContextData.config.AnnotationsConfig field checkRequirementsTemplateName value <nil>")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T) {
@@ -81,7 +92,8 @@ func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T
 		functionsMap:          make(map[string]functionInfoStruct),
 		ignoreFunctionsRegexp: []*regexp.Regexp{},
 	})
-	assert.Error(t, err, "validation failed invalid value : context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil>")
+	assert.Error(t, err, "validation failed invalid value : "+
+		"context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil>")
 }
 
 func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
@@ -105,7 +117,7 @@ func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
 func TestRequireParseFunctionNoRequiredFunction(t *testing.T) {
 	requireProcessor := getValidRequireProcessor(t)
 	functionStruct := &functionInfoStruct{ //nolint:exhaustruct // test
-		AnnotationMap: make(map[string]interface{}),
+		AnnotationMap: make(map[string]any),
 		SourceCode:    "",
 	}
 	err := requireProcessor.ParseFunction(
@@ -119,7 +131,7 @@ func TestRequireParseFunctionNoRequiredFunction(t *testing.T) {
 func TestRequireParseFunctionWithARequiredFunction(t *testing.T) {
 	requireProcessor := getValidRequireProcessor(t)
 	functionStruct := &functionInfoStruct{ //nolint:exhaustruct // test
-		AnnotationMap: make(map[string]interface{}),
+		AnnotationMap: make(map[string]any),
 		FunctionName:  "Function::myFunction",
 		SourceCode:    "# @require MyRequired::function\nfunction Function::myFunction() {\n:;\n}",
 	}
@@ -127,13 +139,17 @@ func TestRequireParseFunctionWithARequiredFunction(t *testing.T) {
 		&CompileContextData{ //nolint:exhaustruct // test
 			templateContextData: &render.TemplateContextData{ //nolint:exhaustruct // test
 				TemplateContext: &templateContextMock{
-					templateContextRenderFunc: func(templateContextData *render.TemplateContextData, _ string) (string, error) {
-						if data, ok := templateContextData.Data.(map[string]interface{}); ok {
+					templateContextRenderFunc: func(
+						templateContextData *render.TemplateContextData, _ string,
+					) (string, error) {
+						if data, ok := templateContextData.Data.(map[string]any); ok {
 							return fmt.Sprintf("%v %v %v", data["code"], data["functionName"], data["requires"]), nil
 						}
 						return "", validationError("invalid Data", templateContextData.Data)
 					},
-					templateContextRenderFromTemplateContent: func(_ *render.TemplateContextData, _ string) (string, error) {
+					templateContextRenderFromTemplateContent: func(
+						_ *render.TemplateContextData, _ string,
+					) (string, error) {
 						return "", nil
 					},
 				},

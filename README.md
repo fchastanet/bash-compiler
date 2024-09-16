@@ -56,7 +56,8 @@ imported as well (of course only once).
 - [Yaml parser](https://github.com/goccy/go-yaml) is used to load template data
   from yaml file
 - [Kong](github.com/alecthomas/kong) used for command arguments parsing
-- [cuelang](cuelang.org/go) allows to transform yaml file in another one
+- [cuelang](https://github.com/cue-lang/cue) allows to transform yaml file in
+  another one
 
 ### 2.2. Template system
 
@@ -384,16 +385,6 @@ directories. `annotationEmbed` allows to:
   extracted to temporary directory and is callable directly using `asName`
   chosen above because path of the temporary directory has been added into the
   PATH variable.
-
-![activity diagram to explain how embed annotation are injected](doc/embedActivityDiagram.svg)
-
-```plantuml
-@startuml "bash-compiler embed annotation activity diagram"
-!include doc/embedActivityDiagram.puml
-@enduml
-```
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/doc/embedActivityDiagram.puml).
 
 ### 3.2. Build/run/clean
 

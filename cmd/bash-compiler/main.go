@@ -18,14 +18,15 @@ import (
 
 func main() {
 	// This controls the maxprocs environment variable in container runtimes.
-	// see https://martin.baillie.id/wrote/gotchas-in-the-go-network-packages-defaults/#bonus-gomaxprocs-containers-and-the-cfs
+	// see https://tinyurl.com/3rfwknuv
 	_, err := maxprocs.Set()
 	logger.Check(err)
 
 	// get current dir
 	currentDir, err := os.Getwd()
 	logger.Check(err)
-	os.Setenv("PWD", currentDir)
+	err = os.Setenv("PWD", currentDir)
+	logger.Check(err)
 
 	// load .bash-compiler file in current directory if exists
 	bashCompilerConfFile := filepath.Join(currentDir, ".bash-compiler")
@@ -50,7 +51,8 @@ func main() {
 		logger.LogFieldVariableName, "COMPILER_ROOT_DIR",
 		logger.LogFieldVariableValue, string(cli.CompilerRootDir),
 	)
-	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	err = os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	logger.Check(err)
 
 	// create BinaryModelService
 	templateContext := render.NewTemplateContext()

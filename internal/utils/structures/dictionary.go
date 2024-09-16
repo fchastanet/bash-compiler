@@ -23,7 +23,7 @@ func (e *invalidValueTypeError) Error() string {
 	return fmt.Sprintf("invalid type: %v", e.Value)
 }
 
-type Dictionary map[string]interface{}
+type Dictionary map[string]any
 
 func (dic Dictionary) GetStringValue(key string) (value string, err error) {
 	val, ok := dic[key]

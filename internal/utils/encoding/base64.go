@@ -17,7 +17,9 @@ func Base64FromFile(file *os.File) (string, error) {
 	if _, err := io.Copy(encoder, file); err != nil {
 		return "", err
 	}
-	encoder.Close()
-
+	err := encoder.Close()
+	if err != nil {
+		return "", err
+	}
 	return buf.String(), nil
 }
