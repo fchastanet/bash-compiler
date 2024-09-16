@@ -6,12 +6,17 @@ import (
 	"gotest.tools/v3/assert"
 )
 
+const (
+	expectedFileFilesGo  = "files.go"
+	expectedFileFiles2Go = "files2.go"
+)
+
 func TestFilePathExists(t *testing.T) {
-	assert.Equal(t, FilePathExists("files.go"), nil)
+	assert.Equal(t, FilePathExists(expectedFileFilesGo), nil)
 }
 
 func TestFilePathNotExists(t *testing.T) {
-	assert.Error(t, FilePathExists("files2.go"), "file path does not exist: files2.go")
+	assert.Error(t, FilePathExists(expectedFileFiles2Go), "file path does not exist: files2.go")
 }
 
 func TestFilePathDirExists(t *testing.T) {
@@ -19,7 +24,7 @@ func TestFilePathDirExists(t *testing.T) {
 }
 
 func TestFileExists(t *testing.T) {
-	assert.Equal(t, FileExists("files.go"), nil)
+	assert.Equal(t, FileExists(expectedFileFilesGo), nil)
 }
 
 func TestFileExistsButDir(t *testing.T) {
@@ -27,7 +32,7 @@ func TestFileExistsButDir(t *testing.T) {
 }
 
 func TestFileNotExists(t *testing.T) {
-	assert.Error(t, FileExists("files2.go"), "file path does not exist: files2.go")
+	assert.Error(t, FileExists(expectedFileFiles2Go), "file path does not exist: files2.go")
 }
 
 func TestDirExists(t *testing.T) {
@@ -39,23 +44,23 @@ func TestDirNotExists(t *testing.T) {
 }
 
 func TestDirExistsNotADirectory(t *testing.T) {
-	assert.Error(t, DirExists("files.go"), "a directory was expected: files.go")
+	assert.Error(t, DirExists(expectedFileFilesGo), "a directory was expected: files.go")
 }
 
-func TestMd5FromFileButDir(t *testing.T) {
-	md5, err := Md5SumFromFile("testsData")
-	assert.Equal(t, md5, "")
+func TestSha256FromFileButDir(t *testing.T) {
+	sha256, err := ChecksumFromFile("testsData")
+	assert.Equal(t, sha256, "")
 	assert.Error(t, err, "read testsData: is a directory")
 }
 
-func TestMd5FromFileOk(t *testing.T) {
-	md5, err := Md5SumFromFile("testsData/testMd5.txt")
-	assert.Equal(t, md5, "772ac1a55fab1122f3b369ee9cd31549")
+func TestSha256FromFileOk(t *testing.T) {
+	sha256, err := ChecksumFromFile("testsData/testMd5.txt")
+	assert.Equal(t, sha256, "af99a79c936e4625c10bc2d3b9e4adf14a67f2d8a1ae27453a77fc5a59bb1b4b")
 	assert.NilError(t, err, "error should have been nil")
 }
 
-func TestMd5FromFileNotExists(t *testing.T) {
-	md5, err := Md5SumFromFile("testsData/notExists.txt")
-	assert.Equal(t, md5, "")
+func TestSha256FromFileNotExists(t *testing.T) {
+	sha256, err := ChecksumFromFile("testsData/notExists.txt")
+	assert.Equal(t, sha256, "")
 	assert.Error(t, err, "open testsData/notExists.txt: no such file or directory")
 }

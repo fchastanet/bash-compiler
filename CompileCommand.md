@@ -923,10 +923,6 @@ The compiler during successive passes:
   - inject the requirements calls in the order specified by dependency tree (see
     below).
 
-![activity diagram to explain how @require directives are injected](images/compilerRequireDirective.svg)
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/src/Compiler/Require/activityDiagram.puml).
-
 #### 4.1.1. Requires dependencies tree
 
 The following rules apply:
@@ -1104,10 +1100,6 @@ interfaces. `Compiler::Implement::interface` allows to:
 - ensure all functions defined by the interface(s) are implemented inside the
   script
 
-![activity diagram to explain how IMPLEMENT directives are injected](images/compilerImplementDirective.svg)
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/src/Compiler/Implement/activityDiagram.puml).
-
 ### 4.4. Compiler - Compiler::Facade::generate
 
 <!-- markdownlint-capture -->
@@ -1130,10 +1122,6 @@ be made public will be the ones declared using `IMPLEMENT` directive.
 - the functions are encapsulated inside a main function with unique name
 - finally using the template the main function will not be called if the file is
   sourced
-
-![activity diagram to explain how IMPLEMENT directives are injected](images/compilerImplementDirective.svg)
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/src/Compiler/Implement/activityDiagram.puml).
 
 ### 4.5. Compiler - Compiler::Embed::embed
 
@@ -1164,10 +1152,6 @@ framework function. `Compiler::Embed::embed` allows to:
   extracted to temporary directory and is callable directly using `asName`
   chosen above because path of the temporary directory has been added into the
   PATH variable.
-
-![activity diagram to explain how EMBED directives are injected](images/compilerEmbedInjection.svg)
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/src/Compiler/Embed/activityDiagram.puml).
 
 ## 5. FrameworkLint
 

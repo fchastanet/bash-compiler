@@ -25,7 +25,7 @@ func format(format string, args ...any) string {
 	return fmt.Sprintf(format, args...)
 }
 
-func stringLength(list interface{}) (int, error) {
+func stringLength(list any) (int, error) {
 	tp := reflect.TypeOf(list)
 	//nolint:exhaustive // no need to be more exhaustive
 	switch tp.Kind() {
@@ -39,7 +39,7 @@ func stringLength(list interface{}) (int, error) {
 	}
 }
 
-func sortCallbacks(list []interface{}) (interface{}, error) {
+func sortCallbacks(list []any) (any, error) {
 	sort.SliceStable(list, func(i int, j int) bool {
 		priorityA := i
 		if valA, okA := list[i].(string); okA {
@@ -72,7 +72,7 @@ func arrayDefaultValue(list []string, i int, defaultValue int) int {
 	return defaultValue
 }
 
-func FuncMap() map[string]interface{} {
+func FuncMap() map[string]any {
 	funcMap := sprig.FuncMap()
 	// string functions
 	funcMap["len"] = stringLength

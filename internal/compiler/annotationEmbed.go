@@ -49,7 +49,7 @@ func validationError(fieldName string, fieldValue any) error {
 	}
 }
 
-func (annotationProcessor *embedAnnotationProcessor) GetTitle() string {
+func (*embedAnnotationProcessor) GetTitle() string {
 	return "EmbedAnnotationProcessor"
 }
 
@@ -97,16 +97,14 @@ func (annotationProcessor *embedAnnotationProcessor) Reset() {
 	annotationProcessor.embedMap = make(map[string]string)
 }
 
-func (annotationProcessor *embedAnnotationProcessor) ParseFunction(
+func (*embedAnnotationProcessor) ParseFunction(
 	_ *CompileContextData,
 	_ *functionInfoStruct,
 ) error {
 	return nil
 }
 
-func (annotationProcessor *embedAnnotationProcessor) Process(
-	_ *CompileContextData,
-) error {
+func (*embedAnnotationProcessor) Process(_ *CompileContextData) error {
 	return nil
 }
 
@@ -124,16 +122,11 @@ func (annotationProcessor *embedAnnotationProcessor) PostProcess(
 		lineNumber++
 		matches := embedRegexp.FindStringSubmatch(line)
 		if matches != nil {
-			resource := os.ExpandEnv(strings.Trim(matches[embedRegexpResourceGroupIndex], " \t"))
-			asName := strings.Trim(matches[embedRegexpAsNameGroupIndex], " \t")
-			if _, exists := annotationProcessor.embedMap[asName]; exists {
-				return "", &duplicatedAsNameError{nil, lineNumber, asName, resource}
-			}
-			annotationProcessor.embedMap[asName] = resource
-			embedCode, err := annotationProcessor.annotationEmbedGenerate.RenderResource(
-				asName, resource, lineNumber,
+			embedCode, err := annotationProcessor.generateEmbedCode(
+				matches[embedRegexpResourceGroupIndex],
+				matches[embedRegexpAsNameGroupIndex],
+				lineNumber,
 			)
-
 			if logger.FancyHandleError(err) {
 				return "", err
 			}
@@ -145,4 +138,20 @@ func (annotationProcessor *embedAnnotationProcessor) PostProcess(
 	}
 
 	return bufferOutput.String(), nil
+}
+
+func (annotationProcessor *embedAnnotationProcessor) generateEmbedCode(
+	resource string,
+	asName string,
+	lineNumber int,
+) (string, error) {
+	resource = os.ExpandEnv(strings.Trim(resource, " \t"))
+	asName = strings.Trim(asName, " \t")
+	if _, exists := annotationProcessor.embedMap[asName]; exists {
+		return "", &duplicatedAsNameError{nil, lineNumber, asName, resource}
+	}
+	annotationProcessor.embedMap[asName] = resource
+	return annotationProcessor.annotationEmbedGenerate.RenderResource(
+		asName, resource, lineNumber,
+	)
 }

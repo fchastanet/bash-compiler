@@ -17,8 +17,15 @@ import (
 var (
 	requireRegexp         = regexp.MustCompile(`# @require (?P<require>.*)$`)
 	requiredFunctionRegex = regexp.MustCompile(
-		`(?m)[ \t]*(function[ \t]+|)(?P<bashFrameworkFunction>([A-Za-z0-9_]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))\(\)[ \t]*\{[ \t]*$`,
+		`(?m)[ \t]*(function[ \t]+|)` +
+			`(?P<bashFrameworkFunction>([A-Za-z0-9_]+[A-Za-z0-9_-]*::)+([a-zA-Z0-9_-]+))\(\)[ \t]*\{[ \t]*$`,
 	)
+)
+
+const (
+	templateFieldFunctionName = "functionName"
+	templateFieldCode         = "code"
+	templateFieldRequires     = "requires"
 )
 
 type requiredFunctionNotFoundError struct {
@@ -55,7 +62,7 @@ func NewRequireAnnotationProcessor() AnnotationProcessorInterface {
 	return &requireAnnotationProcessor{} //nolint:exhaustruct // Check Init method
 }
 
-func (annotationProcessor *requireAnnotationProcessor) GetTitle() string {
+func (*requireAnnotationProcessor) GetTitle() string {
 	return "RequireAnnotationProcessor"
 }
 
@@ -70,7 +77,8 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 		return err
 	}
 	annotationProcessor.compileContextData = compileContextData
-	checkRequirementsTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("checkRequirementsTemplateName")
+	checkRequirementsTemplateName, err := compileContextData.config.AnnotationsConfig.
+		GetStringValue("checkRequirementsTemplateName")
 	if err != nil {
 		return &errors.ValidationError{
 			InnerError: err,
@@ -79,7 +87,8 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 			FieldValue: nil,
 		}
 	}
-	requireTemplateName, err := annotationProcessor.compileContextData.config.AnnotationsConfig.GetStringValue("requireTemplateName")
+	requireTemplateName, err := compileContextData.config.AnnotationsConfig.
+		GetStringValue("requireTemplateName")
 	if err != nil {
 		return &errors.ValidationError{
 			InnerError: err,
@@ -95,7 +104,7 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 	return nil
 }
 
-func (annotationProcessor *requireAnnotationProcessor) Reset() {
+func (*requireAnnotationProcessor) Reset() {
 }
 
 func (annotationProcessor *requireAnnotationProcessor) ParseFunction(
@@ -120,10 +129,10 @@ func (annotationProcessor *requireAnnotationProcessor) ParseFunction(
 
 	functionStruct.SourceCode, err = myTemplateFunctions.MustInclude(
 		annotationProcessor.checkRequirementsTemplateName,
-		map[string]interface{}{
-			"code":         functionStruct.SourceCode,
-			"functionName": functionStruct.FunctionName,
-			"requires":     annotation.requiredFunctions,
+		map[string]any{
+			templateFieldCode:         functionStruct.SourceCode,
+			templateFieldFunctionName: functionStruct.FunctionName,
+			templateFieldRequires:     annotation.requiredFunctions,
 		},
 		*compileContextData.templateContextData,
 	)
@@ -163,7 +172,7 @@ func (annotationProcessor *requireAnnotationProcessor) Process(
 	sort.Strings(functionNames)
 	for _, functionName := range functionNames {
 		functionStruct := functionsMap[functionName]
-		slog.Debug("addRequireCodeToEachRequiredFunctions", "functionName", functionName)
+		slog.Debug("addRequireCodeToEachRequiredFunctions", templateFieldFunctionName, functionName)
 		err := annotationProcessor.addRequireCodeToEachRequiredFunctions(compileContextData, &functionStruct)
 		if err != nil {
 			return err
@@ -201,23 +210,24 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCodeToEachRequi
 	if err != nil {
 		return err
 	}
-
-	if len(requireAnnotation.requiredFunctions) > 0 {
-		functionsMap := compileContextData.functionsMap
-		for _, requiredFunctionName := range requireAnnotation.requiredFunctions {
-			slog.Debug("Check if required function has been imported", "requiredFunctionName", requiredFunctionName)
-			requiredFunctionStruct, ok := functionsMap[requiredFunctionName]
-			if !ok {
-				return &requiredFunctionNotFoundError{nil, requiredFunctionName}
-			}
-			err = annotationProcessor.addRequireCode(compileContextData, &requiredFunctionStruct)
-			if err != nil {
-				return err
-			}
-			compileContextData.functionsMap[requiredFunctionName] = requiredFunctionStruct
-		}
-		requireAnnotation.codeAddedOnRequiredFunctions = true
+	if len(requireAnnotation.requiredFunctions) == 0 {
+		return nil
 	}
+
+	functionsMap := compileContextData.functionsMap
+	for _, requiredFunctionName := range requireAnnotation.requiredFunctions {
+		slog.Debug("Check if required function has been imported", "requiredFunctionName", requiredFunctionName)
+		requiredFunctionStruct, ok := functionsMap[requiredFunctionName]
+		if !ok {
+			return &requiredFunctionNotFoundError{nil, requiredFunctionName}
+		}
+		err = annotationProcessor.addRequireCode(compileContextData, &requiredFunctionStruct)
+		if err != nil {
+			return err
+		}
+		compileContextData.functionsMap[requiredFunctionName] = requiredFunctionStruct
+	}
+	requireAnnotation.codeAddedOnRequiredFunctions = true
 	functionStruct.AnnotationMap[annotationRequireKind] = *requireAnnotation
 	return nil
 }
@@ -242,9 +252,9 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCode(
 
 	sourceCode, err := myTemplateFunctions.MustInclude(
 		annotationProcessor.requireTemplateName,
-		map[string]interface{}{
-			"code":         functionStruct.SourceCode,
-			"functionName": functionStruct.FunctionName,
+		map[string]any{
+			templateFieldCode:         functionStruct.SourceCode,
+			templateFieldFunctionName: functionStruct.FunctionName,
 		},
 		*compileContextData.templateContextData,
 	)
@@ -259,7 +269,7 @@ func (annotationProcessor *requireAnnotationProcessor) addRequireCode(
 
 func isCodeContainsFunction(code string, functionName string) error {
 	matches := requiredFunctionRegex.FindAllStringSubmatch(code, -1)
-	slog.Debug("isCodeContainsFunction", "functionName", functionName)
+	slog.Debug("isCodeContainsFunction", templateFieldFunctionName, functionName)
 	if matches == nil {
 		slog.Error("isCodeContainsFunction no function regexp match")
 		return &requiredFunctionNotFoundError{nil, functionName}
@@ -270,11 +280,11 @@ func isCodeContainsFunction(code string, functionName string) error {
 			return nil
 		}
 	}
-	slog.Error("isCodeContainsFunction function does not match", "functionName", functionName)
+	slog.Error("isCodeContainsFunction function does not match", templateFieldFunctionName, functionName)
 	return &requiredFunctionNotFoundError{nil, functionName}
 }
 
-func (annotationProcessor *requireAnnotationProcessor) PostProcess(
+func (*requireAnnotationProcessor) PostProcess(
 	_ *CompileContextData, code string,
 ) (string, error) {
 	return code, nil

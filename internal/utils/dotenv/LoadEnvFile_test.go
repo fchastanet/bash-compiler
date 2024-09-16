@@ -7,6 +7,10 @@ import (
 	"gotest.tools/v3/assert"
 )
 
+const (
+	msgErrorShouldBeNil = "error should be nil"
+)
+
 func setupTest(_ testing.TB) func(tb testing.TB) {
 	os.Clearenv()
 	return func(_ testing.TB) {
@@ -18,7 +22,7 @@ func TestLoadSimpleFileMyVarNotExisting(t *testing.T) {
 	teardownTest := setupTest(t)
 	defer teardownTest(t)
 	err := LoadEnvFile("./testsData/simpleFile.txt")
-	assert.NilError(t, err, "error should be nil")
+	assert.NilError(t, err, msgErrorShouldBeNil)
 	envValue, exists := os.LookupEnv("FRAMEWORK_ROOT_DIR")
 	assert.Equal(t, exists, true)
 	assert.Equal(t, envValue, "", envValue)
@@ -29,7 +33,7 @@ func TestLoadSimpleFileMyVarExists(t *testing.T) {
 	defer teardownTest(t)
 	os.Setenv("MY_VAR", "myValue")
 	err := LoadEnvFile("./testsData/simpleFile.txt")
-	assert.NilError(t, err, "error should be nil")
+	assert.NilError(t, err, msgErrorShouldBeNil)
 	envValue, exists := os.LookupEnv("FRAMEWORK_ROOT_DIR")
 	assert.Equal(t, exists, true)
 	assert.Equal(t, envValue, "myValue", envValue)
@@ -39,7 +43,7 @@ func TestLoadFileVarsDefaultValues(t *testing.T) {
 	teardownTest := setupTest(t)
 	defer teardownTest(t)
 	err := LoadEnvFile("./testsData/vars.txt")
-	assert.NilError(t, err, "error should be nil")
+	assert.NilError(t, err, msgErrorShouldBeNil)
 	envValue, exists := os.LookupEnv("FRAMEWORK_ROOT_DIR")
 	assert.Equal(t, exists, true)
 	assert.Equal(t, envValue, "dummy", envValue)

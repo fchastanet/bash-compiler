@@ -47,7 +47,7 @@ func (compilerConfig *CompilerConfig) DebugCopyGeneratedFile(
 type BinaryModel struct {
 	CompilerConfig CompilerConfig        `yaml:"compilerConfig"`
 	Vars           structures.Dictionary `yaml:"vars"`
-	BinData        interface{}           `yaml:"binData"`
+	BinData        any                   `yaml:"binData"`
 }
 
 type BinaryModelLoader struct{}
@@ -61,9 +61,14 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	binaryModelFilePath string,
 	binaryModelBaseName string,
 	referenceDir string,
-	keepIntermediateFiles bool,
+	intermediateFileCallback func(
+		targetDir string, basename string, suffix string, tempYamlFile string,
+	) (err error),
+	intermediateFileContentCallback func(
+		targetDir string, basename string, suffix string, content string,
+	) (err error),
 ) (_ *BinaryModel, err error) {
-	modelMap := map[string]interface{}{}
+	modelMap := map[string]any{}
 	loadedFiles := map[string]string{}
 	err = loadModel(
 		referenceDir,
@@ -86,16 +91,14 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	if err != nil {
 		return nil, err
 	}
-	if keepIntermediateFiles {
-		err = logger.DebugSaveGeneratedFile(
-			targetDir,
-			binaryModelBaseName,
-			"-1-merged.yaml",
-			tempYamlFile.Name(),
-		)
-		if err != nil {
-			return nil, err
-		}
+	err = intermediateFileCallback(
+		targetDir,
+		binaryModelBaseName,
+		"-1-merged.yaml",
+		tempYamlFile.Name(),
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	var resultWriter bytes.Buffer
@@ -103,16 +106,14 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	if err != nil {
 		return nil, err
 	}
-	if keepIntermediateFiles {
-		err = logger.DebugCopyGeneratedFile(
-			targetDir,
-			binaryModelBaseName,
-			"-2-cue-transformed.yaml",
-			resultWriter.String(),
-		)
-		if err != nil {
-			return nil, err
-		}
+	err = intermediateFileContentCallback(
+		targetDir,
+		binaryModelBaseName,
+		"-2-cue-transformed.yaml",
+		resultWriter.String(),
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	// load command yaml data model
@@ -129,7 +130,7 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	return &binaryModel, err
 }
 
-func (binaryModelContext *BinaryModelLoader) setEnvVars(binaryModel *BinaryModel) {
+func (*BinaryModelLoader) setEnvVars(binaryModel *BinaryModel) {
 	for key, value := range binaryModel.Vars {
 		if val, ok := value.(string); ok {
 			os.Setenv(key, val)
@@ -137,7 +138,7 @@ func (binaryModelContext *BinaryModelLoader) setEnvVars(binaryModel *BinaryModel
 	}
 }
 
-func (binaryModelContext *BinaryModelLoader) expandVars(binaryModel *BinaryModel) {
+func (*BinaryModelLoader) expandVars(binaryModel *BinaryModel) {
 	binaryModel.CompilerConfig.SrcDirsExpanded = []string{}
 	for _, srcDir := range binaryModel.CompilerConfig.SrcDirs {
 		binaryModel.CompilerConfig.SrcDirsExpanded = append(

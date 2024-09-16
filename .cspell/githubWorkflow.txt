@@ -1,6 +1,10 @@
+autoupdate
 COND
 DOCKERHUB
+friday
+goimports
 gpgsign
+precommit
 Sarif
 SARIF
 sarif

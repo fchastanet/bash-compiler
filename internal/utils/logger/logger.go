@@ -47,7 +47,9 @@ func Check(e error) {
 		// notice that we're using 1, so it will actually log where
 		// the error happened, 0 = this function, we don't want that.
 		_, filename, line, _ := runtime.Caller(1)
+		//revive:disable
 		log.Fatalf("[error] %s:%d %+v", filename, line, e)
+		//revive:enable
 	}
 }
 
@@ -78,7 +80,10 @@ func DebugCopyGeneratedFile(
 		fmt.Sprintf("%s%s", basename, suffix),
 	)
 	err = os.WriteFile(targetFile, []byte(code), files.UserReadWriteExecutePerm)
-	slog.Info("KeepIntermediateFiles - merged config file", LogFieldFilePath, targetFile)
+	slog.Info(
+		"KeepIntermediateFiles - merged config file",
+		LogFieldFilePath, targetFile,
+	)
 
 	return err
 }
