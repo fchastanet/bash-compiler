@@ -240,14 +240,14 @@ input: #Schema
 }
 
 #Schema: {
-	// Commands
+  // Commands
   compilerConfig: #CompilerConfigSchema
-	vars: {
-		{[=~"^[A-Z0-9_]+$" & !~"^()$"]: string}
-	}
-	binData: {
-		commands: #CommandsSchema
-	}
+  vars: {
+    {[=~"^[A-Z0-9_]+$" & !~"^()$"]: string}
+  }
+  binData: {
+    commands: #CommandsSchema
+  }
 
 }
 

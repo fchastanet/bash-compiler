@@ -55,8 +55,9 @@ imported as well (of course only once).
   - [slog tutorial](https://betterstack.com/community/guides/logging/logging-in-go/#customizing-the-default-logger)
 - [Yaml parser](https://github.com/goccy/go-yaml) is used to load template data
   from yaml file
-- [Kong](github.com/alecthomas/kong) used for command arguments parsing
-- [cuelang](cuelang.org/go) allows to transform yaml file in another one
+- [Kong](https://github.com/alecthomas/kong) used for command arguments parsing
+- [cuelang](https://github.com/cue-lang/cue) allows to transform yaml file in
+  another one
 
 ### 2.2. Template system
 
@@ -385,16 +386,6 @@ directories. `annotationEmbed` allows to:
   chosen above because path of the temporary directory has been added into the
   PATH variable.
 
-![activity diagram to explain how embed annotation are injected](doc/embedActivityDiagram.svg)
-
-```plantuml
-@startuml "bash-compiler embed annotation activity diagram"
-!include doc/embedActivityDiagram.puml
-@enduml
-```
-
-[activity diagram source code](https://github.com/fchastanet/bash-tools-framework/blob/master/doc/embedActivityDiagram.puml).
-
 ### 3.2. Build/run/clean
 
 Formatting is managed exclusively by pre-commit hooks.
@@ -438,13 +429,18 @@ build/clean.sh
 Compile bin file
 
 ```bash
-FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework go run ./cmd/bash-compiler examples/configReference/shellcheckLint.yaml -t examples/generated -k -d
+FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
+  go run ./cmd/bash-compiler examples/configReference/shellcheckLint.yaml \
+  -t examples/generated -k -d
 ```
 
 for debugging purpose, manually Transform and validate yaml file using cue
 
 ```bash
-cue export -l input: examples/generated/shellcheckLint-merged.yaml internal/model/binFile.cue --out yaml -e output >examples/generated/shellcheckLint-cue-transformed.yaml
+cue export \
+  -l input: examples/generated/shellcheckLint-merged.yaml \
+  internal/model/binFile.cue --out yaml \
+  -e output >examples/generated/shellcheckLint-cue-transformed.yaml
 ```
 
 ## 5. Alternatives

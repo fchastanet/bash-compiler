@@ -27,7 +27,12 @@ type BinaryModelLoaderInterface interface {
 		binaryModelFilePath string,
 		binaryModelBaseName string,
 		referenceDir string,
-		keepIntermediateFiles bool,
+		keepIntermediateFilesCallback func(
+			targetDir string, basename string, suffix string, tempYamlFile string,
+		) (err error),
+		intermediateFileContentCallback func(
+			targetDir string, basename string, suffix string, tempYamlFile string,
+		) (err error),
 	) (binaryModel *model.BinaryModel, err error)
 }
 
@@ -35,8 +40,8 @@ type TemplateContextInterface interface {
 	Init(
 		templateDirs []string,
 		templateFile string,
-		data interface{},
-		funcMap map[string]interface{},
+		data any,
+		funcMap map[string]any,
 	) (*render.TemplateContextData, error)
 	Render(
 		templateContextData *render.TemplateContextData,
@@ -52,36 +57,48 @@ type TemplateContextInterface interface {
 }
 
 type BinaryModelServiceContext struct {
-	binaryModelLoader BinaryModelLoaderInterface
-	templateContext   TemplateContextInterface
-	codeCompiler      CodeCompilerInterface
+	binaryModelLoader             BinaryModelLoaderInterface
+	templateContext               TemplateContextInterface
+	codeCompiler                  CodeCompilerInterface
+	keepIntermediateFilesCallback func(
+		targetDir string, basename string, suffix string, tempYamlFile string,
+	) (err error)
+	intermediateFileContentCallback func(
+		targetDir string, basename string, suffix string, tempYamlFile string,
+	) (err error)
 }
 
 type BinaryModelServiceContextData struct {
-	binaryModelData       *model.BinaryModel
-	compileContextData    *compiler.CompileContextData
-	templateContextData   *render.TemplateContextData
-	targetDir             string
-	keepIntermediateFiles bool
-	binaryModelFilePath   string
-	binaryModelBaseName   string
+	binaryModelData     *model.BinaryModel
+	compileContextData  *compiler.CompileContextData
+	templateContextData *render.TemplateContextData
+	targetDir           string
+	binaryModelFilePath string
+	binaryModelBaseName string
 }
 
 func NewBinaryModelService(
 	binaryModelLoader BinaryModelLoaderInterface,
 	templateContext TemplateContextInterface,
 	codeCompiler CodeCompilerInterface,
+	keepIntermediateFilesCallback func(
+		targetDir string, basename string, suffix string, tempYamlFile string,
+	) (err error),
+	intermediateFileContentCallback func(
+		targetDir string, basename string, suffix string, tempYamlFile string,
+	) (err error),
 ) (_ *BinaryModelServiceContext) {
 	return &BinaryModelServiceContext{
-		binaryModelLoader: binaryModelLoader,
-		templateContext:   templateContext,
-		codeCompiler:      codeCompiler,
+		binaryModelLoader:               binaryModelLoader,
+		templateContext:                 templateContext,
+		codeCompiler:                    codeCompiler,
+		keepIntermediateFilesCallback:   keepIntermediateFilesCallback,
+		intermediateFileContentCallback: intermediateFileContentCallback,
 	}
 }
 
 func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	targetDir string,
-	keepIntermediateFiles bool,
 	binaryModelFilePath string,
 ) (*BinaryModelServiceContextData, error) {
 	binaryModelBaseName := files.BaseNameWithoutExtension(binaryModelFilePath)
@@ -92,23 +109,23 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 		binaryModelFilePath,
 		binaryModelBaseName,
 		referenceDir,
-		keepIntermediateFiles,
+		binaryModelServiceContext.keepIntermediateFilesCallback,
+		binaryModelServiceContext.intermediateFileContentCallback,
 	)
 	if err != nil {
 		return nil, err
 	}
 	binaryModelServiceContextData := &BinaryModelServiceContextData{
-		binaryModelData:       binaryModelData,
-		templateContextData:   nil, // computed later
-		compileContextData:    nil, // computed later
-		targetDir:             targetDir,
-		keepIntermediateFiles: keepIntermediateFiles,
-		binaryModelFilePath:   binaryModelFilePath,
-		binaryModelBaseName:   binaryModelBaseName,
+		binaryModelData:     binaryModelData,
+		templateContextData: nil, // computed later
+		compileContextData:  nil, // computed later
+		targetDir:           targetDir,
+		binaryModelFilePath: binaryModelFilePath,
+		binaryModelBaseName: binaryModelBaseName,
 	}
 
 	// init template context
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	data["binData"] = binaryModelData.BinData
 	data["compilerConfig"] = binaryModelData.CompilerConfig
 	data["vars"] = binaryModelData.Vars
@@ -129,7 +146,6 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	compilerConfig := binaryModelData.CompilerConfig
 	compilerConfig.IntermediateFilesCount = 0
 	compilerConfig.TargetDir = targetDir
-	compilerConfig.KeepIntermediateFiles = keepIntermediateFiles
 	compilerConfig.BinaryModelBaseName = binaryModelBaseName
 	compileContextData, err := binaryModelServiceContext.codeCompiler.Init(
 		templateContextData,
@@ -176,17 +192,16 @@ func (binaryModelServiceContext *BinaryModelServiceContext) renderBinaryCodeFrom
 	if err != nil {
 		return "", err
 	}
-	if binaryModelServiceContextData.keepIntermediateFiles {
-		err = logger.DebugCopyGeneratedFile(
-			binaryModelServiceContextData.targetDir,
-			binaryModelServiceContextData.binaryModelBaseName,
-			"-3-afterTemplateRendering.sh",
-			code,
-		)
-		if err != nil {
-			return "", err
-		}
+	err = binaryModelServiceContext.intermediateFileContentCallback(
+		binaryModelServiceContextData.targetDir,
+		binaryModelServiceContextData.binaryModelBaseName,
+		"-3-afterTemplateRendering.sh",
+		code,
+	)
+	if err != nil {
+		return "", err
 	}
+
 	return code, err
 }
 

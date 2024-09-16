@@ -3,7 +3,7 @@
 name: CI
 on: # yamllint disable-line rule:truthy
   pull_request:
-    branches: ["master"]
+    branches: ["**"]
     paths-ignore: ["docs/**"]
 
   push:
@@ -159,6 +159,16 @@ jobs:
         with:
           python-version: 3.9
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          check-latest: false
+
+      - run: |
+          go install mvdan.cc/gofumpt@latest
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install github.com/mgechev/revive@latest
+
       - uses: fchastanet/github-action-setup-shfmt@v4.0.0
 
       - name: Run pre-commit
@@ -173,7 +183,7 @@ jobs:
         if: ${{ always() }}
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/flavors/
-        uses: oxsecurity/megalinter/flavors/go@v7
+        uses: oxsecurity/megalinter/flavors/go@v8
         # All available variables are described in documentation
         # https://megalinter.io/configuration/
         env:
@@ -254,12 +264,14 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.21.9]
+        go-version: [1.22.5]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       # needed by akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
       statuses: write
+      # needed by marocchino/sticky-pull-request-comment
+      pull-requests: write
 
     steps:
       - name: Install Go

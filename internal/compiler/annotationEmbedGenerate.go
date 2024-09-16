@@ -72,7 +72,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	}
 	defer file.Close()
 
-	md5sum, err := encoding.Md5SumFromFile(file)
+	md5sum, err := encoding.ChecksumFromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
@@ -116,7 +116,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if err != nil {
 		return "", err
 	}
-	md5sum, err := encoding.Md5SumFromFile(directoryArchive)
+	md5sum, err := encoding.ChecksumFromFile(directoryArchive)
 	if err != nil {
 		return "", err
 	}

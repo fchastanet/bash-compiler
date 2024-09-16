@@ -90,7 +90,7 @@ type functionInfoStruct struct {
 	FunctionName         string
 	SrcFile              string // "" if not computed yet
 	SourceCode           string // the src file content
-	AnnotationMap        map[string]interface{}
+	AnnotationMap        map[string]any
 	Inserted             bool
 	InsertPosition       InsertPosition
 	SourceCodeLoaded     bool
@@ -222,7 +222,7 @@ func (context CompileContext) computeFunctions(
 	return generatedCode, nil
 }
 
-func (context CompileContext) markAllFunctionsAsNotInserted(
+func (CompileContext) markAllFunctionsAsNotInserted(
 	compileContextData *CompileContextData,
 ) {
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
@@ -233,7 +233,7 @@ func (context CompileContext) markAllFunctionsAsNotInserted(
 	}
 }
 
-func (context CompileContext) formatCode(code string) string {
+func (CompileContext) formatCode(code string) string {
 	var newCodeBuffer bytes.Buffer
 	scanner := bufio.NewScanner(strings.NewReader(code))
 	for scanner.Scan() {
@@ -275,6 +275,7 @@ func (context CompileContext) generateCode(compileContextData *CompileContextDat
 	return newCode != generatedCode, newCode, nil
 }
 
+//revive:disable:cognitive-complexity
 func (context CompileContext) functionsAnalysis(
 	compileContextData *CompileContextData,
 	code string,
@@ -306,38 +307,51 @@ func (context CompileContext) functionsAnalysis(
 	return nil
 }
 
+//revive:enable:cognitive-complexity
+
 func (context CompileContext) renderEachFunctionAsTemplate(
 	compileContextData *CompileContextData,
 ) (err error) {
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
 		functionInfo := compileContextData.functionsMap[functionName]
-		if functionInfo.SourceCodeAsTemplate || !functionInfo.SourceCodeLoaded {
+		if functionInfo.SourceCodeAsTemplate ||
+			!functionInfo.SourceCodeLoaded ||
+			functionInfo.SourceCode == "" {
 			continue
 		}
-		if functionInfo.SourceCode != "" {
-			slog.Debug("renderEachFunctionAsTemplate", logger.LogFieldFunc, functionName)
-			newCode, err := context.templateContext.RenderFromTemplateContent(
-				compileContextData.templateContextData,
-				functionInfo.SourceCode,
-			)
-			if err != nil {
-				return err
-			}
-			slog.Debug("renderEachFunctionAsTemplate",
-				logger.LogFieldFunc, functionName,
-				LogFieldCode, newCode,
-			)
-			functionInfo.SourceCode = newCode
-			for _, annotationProcessor := range context.annotationProcessors {
-				err = annotationProcessor.ParseFunction(compileContextData, &functionInfo)
-				if err != nil {
-					return err
-				}
-			}
+		err := context.renderFunctionAsTemplate(compileContextData, &functionInfo)
+		if err != nil {
+			return err
 		}
-		functionInfo.SourceCodeAsTemplate = true
 		compileContextData.functionsMap[functionName] = functionInfo
+	}
+	return nil
+}
+
+func (context CompileContext) renderFunctionAsTemplate(
+	compileContextData *CompileContextData,
+	functionInfo *functionInfoStruct,
+) (err error) {
+	functionInfo.SourceCodeAsTemplate = true
+	slog.Debug("renderEachFunctionAsTemplate", logger.LogFieldFunc, functionInfo.FunctionName)
+	newCode, err := context.templateContext.RenderFromTemplateContent(
+		compileContextData.templateContextData,
+		functionInfo.SourceCode,
+	)
+	if err != nil {
+		return err
+	}
+	slog.Debug("renderEachFunctionAsTemplate",
+		logger.LogFieldFunc, functionInfo.FunctionName,
+		LogFieldCode, newCode,
+	)
+	functionInfo.SourceCode = newCode
+	for _, annotationProcessor := range context.annotationProcessors {
+		err = annotationProcessor.ParseFunction(compileContextData, functionInfo)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -356,7 +370,7 @@ func (context CompileContext) isNonFrameworkFunction(
 	return false
 }
 
-func (context CompileContext) nonFrameworkFunctionRegexpCompile(
+func (CompileContext) nonFrameworkFunctionRegexpCompile(
 	compileContextData *CompileContextData,
 ) {
 	if compileContextData.ignoreFunctionsRegexp != nil {
@@ -383,7 +397,6 @@ func (context CompileContext) generateFunctionCode(
 	err error,
 ) {
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
-	sort.Strings(functionNames) // ensure to generate functions always in the same order
 
 	var finalBuffer bytes.Buffer
 	err = context.insertFunctionsCode(compileContextData, functionNames, &finalBuffer, InsertPositionFirst)
@@ -402,7 +415,24 @@ func (context CompileContext) generateFunctionCode(
 	return finalBuffer.String(), nil
 }
 
-func (context CompileContext) insertFunctionsCode(
+func isFuncShouldBeSkipped(
+	functionInfo functionInfoStruct,
+	insertPosition InsertPosition,
+) bool {
+	if functionInfo.Inserted || functionInfo.InsertPosition != insertPosition {
+		return true
+	}
+	if !functionInfo.SourceCodeLoaded {
+		slog.Warn(
+			"Function source code not loaded",
+			logger.LogFieldFunc, functionInfo.FunctionName,
+		)
+		return true
+	}
+	return false
+}
+
+func (CompileContext) insertFunctionsCode(
 	compileContextData *CompileContextData,
 	functionNames []string,
 	buffer *bytes.Buffer,
@@ -410,11 +440,7 @@ func (context CompileContext) insertFunctionsCode(
 ) error {
 	for _, functionName := range functionNames {
 		functionInfo := compileContextData.functionsMap[functionName]
-		if functionInfo.Inserted || functionInfo.InsertPosition != insertPosition {
-			continue
-		}
-		if !functionInfo.SourceCodeLoaded {
-			slog.Warn("Function source code not loaded", logger.LogFieldFunc, functionName)
+		if isFuncShouldBeSkipped(functionInfo, insertPosition) {
 			continue
 		}
 		slog.Debug("Append",
@@ -439,9 +465,6 @@ func (context CompileContext) retrieveAllFunctionsContent(
 ) {
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
-		if context.isNonFrameworkFunction(compileContextData, functionName) {
-			continue
-		}
 		functionInfo := compileContextData.functionsMap[functionName]
 		slog.Debug(
 			"retrieveAllFunctionsContent",
@@ -487,8 +510,29 @@ func createFunctionInfoStruct(
 		SourceCode:           "",
 		SourceCodeLoaded:     false,
 		SourceCodeAsTemplate: false,
-		AnnotationMap:        make(map[string]interface{}),
+		AnnotationMap:        make(map[string]any),
 	}
+}
+
+func (context CompileContext) addSpecialFiles(
+	compileContextData *CompileContextData,
+	relativeFilePathDir string,
+	specialFilename string,
+	insertPosition InsertPosition,
+) (addedFiles bool) {
+	specialFile := filepath.Join(relativeFilePathDir, specialFilename)
+	filePath, found := context.findFileInSrcDirs(compileContextData, specialFile)
+	if !found {
+		return false
+	}
+	if _, ok := compileContextData.functionsMap[filePath]; ok {
+		return false
+	}
+	slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
+	compileContextData.functionsMap[filePath] = createFunctionInfoStruct(
+		filePath, filePath, insertPosition,
+	)
+	return true
 }
 
 func getSortedFunctionNamesFromMap(myMap map[string]functionInfoStruct) []string {
@@ -505,9 +549,6 @@ func (context CompileContext) retrieveEachFunctionPath(
 	addedFiles = false
 	functionNames := getSortedFunctionNamesFromMap(compileContextData.functionsMap)
 	for _, functionName := range functionNames {
-		if context.isNonFrameworkFunction(compileContextData, functionName) {
-			continue
-		}
 		functionInfo := compileContextData.functionsMap[functionName]
 		if functionInfo.SrcFile != "" {
 			continue
@@ -524,30 +565,15 @@ func (context CompileContext) retrieveEachFunctionPath(
 		relativeFilePathDir := filepath.Dir(functionRelativePath)
 
 		// check if _.sh in directory of the function is needed to be loaded
-		underscoreShFile := filepath.Join(relativeFilePathDir, "_.sh")
-		filePath, found = context.findFileInSrcDirs(compileContextData, underscoreShFile)
-		if found {
-			if _, ok := compileContextData.functionsMap[filePath]; !ok {
-				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
-				addedFiles = true
-				compileContextData.functionsMap[filePath] = createFunctionInfoStruct(
-					filePath, filePath, InsertPositionFirst,
-				)
-			}
-		}
+		newUnderscoreAddedFiles := context.addSpecialFiles(
+			compileContextData, relativeFilePathDir, "_.sh", InsertPositionFirst,
+		)
 
 		// check if ZZZ.sh in directory of the function is needed to be loaded
-		zzzShFile := filepath.Join(relativeFilePathDir, "ZZZ.sh")
-		filePath, found = context.findFileInSrcDirs(compileContextData, zzzShFile)
-		if found {
-			if _, ok := compileContextData.functionsMap[filePath]; !ok {
-				addedFiles = true
-				slog.Debug("Adding file", logger.LogFieldFilePath, filePath)
-				compileContextData.functionsMap[filePath] = createFunctionInfoStruct(
-					filePath, filePath, InsertPositionLast,
-				)
-			}
-		}
+		newZZZAddedFiles := context.addSpecialFiles(
+			compileContextData, relativeFilePathDir, "ZZZ.sh", InsertPositionLast,
+		)
+		addedFiles = addedFiles || newZZZAddedFiles || newUnderscoreAddedFiles
 	}
 
 	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
@@ -596,7 +622,7 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 	return newFunctionAdded
 }
 
-func (context CompileContext) findFileInSrcDirs(
+func (CompileContext) findFileInSrcDirs(
 	compileContextData *CompileContextData,
 	relativeFilePath string,
 ) (

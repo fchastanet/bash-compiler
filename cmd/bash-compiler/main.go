@@ -16,20 +16,16 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
-func main() {
-	// This controls the maxprocs environment variable in container runtimes.
-	// see https://martin.baillie.id/wrote/gotchas-in-the-go-network-packages-defaults/#bonus-gomaxprocs-containers-and-the-cfs
-	_, err := maxprocs.Set()
-	logger.Check(err)
+func skipIntermediateFilesCallback(
+	_ string, _ string, _ string, _ string,
+) error {
+	return nil
+}
 
-	// get current dir
-	currentDir, err := os.Getwd()
-	logger.Check(err)
-	os.Setenv("PWD", currentDir)
-
-	// load .bash-compiler file in current directory if exists
+// load .bash-compiler file in current directory if exists
+func loadConfFile(currentDir string) {
 	bashCompilerConfFile := filepath.Join(currentDir, ".bash-compiler")
-	err = files.FileExists(bashCompilerConfFile)
+	err := files.FileExists(bashCompilerConfFile)
 	if err == nil {
 		slog.Info("Loading", logger.LogFieldFilePath, bashCompilerConfFile)
 		err = dotenv.LoadEnvFile(bashCompilerConfFile)
@@ -37,6 +33,21 @@ func main() {
 	} else {
 		slog.Warn(".bash-compiler file not available")
 	}
+}
+
+func main() {
+	// This controls the maxprocs environment variable in container runtimes.
+	// see https://tinyurl.com/3rfwknuv
+	_, err := maxprocs.Set()
+	logger.Check(err)
+
+	// get current dir
+	currentDir, err := os.Getwd()
+	logger.Check(err)
+	err = os.Setenv("PWD", currentDir)
+	logger.Check(err)
+
+	loadConfFile(currentDir)
 
 	// parse arguments
 	var cli cli
@@ -50,7 +61,8 @@ func main() {
 		logger.LogFieldVariableName, "COMPILER_ROOT_DIR",
 		logger.LogFieldVariableValue, string(cli.CompilerRootDir),
 	)
-	os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	err = os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	logger.Check(err)
 
 	// create BinaryModelService
 	templateContext := render.NewTemplateContext()
@@ -65,19 +77,25 @@ func main() {
 	)
 	var templateContextInterface services.TemplateContextInterface = templateContext
 	var compilerInterface services.CodeCompilerInterface = compilerService
+	intermediateFileCallback := skipIntermediateFilesCallback
+	intermediateFileContentCallback := skipIntermediateFilesCallback
+	if cli.KeepIntermediateFiles {
+		intermediateFileCallback = logger.DebugSaveGeneratedFile
+		intermediateFileContentCallback = logger.DebugCopyGeneratedFile
+	}
 	binaryModelService := services.NewBinaryModelService(
 		model.NewBinaryModelLoader(),
 		templateContextInterface,
 		compilerInterface,
+		intermediateFileCallback,
+		intermediateFileContentCallback,
 	)
 	defaultLogger := slog.Default()
+
 	for _, binaryModelFilePath := range cli.YamlFiles {
-		slog.SetDefault(defaultLogger.With(
-			"binaryModelFilePath", binaryModelFilePath,
-		))
+		slog.SetDefault(defaultLogger.With("binaryModelFilePath", binaryModelFilePath))
 		binaryModelServiceContextData, err := binaryModelService.Init(
 			string(cli.TargetDir),
-			cli.KeepIntermediateFiles,
 			binaryModelFilePath,
 		)
 		logger.Check(err)

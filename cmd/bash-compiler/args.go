@@ -17,7 +17,7 @@ type getCurrentFilenameError struct {
 	error
 }
 
-func (e *getCurrentFilenameError) Error() string {
+func (*getCurrentFilenameError) Error() string {
 	return "unable to get the current filename"
 }
 
@@ -47,9 +47,11 @@ func (yamlFiles *YamlFiles) Validate() error {
 	return nil
 }
 
-func (v VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
-func (v VersionFlag) IsBool() bool                       { return true }
-func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error { //nolint:unparam // need to conform to interface
+func (VersionFlag) Decode(_ *kong.DecodeContext) error { return nil }
+func (VersionFlag) IsBool() bool                       { return true }
+func (VersionFlag) BeforeApply(
+	app *kong.Kong, vars kong.Vars,
+) error { //nolint:unparam // need to conform to interface
 	fmt.Printf("Bash compiler version %s\n", vars["version"])
 	app.Exit(0)
 	return nil
@@ -64,7 +66,8 @@ func parseArgs(cli *cli) (err error) {
 	// just need the yaml file, from which all the dependencies will deduced
 	kong.Parse(cli,
 		kong.Name("bash-compiler"),
-		kong.Description("From a yaml file describing the bash application, interprets the templates and import the necessary bash functions"),
+		kong.Description("From a yaml file describing the bash application, "+
+			"interprets the templates and import the necessary bash functions"),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{
 			NoAppSummary:        false,

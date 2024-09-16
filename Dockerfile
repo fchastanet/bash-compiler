@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1.2
 
 # get modules, if they don't change the cache can be used for faster builds
-FROM golang:1.21.9@sha256:d83472f1ab5712a6b2b816dc811e46155e844ddc02f5f5952e72c6deedafed77 AS base
+FROM golang:1.23.1-alpine3.20 AS base
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOOS=linux

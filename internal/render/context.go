@@ -36,8 +36,8 @@ type TemplateContextData struct {
 	TemplateContext TemplateContextInterface
 	TemplateName    *string
 	Template        templateInterface
-	RootData        interface{}
-	Data            interface{}
+	RootData        any
+	Data            any
 }
 
 func NewTemplateContext() (templateContext *TemplateContext) {
@@ -47,8 +47,8 @@ func NewTemplateContext() (templateContext *TemplateContext) {
 func (templateContext *TemplateContext) Init(
 	templateDirs []string,
 	templateFile string,
-	data interface{},
-	funcMap map[string]interface{},
+	data any,
+	funcMap map[string]any,
 ) (*TemplateContextData, error) {
 	// load template system
 	myTemplate, templateName, err := newTemplate(
@@ -71,7 +71,7 @@ func (templateContext *TemplateContext) Init(
 	return templateContextData, nil
 }
 
-func (templateContext *TemplateContext) Render(
+func (*TemplateContext) Render(
 	templateContextData *TemplateContextData,
 	templateName string,
 ) (string, error) {
@@ -95,7 +95,7 @@ func (templateContext *TemplateContext) RenderFromTemplateName(
 	return code, err
 }
 
-func (templateContext *TemplateContext) RenderFromTemplateContent(
+func (*TemplateContext) RenderFromTemplateContent(
 	templateContextData *TemplateContextData,
 	templateContent string,
 ) (codeStr string, err error) {

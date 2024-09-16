@@ -3,7 +3,6 @@ package render
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"path"
@@ -62,9 +61,8 @@ func includeFile(filePath string) string {
 	)
 
 	file, err := os.ReadFile(filePathExpanded)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	logger.Check(err)
+
 	return string(file)
 }
 
@@ -80,13 +78,11 @@ func includeFileAsTemplate(
 	)
 
 	fileContent, err := os.ReadFile(filePathExpanded)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	code, err := templateContextData.TemplateContext.RenderFromTemplateContent(&templateContextData, string(fileContent))
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	logger.Check(err)
+
+	code, err := templateContextData.TemplateContext.RenderFromTemplateContent(
+		&templateContextData, string(fileContent))
+	logger.Check(err)
 	return code
 }
 
@@ -116,6 +112,6 @@ func dynamicFile(filePath string, paths []string) string {
 		}
 	}
 
-	log.Fatalf("error: %v", fileNotFoundError{nil, filePathExpanded, paths})
+	logger.Check(&fileNotFoundError{nil, filePathExpanded, paths})
 	return ""
 }
