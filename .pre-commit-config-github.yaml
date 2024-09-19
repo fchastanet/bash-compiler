@@ -108,7 +108,8 @@ repos:
           - --write-changes
         exclude: >
           (?x)(
-              ^.cspell/codespellrc-.*.txt$
+              ^.cspell/codespellrc-.*.txt$|
+              ^internal/utils/encoding/testsData/content.txt$
           )
 
   - repo: local

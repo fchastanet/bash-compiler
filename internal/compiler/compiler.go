@@ -175,14 +175,14 @@ func (context CompileContext) Compile(
 	if err != nil {
 		return "", err
 	}
-	compileContextData.config.DebugCopyGeneratedFile(code, "-compiler::Compile1")
+	compileContextData.config.DebugSaveIntermediateFile(code, "-compiler::Compile1")
 
 	context.markAllFunctionsAsNotInserted(compileContextData)
 	_, generatedCode, err := context.generateCode(compileContextData, code)
 	if err != nil {
 		return "", err
 	}
-	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::Compile2")
+	compileContextData.config.DebugSaveIntermediateFile(generatedCode, "-compiler::Compile2")
 
 	for _, annotationProcessor := range context.annotationProcessors {
 		annotationProcessor.Reset()
@@ -190,7 +190,7 @@ func (context CompileContext) Compile(
 		if err != nil {
 			return "", err
 		}
-		compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-after-"+annotationProcessor.GetTitle())
+		compileContextData.config.DebugSaveIntermediateFile(generatedCode, "-after-"+annotationProcessor.GetTitle())
 	}
 
 	return context.formatCode(generatedCode), nil
@@ -204,13 +204,13 @@ func (context CompileContext) computeFunctions(
 		return "", err
 	}
 
-	compileContextData.config.DebugCopyGeneratedFile(code, "-compiler::computeFunctions1")
+	compileContextData.config.DebugSaveIntermediateFile(code, "-compiler::computeFunctions1")
 
 	needAnotherCompilerPass, generatedCode, err := context.generateCode(compileContextData, code)
 	if err != nil {
 		return "", err
 	}
-	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::computeFunctions2")
+	compileContextData.config.DebugSaveIntermediateFile(generatedCode, "-compiler::computeFunctions2")
 
 	if needAnotherCompilerPass {
 		generatedCode, err = context.computeFunctions(compileContextData, generatedCode)
@@ -254,13 +254,13 @@ func (context CompileContext) generateCode(compileContextData *CompileContextDat
 	if err != nil {
 		return false, "", err
 	}
-	compileContextData.config.DebugCopyGeneratedFile(functionsCode, "-compiler::generateCode1")
+	compileContextData.config.DebugSaveIntermediateFile(functionsCode, "-compiler::generateCode1")
 
 	generatedCode, err = injectFunctionCode(code, functionsCode)
 	if err != nil {
 		return false, "", err
 	}
-	compileContextData.config.DebugCopyGeneratedFile(generatedCode, "-compiler::generateCode2")
+	compileContextData.config.DebugSaveIntermediateFile(generatedCode, "-compiler::generateCode2")
 
 	newCode := generatedCode
 	for _, annotationProcessor := range context.annotationProcessors {
@@ -269,7 +269,7 @@ func (context CompileContext) generateCode(compileContextData *CompileContextDat
 		if err != nil {
 			return false, "", err
 		}
-		compileContextData.config.DebugCopyGeneratedFile(newCode, "-after-"+annotationProcessor.GetTitle())
+		compileContextData.config.DebugSaveIntermediateFile(newCode, "-after-"+annotationProcessor.GetTitle())
 	}
 
 	return newCode != generatedCode, newCode, nil

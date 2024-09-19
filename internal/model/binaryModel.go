@@ -29,13 +29,13 @@ type CompilerConfig struct {
 	IntermediateFilesCount          int                   `yaml:"-"`
 }
 
-func (compilerConfig *CompilerConfig) DebugCopyGeneratedFile(
+func (compilerConfig *CompilerConfig) DebugSaveIntermediateFile(
 	code string,
 	suffix string,
 ) {
 	if compilerConfig.KeepIntermediateFiles {
 		compilerConfig.IntermediateFilesCount++
-		logger.DebugCopyGeneratedFile(
+		logger.DebugSaveIntermediateFile(
 			compilerConfig.TargetDir,
 			compilerConfig.BinaryModelBaseName,
 			fmt.Sprintf("-4-compiler-%d%s.sh", compilerConfig.IntermediateFilesCount, suffix),

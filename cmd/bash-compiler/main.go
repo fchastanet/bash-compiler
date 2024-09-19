@@ -80,8 +80,8 @@ func main() {
 	intermediateFileCallback := skipIntermediateFilesCallback
 	intermediateFileContentCallback := skipIntermediateFilesCallback
 	if cli.KeepIntermediateFiles {
-		intermediateFileCallback = logger.DebugSaveGeneratedFile
-		intermediateFileContentCallback = logger.DebugCopyGeneratedFile
+		intermediateFileCallback = logger.DebugCopyIntermediateFile
+		intermediateFileContentCallback = logger.DebugSaveIntermediateFile
 	}
 	binaryModelService := services.NewBinaryModelService(
 		model.NewBinaryModelLoader(),

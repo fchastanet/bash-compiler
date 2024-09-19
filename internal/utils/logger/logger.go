@@ -3,7 +3,6 @@ package logger
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -28,6 +27,11 @@ const (
 	LogFieldVariableValue          string = "variableValue"
 )
 
+// No way to mock os.Exit function easily
+//
+//nolint:gochecknoglobals // no other solution for now
+var myPrivateExitFunction = os.Exit
+
 // InitLogger initializes the logger in slog instance
 func InitLogger(level int) {
 	slogLevel := slog.Level(level)
@@ -47,19 +51,27 @@ func Check(e error) {
 		// notice that we're using 1, so it will actually log where
 		// the error happened, 0 = this function, we don't want that.
 		_, filename, line, _ := runtime.Caller(1)
-		//revive:disable
-		log.Fatalf("[error] %s:%d %+v", filename, line, e)
-		//revive:enable
+		slog.Error(
+			"Error",
+			LogFieldFilePath, filename,
+			LogFieldLineNumber, line,
+			LogFieldErr, e,
+		)
+		myPrivateExitFunction(1)
 	}
 }
 
-func DebugSaveGeneratedFile(
-	targetDir string, basename string, suffix string, tempYamlFile string,
-) (err error) {
-	targetFile := filepath.Join(
+func getTargetFile(targetDir string, basename string, suffix string) string {
+	return filepath.Join(
 		targetDir,
 		fmt.Sprintf("%s%s", basename, suffix),
 	)
+}
+
+func DebugCopyIntermediateFile(
+	targetDir string, basename string, suffix string, tempYamlFile string,
+) (err error) {
+	targetFile := getTargetFile(targetDir, basename, suffix)
 	err = files.Copy(tempYamlFile, targetFile)
 	if err != nil {
 		return err
@@ -72,15 +84,12 @@ func DebugSaveGeneratedFile(
 	return nil
 }
 
-func DebugCopyGeneratedFile(
-	targetDir string, basename string, suffix string, code string,
+func DebugSaveIntermediateFile(
+	targetDir string, basename string, suffix string, content string,
 ) (err error) {
-	targetFile := filepath.Join(
-		targetDir,
-		fmt.Sprintf("%s%s", basename, suffix),
-	)
-	err = os.WriteFile(targetFile, []byte(code), files.UserReadWriteExecutePerm)
-	slog.Info(
+	targetFile := getTargetFile(targetDir, basename, suffix)
+	err = os.WriteFile(targetFile, []byte(content), files.UserReadWriteExecutePerm)
+	slog.Debug(
 		"KeepIntermediateFiles - merged config file",
 		LogFieldFilePath, targetFile,
 	)
