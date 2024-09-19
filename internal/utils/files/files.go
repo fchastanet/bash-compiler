@@ -116,7 +116,7 @@ func ChecksumFromFile(filePath string) (string, error) {
 	}
 	defer file.Close()
 
-	hash := sha256.New() //nolint:all
+	hash := sha256.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", err
 	}

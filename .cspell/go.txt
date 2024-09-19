@@ -20,6 +20,7 @@ gostub
 gotestfmt
 goutils
 gtpl
+hugeparam
 isatty
 ldflags
 maxprocs
@@ -39,6 +40,7 @@ reflectwalk
 runtimes
 struct
 txtpbfmt
+Typef
 unconvert
 Unmarshalling
 unparam
