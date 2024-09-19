@@ -5,22 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch shellcheckLint Local",
+      "name": "Launch bash-tools Local",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "cmd/bash-compiler",
-      "args": [
-        "examples/configReference/shellcheckLint.yaml",
-        "-t",
-        "examples/generated",
-        "-k",
-        "-d"
-      ],
-      "cwd": "/home/wsl/fchastanet/bash-compiler",
-      "env": {
-        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework"
-      }
+      "args": ["-r", "/home/wsl/fchastanet/bash-tools/pages", "-d"],
+      "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
       "name": "Launch bash-tools dbImport",
