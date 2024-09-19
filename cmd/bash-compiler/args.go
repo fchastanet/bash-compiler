@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -22,19 +23,23 @@ func (*getCurrentFilenameError) Error() string {
 }
 
 type cli struct {
-	YamlFiles             YamlFiles   `arg:""                                             help:"Yaml files" type:"path"`
-	TargetDir             Directory   `help:"Directory that will contain generated files" optional:""       short:"t"`
-	Version               VersionFlag `help:"Print version information and quit"          name:"version"    short:"v"`
-	KeepIntermediateFiles bool        `help:"Keep intermediate files in target directory" short:"k"`
-	Debug                 bool        `help:"Set log in debug level"                      short:"d"`
-	LogLevel              int         `hidden:""`
-	CompilerRootDir       Directory   `hidden:""`
+	YamlFiles             YamlFiles            `arg:""                                             help:"Yaml files"                                                 optional:"" type:"path"`
+	RootDirectory         Directory            `help:"Root directory containing binary files"      short:"r"                                                         type:"path"`
+	TargetDir             Directory            `help:"Directory that will contain generated files" optional:""                                                       short:"t"`
+	BinaryFilesExtension  BinaryFilesExtension `default:"-binary.yaml"                             help:"Provide the extension for automatic search of binary files" optional:""`
+	Version               VersionFlag          `help:"Print version information and quit"          name:"version"                                                    short:"v"`
+	KeepIntermediateFiles bool                 `help:"Keep intermediate files in target directory" short:"k"`
+	Debug                 bool                 `help:"Set log in debug level"                      short:"d"`
+	LogLevel              int                  `hidden:""`
+	CompilerRootDir       Directory            `hidden:""`
 }
 
 type (
-	VersionFlag string
-	Directory   string
-	YamlFiles   []string
+	VersionFlag          string
+	Directory            string
+	ConfigFile           string
+	BinaryFilesExtension string
+	YamlFiles            []string
 )
 
 func (yamlFiles *YamlFiles) Validate() error {
@@ -102,6 +107,11 @@ func parseArgs(cli *cli) (err error) {
 	cli.CompilerRootDir = Directory(compilerRootDir)
 	if cli.TargetDir == "" {
 		cli.TargetDir = Directory(compilerRootDir)
+	}
+	if cli.RootDirectory == "" {
+		currentDir, err := os.Getwd()
+		logger.Check(err)
+		cli.RootDirectory = Directory(currentDir)
 	}
 	if cli.Debug {
 		cli.LogLevel = int(slog.LevelDebug)

@@ -23,16 +23,47 @@ func skipIntermediateFilesCallback(
 }
 
 // load .bash-compiler file in current directory if exists
-func loadConfFile(currentDir string) {
-	bashCompilerConfFile := filepath.Join(currentDir, ".bash-compiler")
-	err := files.FileExists(bashCompilerConfFile)
+func loadConfFile(cli *cli) {
+	configFile := filepath.Join(string(cli.RootDirectory), ".bash-compiler")
+	err := files.FileExists(configFile)
 	if err == nil {
-		slog.Info("Loading", logger.LogFieldFilePath, bashCompilerConfFile)
-		err = dotenv.LoadEnvFile(bashCompilerConfFile)
+		slog.Info("Loading", logger.LogFieldFilePath, configFile)
+		err = dotenv.LoadEnvFile(configFile)
 		logger.Check(err)
 	} else {
-		slog.Warn(".bash-compiler file not available")
+		slog.Warn("Config file is not available or not readable", "configFile", configFile)
 	}
+}
+
+func getYamlFiles(cli *cli) (yamlFiles YamlFiles, err error) {
+	yamlFiles = cli.YamlFiles
+	if len(cli.YamlFiles) == 0 {
+		filesList, err := files.MatchPatterns(
+			string(cli.RootDirectory),
+			"**/*"+string(cli.BinaryFilesExtension),
+		)
+		logger.Check(err)
+		if len(filesList) == 0 {
+			slog.Error(
+				"cannot find any file with specified suffix and directory",
+				"rootDirectory", string(cli.RootDirectory),
+				"extension", cli.BinaryFilesExtension,
+			)
+			return cli.YamlFiles, err
+		}
+		yamlFiles = filesList
+	}
+	return yamlFiles, nil
+}
+
+func setEnvVariable(name string, value string) {
+	slog.Debug(
+		"main",
+		logger.LogFieldVariableName, name,
+		logger.LogFieldVariableValue, value,
+	)
+	err := os.Setenv(name, value)
+	logger.Check(err)
 }
 
 func main() {
@@ -47,22 +78,24 @@ func main() {
 	err = os.Setenv("PWD", currentDir)
 	logger.Check(err)
 
-	loadConfFile(currentDir)
-
 	// parse arguments
 	var cli cli
 	err = parseArgs(&cli)
 	logger.Check(err)
-	logger.InitLogger(cli.LogLevel)
 
 	// set useful env variables that can be interpolated during template rendering
-	slog.Debug(
-		"main",
-		logger.LogFieldVariableName, "COMPILER_ROOT_DIR",
-		logger.LogFieldVariableValue, string(cli.CompilerRootDir),
-	)
-	err = os.Setenv("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
-	logger.Check(err)
+	setEnvVariable("COMPILER_ROOT_DIR", string(cli.CompilerRootDir))
+	setEnvVariable("ROOT_DIR", string(cli.RootDirectory))
+
+	// load config file
+	loadConfFile(&cli)
+	logger.InitLogger(cli.LogLevel)
+	if cli.Debug {
+		envVars := os.Environ()
+		for _, envVar := range envVars {
+			slog.Debug("env", "var", envVar)
+		}
+	}
 
 	// create BinaryModelService
 	templateContext := render.NewTemplateContext()
@@ -92,7 +125,9 @@ func main() {
 	)
 	defaultLogger := slog.Default()
 
-	for _, binaryModelFilePath := range cli.YamlFiles {
+	yamlFiles, err := getYamlFiles(&cli)
+	logger.Check(err)
+	for _, binaryModelFilePath := range yamlFiles {
 		slog.SetDefault(defaultLogger.With("binaryModelFilePath", binaryModelFilePath))
 		binaryModelServiceContextData, err := binaryModelService.Init(
 			string(cli.TargetDir),
