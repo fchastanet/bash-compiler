@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/a8m/envsubst"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -21,8 +22,7 @@ func LoadEnvFile(confFile string) error {
 	if err != nil {
 		return err
 	}
-	// skipcq: GO-S2307 // no need Sync as readOnly open
-	defer confFileContent.Close()
+	defer errors.SafeCloseDeferCallback(confFileContent, &err)
 
 	variables := make(map[string]string)
 	scanFile(confFileContent, variables)

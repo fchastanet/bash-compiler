@@ -64,7 +64,7 @@ jobs:
 
       - uses: akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
         with:
-          name: docker-build-${{ env.image_tag }}
+          name: build-docker-${{ env.image_tag }}
           status: pending
 
       - name: Docker meta
@@ -101,7 +101,12 @@ jobs:
       - uses: akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
         if: ${{ always() }}
         with:
-          name: docker-build-${{ env.image_tag }}
+          name: build-docker-${{ env.image_tag }}
+          status: ${{ job.status }}
+
+      - uses: akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
+        with:
+          name: build-docker
           status: ${{ job.status }}
 
   # -------------------------------------------------------

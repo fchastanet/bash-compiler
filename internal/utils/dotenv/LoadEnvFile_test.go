@@ -54,7 +54,7 @@ func TestLoadFileDependentVarsDefaultValues(t *testing.T) {
 	defer teardownTest(t)
 	err := LoadEnvFile("./testsData/dependentVars.txt")
 	assert.NilError(t, err, "error should be nil")
-	envValue, exists := os.LookupEnv("FRAMEWORK_ROOT_DIR")
+	envValue, exists := os.LookupEnv("CUSTOM_ENV_VAR")
 	assert.Equal(t, exists, true)
 	assert.Equal(t, envValue, "dummy", envValue)
 	envValue, exists = os.LookupEnv("SRC_FILE")

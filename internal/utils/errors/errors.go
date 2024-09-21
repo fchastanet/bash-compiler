@@ -1,6 +1,8 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ValidationError struct {
 	InnerError error
@@ -14,4 +16,16 @@ func (e *ValidationError) Error() string {
 		"validation failed invalid value : context %s field %s value %v",
 		e.Context, e.FieldName, e.FieldValue,
 	)
+}
+
+type closeInterface interface {
+	Close() error
+}
+
+func SafeCloseDeferCallback(file closeInterface, err *error) {
+	// Report the error, if any, from Close, but do so
+	// only if there isn't already an outgoing error.
+	if c := file.Close(); *err == nil {
+		*err = c
+	}
 }
