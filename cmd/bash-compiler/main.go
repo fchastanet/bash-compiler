@@ -36,7 +36,8 @@ func main() {
 		cli.Debug,
 		cli.KeepIntermediateFiles,
 	)
-	compilerPipelineService.Init()
+	err = compilerPipelineService.Init()
+	logger.Check(err)
 	err = compilerPipelineService.ProcessPipeline()
 	logger.Check(err)
 }
