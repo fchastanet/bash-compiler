@@ -30,6 +30,7 @@ func TestChecksumFromFile(t *testing.T) {
 	)
 }
 
+// jscpd:ignore-start
 func TestChecksumFromUnknownFile(t *testing.T) {
 	tempFile, _ := os.CreateTemp("", "test******")
 	tempFile.Sync()
@@ -40,3 +41,5 @@ func TestChecksumFromUnknownFile(t *testing.T) {
 	assert.IsType(t, &fs.PathError{Op: "", Path: "", Err: nil}, err)
 	assert.Equal(t, "", checksum)
 }
+
+// jscpd:ignore-end

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -17,15 +18,15 @@ func CreateArchive(
 	relativeDir string,
 	buf io.Writer,
 	updateFileInfoHeader func(info *tar.Header, fi fs.FileInfo) error,
-) error {
+) (err error) {
 	// Create new Writers for gzip and tar
 	// These writers are chained. Writing to the tar writer will
 	// write to the gzip writer which in turn will write to
 	// the "buf" writer
 	gw := gzip.NewWriter(buf)
-	defer gw.Close()
+	defer errors.SafeCloseDeferCallback(gw, &err)
 	tw := tar.NewWriter(gw)
-	defer tw.Close()
+	defer errors.SafeCloseDeferCallback(tw, &err)
 
 	// Iterate over files and add them to the tar archive
 	for _, file := range files {
@@ -97,8 +98,7 @@ func addToArchive(
 	if err != nil {
 		return err
 	}
-	// skipcq: GO-S2307 // no need Sync as readOnly open
-	defer file.Close()
+	defer errors.SafeCloseDeferCallback(file, &err)
 
 	header, err := getFileHeader(fileInfo, filename, relativeDir)
 	if err != nil {

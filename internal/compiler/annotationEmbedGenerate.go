@@ -8,6 +8,7 @@ import (
 
 	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/encoding"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/tar"
@@ -70,8 +71,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	// skipcq: GO-S2307 // no need Sync as readOnly open
-	defer file.Close()
+	defer errors.SafeCloseDeferCallback(file, &err)
 
 	md5sum, err := encoding.ChecksumFromFile(file)
 	if logger.FancyHandleError(err) {
@@ -111,7 +111,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	defer directoryArchive.Close()
+	defer errors.SafeCloseDeferCallback(directoryArchive, &err)
 	err = directoryArchive.Sync()
 	if err != nil {
 		return "", err

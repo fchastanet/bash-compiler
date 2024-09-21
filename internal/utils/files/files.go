@@ -7,6 +7,8 @@ import (
 	"errors"
 	"io"
 	"os"
+
+	myErrors "github.com/fchastanet/bash-compiler/internal/utils/errors"
 )
 
 const (
@@ -90,21 +92,14 @@ func Copy(srcPath string, dstPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	// skipcq: GO-S2307 // no need Sync as readOnly open
-	defer r.Close() // ignore error: file was opened read-only.
+	defer myErrors.SafeCloseDeferCallback(r, &err)
 
 	w, err := os.Create(dstPath)
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		// Report the error, if any, from Close, but do so
-		// only if there isn't already an outgoing error.
-		if c := w.Close(); err == nil {
-			err = c
-		}
-	}()
+	defer myErrors.SafeCloseDeferCallback(w, &err)
 
 	_, err = io.Copy(w, r)
 	return err
