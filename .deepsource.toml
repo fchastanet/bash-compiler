@@ -14,6 +14,11 @@ enabled = true
 [[analyzers]]
 name = "go"
 enabled = true
+  [analyzers.meta]
+  import_root = "github.com/fchastanet/bash-compiler"
+  import_paths = [
+    "github.com/fchastanet/bash-compiler/internal"
+  ]
 
 [[analyzers]]
 name = "shell"

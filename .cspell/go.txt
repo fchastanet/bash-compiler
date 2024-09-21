@@ -38,7 +38,9 @@ prealloc
 promlint
 reflectwalk
 runtimes
+skipcq
 struct
+tagalign
 txtpbfmt
 Typef
 unconvert

@@ -121,8 +121,8 @@ Template filter functions, `internal/render/functions/index.go` includes:
 The command to generate a bash binary file:
 
 ```bash
-FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
-  ./bin/bash-compiler examples/configReference/shellcheckLint.yaml \
+./bin/bash-compiler examples/configReference/shellcheckLint.yaml \
+  --root-dir /home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
   --target-dir examples/generated \
   --keep-intermediate-files
 ```
@@ -429,8 +429,8 @@ build/clean.sh
 Compile bin file
 
 ```bash
-FRAMEWORK_ROOT_DIR=/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
-  go run ./cmd/bash-compiler examples/configReference/shellcheckLint.yaml \
+go run ./cmd/bash-compiler examples/configReference/shellcheckLint.yaml \
+  --root-dir /home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
   -t examples/generated -k -d
 ```
 

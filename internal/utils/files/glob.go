@@ -13,6 +13,7 @@ func MatchFullDirectoryRelative(directory string) (files []string, err error) {
 }
 
 func MatchPatternRelative(directory string, pattern string) (files []string, err error) {
+	// skipcq: GO-S1047 // skipped as FilesOnly option used
 	return doublestar.Glob(
 		os.DirFS(directory),
 		pattern,
@@ -23,7 +24,7 @@ func MatchPatternRelative(directory string, pattern string) (files []string, err
 }
 
 func MatchPatterns(directory string, patterns ...string) (files []string, err error) {
-	filesList := []string{}
+	var filesList []string
 	for _, pattern := range patterns {
 		list, err := matchPattern(directory, pattern)
 		if err != nil {
@@ -35,6 +36,7 @@ func MatchPatterns(directory string, patterns ...string) (files []string, err er
 }
 
 func matchPattern(directory string, pattern string) (files []string, err error) {
+	// skipcq: GO-S1048 // skipped as FilesOnly option used
 	return doublestar.FilepathGlob(
 		filepath.Join(directory, pattern),
 		doublestar.WithFailOnIOErrors(),

@@ -7,11 +7,13 @@ import (
 )
 
 func TestMapKeys(t *testing.T) {
-	emptyMap := map[string]string{}
+	var emptyMap map[string]string
 	oneElemMap := map[string]string{"id1": "elem1"}
 	intMap := map[int]string{1: "elem1", 2: "elem2"}
+
 	t.Run("empty map", func(t *testing.T) {
 		list := MapKeys(emptyMap)
+		// skipcq: GO-W1027 // here not nil expected but real slice
 		expectedList := []string{}
 		assert.Equal(t, list, expectedList)
 	})

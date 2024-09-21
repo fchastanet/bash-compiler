@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreateArchive(assert *testing.T) {
-	filesList := []string{}
+	var filesList []string
 	directory, _ := os.MkdirTemp("", "directory")
 	file := filepath.Join(directory, "file1")
 	os.Create(file)

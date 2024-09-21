@@ -16,6 +16,7 @@ func TestBase64FromBytes(t *testing.T) {
 
 func TestBase64FromFile(t *testing.T) {
 	file, _ := os.Open("testsData/content.txt")
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer file.Close()
 	base64, err := Base64FromFile(file)
 	assert.Equal(t, nil, err)
@@ -26,6 +27,7 @@ func TestBase64FromFile(t *testing.T) {
 
 func TestBase64FromUnknownFile(t *testing.T) {
 	tempFile, _ := os.CreateTemp("", "test******")
+	tempFile.Sync()
 	tempFile.Close()
 	err := os.Remove(tempFile.Name())
 	assert.Equal(t, nil, err)

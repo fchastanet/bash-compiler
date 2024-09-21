@@ -21,7 +21,7 @@ func getDefaultExpectedCli(expectedCli *cli) error {
 	}
 	expectedCli.YamlFiles = YamlFiles(expectedYamlFiles)
 
-	expectedCli.RootDirectory = Directory(currentDir)
+	expectedCli.RootDirectory = Directory(filepath.Join(currentDir, "testsData"))
 	expectedCli.TargetDir = Directory(targetDir)
 	expectedCli.BinaryFilesExtension = BinaryFilesExtension("-binary.yaml")
 	expectedCli.Version = VersionFlag("")
@@ -33,8 +33,8 @@ func getDefaultExpectedCli(expectedCli *cli) error {
 }
 
 func TestArgs(t *testing.T) {
-	t.Run("no arg", func(t *testing.T) {
-		os.Args = []string{"cmd"}
+	t.Run("no arg except mandatory", func(t *testing.T) {
+		os.Args = []string{"cmd", "-r", "testsData"}
 		expectedCli := &cli{} //nolint:exhaustruct //test
 		err := getDefaultExpectedCli(expectedCli)
 		assert.Equal(t, nil, err)
@@ -48,8 +48,8 @@ func TestArgs(t *testing.T) {
 		expectedCli := &cli{} //nolint:exhaustruct //test
 		err := getDefaultExpectedCli(expectedCli)
 		assert.Equal(t, nil, err)
-		expectedTargetDir := filepath.Join(string(expectedCli.RootDirectory), "testsData")
-		os.Args = []string{"cmd", "-t", expectedTargetDir}
+		expectedTargetDir := string(expectedCli.RootDirectory)
+		os.Args = []string{"cmd", "-r", "testsData", "-t", expectedTargetDir}
 		expectedCli.TargetDir = Directory(expectedTargetDir)
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
@@ -63,7 +63,7 @@ func TestArgs(t *testing.T) {
 		assert.Equal(t, nil, err)
 		expectedCli.Debug = true
 		expectedCli.LogLevel = int(slog.LevelDebug)
-		os.Args = []string{"cmd", "-d"}
+		os.Args = []string{"cmd", "-r", "testsData", "-d"}
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
 		assert.Nil(t, err)
@@ -71,13 +71,13 @@ func TestArgs(t *testing.T) {
 	})
 
 	t.Run("yaml file", func(t *testing.T) {
-		os.Args = []string{"cmd", "testsData/file-binary.yaml"}
+		os.Args = []string{"cmd", "-r", "testsData", "testsData/file-binary.yaml"}
 		expectedCli := &cli{} //nolint:exhaustruct //test
 		err := getDefaultExpectedCli(expectedCli)
 		assert.Equal(t, nil, err)
 		expectedCli.YamlFiles = append(
 			expectedCli.YamlFiles,
-			filepath.Join(string(expectedCli.RootDirectory), "testsData", "file-binary.yaml"),
+			filepath.Join(string(expectedCli.RootDirectory), "file-binary.yaml"),
 		)
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
