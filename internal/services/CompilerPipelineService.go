@@ -46,13 +46,22 @@ func NewCompilerPipelineService(
 	}
 }
 
-func (service *CompilerPipelineService) Init() {
+func (service *CompilerPipelineService) Init() error {
 	// set useful env variables that can be interpolated during template rendering
-	setEnvVariable("COMPILER_ROOT_DIR", service.compilerRootDir)
-	setEnvVariable("ROOT_DIR", service.rootDirectory)
+	err := setEnvVariable("COMPILER_ROOT_DIR", service.compilerRootDir)
+	if err != nil {
+		return err
+	}
+	err = setEnvVariable("ROOT_DIR", service.rootDirectory)
+	if err != nil {
+		return err
+	}
 
 	// load config file
-	service.loadConfFile()
+	err = service.loadConfFile()
+	if err != nil {
+		return err
+	}
 	if service.debug {
 		envVars := os.Environ()
 		for _, envVar := range envVars {
@@ -61,6 +70,7 @@ func (service *CompilerPipelineService) Init() {
 	}
 
 	service.initBinaryModelService()
+	return nil
 }
 
 func (service *CompilerPipelineService) initBinaryModelService() {
@@ -117,16 +127,15 @@ func (service *CompilerPipelineService) ProcessPipeline() error {
 }
 
 // load .bash-compiler file in current directory if exists
-func (service *CompilerPipelineService) loadConfFile() {
+func (service *CompilerPipelineService) loadConfFile() error {
 	configFile := filepath.Join(service.rootDirectory, ".bash-compiler")
 	err := files.FileExists(configFile)
-	if err == nil {
-		slog.Info("Loading", logger.LogFieldFilePath, configFile)
-		err = dotenv.LoadEnvFile(configFile)
-		logger.Check(err)
-	} else {
+	if err != nil {
 		slog.Warn("Config file is not available or not readable", "configFile", configFile)
+		return nil //nolint:nilerr // error ignored
 	}
+	slog.Info("Loading", logger.LogFieldFilePath, configFile)
+	return dotenv.LoadEnvFile(configFile)
 }
 
 func (service *CompilerPipelineService) computeYamlFiles() (err error) {
@@ -135,7 +144,9 @@ func (service *CompilerPipelineService) computeYamlFiles() (err error) {
 			service.rootDirectory,
 			"**/*"+service.binaryFilesExtension,
 		)
-		logger.Check(err)
+		if err != nil {
+			return err
+		}
 		if len(filesList) == 0 {
 			slog.Error(
 				"cannot find any file with specified suffix and directory",
@@ -155,12 +166,11 @@ func skipIntermediateFilesCallback(
 	return nil
 }
 
-func setEnvVariable(name string, value string) {
+func setEnvVariable(name string, value string) error {
 	slog.Debug(
 		"main",
 		logger.LogFieldVariableName, name,
 		logger.LogFieldVariableValue, value,
 	)
-	err := os.Setenv(name, value)
-	logger.Check(err)
+	return os.Setenv(name, value)
 }
