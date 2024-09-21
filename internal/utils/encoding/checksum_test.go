@@ -19,6 +19,7 @@ func TestChecksumFromBytes(t *testing.T) {
 
 func TestChecksumFromFile(t *testing.T) {
 	file, _ := os.Open("testsData/content.txt")
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer file.Close()
 	checksum, err := ChecksumFromFile(file)
 	assert.Equal(t, nil, err)
@@ -31,6 +32,7 @@ func TestChecksumFromFile(t *testing.T) {
 
 func TestChecksumFromUnknownFile(t *testing.T) {
 	tempFile, _ := os.CreateTemp("", "test******")
+	tempFile.Sync()
 	tempFile.Close()
 	err := os.Remove(tempFile.Name())
 	assert.Equal(t, nil, err)

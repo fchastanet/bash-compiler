@@ -31,7 +31,7 @@ func TestLoadSimpleFileMyVarNotExisting(t *testing.T) {
 func TestLoadSimpleFileMyVarExists(t *testing.T) {
 	teardownTest := setupTest(t)
 	defer teardownTest(t)
-	os.Setenv("MY_VAR", "myValue")
+	t.Setenv("MY_VAR", "myValue")
 	err := LoadEnvFile("./testsData/simpleFile.txt")
 	assert.NilError(t, err, msgErrorShouldBeNil)
 	envValue, exists := os.LookupEnv("FRAMEWORK_ROOT_DIR")

@@ -1,7 +1,6 @@
 package structures
 
 import (
-	"os"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -31,7 +30,7 @@ func TestGetStringValue(t *testing.T) {
 	})
 
 	t.Run("expand env", func(t *testing.T) {
-		os.Setenv("ENV_KEY", "envValue")
+		t.Setenv("ENV_KEY", "envValue")
 		dic["key"] = "${ENV_KEY}"
 		val, err := dic.GetStringValue("key")
 		assert.Equal(t, val, "envValue")
@@ -66,7 +65,7 @@ func TestStringList(t *testing.T) {
 	})
 
 	t.Run("expand env", func(t *testing.T) {
-		os.Setenv("ENV_KEY", "envValue")
+		t.Setenv("ENV_KEY", "envValue")
 		expectedList := []string{"envValue"}
 		dic["key"] = []string{"${ENV_KEY}"}
 		list, err := dic.GetStringList("key")

@@ -90,6 +90,7 @@ func Copy(srcPath string, dstPath string) (err error) {
 	if err != nil {
 		return err
 	}
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer r.Close() // ignore error: file was opened read-only.
 
 	w, err := os.Create(dstPath)
@@ -114,6 +115,7 @@ func ChecksumFromFile(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer file.Close()
 
 	hash := sha256.New()

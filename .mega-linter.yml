@@ -148,7 +148,11 @@ YAML_V8R_FILTER_REGEX_EXCLUDE: |
     ^\.github/workflows/dependabot\.yml$|
     ^\.secretlintrc\.yml$|
     ^\.secretlintrc\.json$|
-    ^\.grype\.yaml
+    /examples/configReference/.*\.yaml$|
+    /testsData/.*\.yaml$|
+    ^\.grype\.yaml$|
+    ^\.checkov\.yaml$|
+    ^\.trivy\.yaml
   )
 
 YAML_V8R_DISABLE_ERRORS_IF_LESS_THAN: 5

@@ -21,6 +21,7 @@ func LoadEnvFile(confFile string) error {
 	if err != nil {
 		return err
 	}
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer confFileContent.Close()
 
 	variables := make(map[string]string)

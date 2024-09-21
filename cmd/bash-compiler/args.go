@@ -23,14 +23,14 @@ func (*getCurrentFilenameError) Error() string {
 }
 
 type cli struct {
-	YamlFiles             YamlFiles            `arg:""                                             help:"Yaml files"                                                 optional:"" type:"path"`
-	RootDirectory         Directory            `help:"Root directory containing binary files"      short:"r"                                                         type:"path"`
-	TargetDir             Directory            `help:"Directory that will contain generated files" optional:""                                                       short:"t"`
-	BinaryFilesExtension  BinaryFilesExtension `default:"-binary.yaml"                             help:"Provide the extension for automatic search of binary files" optional:""`
-	Version               VersionFlag          `help:"Print version information and quit"          name:"version"                                                    short:"v"`
-	KeepIntermediateFiles bool                 `help:"Keep intermediate files in target directory" short:"k"`
-	Debug                 bool                 `help:"Set log in debug level"                      short:"d"`
-	LogLevel              int                  `hidden:""`
+	YamlFiles             YamlFiles            `arg:""    optional:"" type:"path"            help:"Yaml files"`                                                 //nolint:tagalign //avoid reformat annotations
+	RootDirectory         Directory            `short:"r" required:"" type:"path"            help:"Root directory containing binary files"`                     //nolint:tagalign //avoid reformat annotations
+	TargetDir             Directory            `short:"t" optional:""                        help:"Directory that will contain generated files"`                //nolint:tagalign //avoid reformat annotations
+	BinaryFilesExtension  BinaryFilesExtension `          optional:"" default:"-binary.yaml" help:"Provide the extension for automatic search of binary files"` //nolint:tagalign //avoid reformat annotations
+	Version               VersionFlag          `short:"v" name:"version"                     help:"Print version information and quit"`                         //nolint:tagalign //avoid reformat annotations
+	KeepIntermediateFiles bool                 `short:"k"                                    help:"Keep intermediate files in target directory"`                //nolint:tagalign //avoid reformat annotations
+	Debug                 bool                 `short:"d"                                    help:"Set log in debug level"`                                     //nolint:tagalign //avoid reformat annotations
+	LogLevel              int                  `hidden:""`                                                                                                      //nolint:tagalign //avoid reformat annotations
 	CompilerRootDir       Directory            `hidden:""`
 }
 
@@ -110,7 +110,9 @@ func parseArgs(cli *cli) (err error) {
 	}
 	if cli.RootDirectory == "" {
 		currentDir, err := os.Getwd()
-		logger.Check(err)
+		if err != nil {
+			return err
+		}
 		cli.RootDirectory = Directory(currentDir)
 	}
 	if cli.Debug {

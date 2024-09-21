@@ -70,6 +70,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer file.Close()
 
 	md5sum, err := encoding.ChecksumFromFile(file)
@@ -111,7 +112,10 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 		return "", err
 	}
 	defer directoryArchive.Close()
-
+	err = directoryArchive.Sync()
+	if err != nil {
+		return "", err
+	}
 	_, err = directoryArchive.Seek(0, 0)
 	if err != nil {
 		return "", err

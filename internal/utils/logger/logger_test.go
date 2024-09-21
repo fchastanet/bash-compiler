@@ -55,7 +55,7 @@ func TestInitLogger(t *testing.T) {
 		assert.IsType(t, &slog.Record{}, slogHandler.Record) //nolint:exhaustruct // test
 		assert.Equal(t, slogHandler.Record.Level, slog.LevelError)
 		assert.Equal(t, slogHandler.Record.Message, "Error")
-		attrsSeen := []string{}
+		var attrsSeen []string
 		slogHandler.Record.Attrs(
 			func(a slog.Attr) bool {
 				attrsSeen = append(attrsSeen, a.Key)
@@ -96,7 +96,7 @@ func TestDebugSaveIntermediateFile(t *testing.T) {
 		assert.IsType(t, &slog.Record{}, slogHandler.Record) //nolint:exhaustruct // test
 		assert.Equal(t, slogHandler.Record.Level, slog.LevelDebug)
 		assert.Equal(t, slogHandler.Record.Message, "KeepIntermediateFiles - merged config file")
-		attrsSeen := []string{}
+		var attrsSeen []string
 		slogHandler.Record.Attrs(
 			func(a slog.Attr) bool {
 				attrsSeen = append(attrsSeen, a.Key)

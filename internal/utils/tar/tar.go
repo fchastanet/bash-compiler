@@ -97,6 +97,7 @@ func addToArchive(
 	if err != nil {
 		return err
 	}
+	// skipcq: GO-S2307 // no need Sync as readOnly open
 	defer file.Close()
 
 	header, err := getFileHeader(fileInfo, filename, relativeDir)

@@ -20,13 +20,11 @@
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
+        "-r",
+        "/home/wsl/fchastanet/bash-tools",
         "/home/wsl/fchastanet/bash-tools/src/_binaries/Database/dbImport/binary-dbImport.yaml"
       ],
-      "cwd": "/home/wsl/fchastanet/bash-compiler",
-      "env": {
-        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
-        "BASH_TOOLS_ROOT_DIR": "/home/wsl/fchastanet/bash-tools"
-      }
+      "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
       "name": "Launch doc",
@@ -35,15 +33,14 @@
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
+        "-r",
+        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
         "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework/src/_binaries/doc/binary-doc.yaml",
         "-d",
         "-k",
         "--target-dir=examples/generated"
       ],
-      "cwd": "/home/wsl/fchastanet/bash-compiler",
-      "env": {
-        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework"
-      }
+      "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
       "name": "Launch Bash-tools-framework shellcheckLint",
@@ -52,16 +49,14 @@
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
+        "-r",
+        "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
         "/home/wsl/fchastanet/bash-dev-env/src/_installScripts/Composer/Composer-binary.yaml",
         "-t",
         "examples/generated",
         "-k"
       ],
-      "cwd": "/home/wsl/fchastanet/bash-compiler",
-      "env": {
-        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
-        "BASH_DEV_ENV_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env"
-      }
+      "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
       "name": "Launch Bash-dev-env install",
@@ -70,16 +65,14 @@
       "mode": "auto",
       "program": "cmd/bash-compiler",
       "args": [
+        "-r",
+        "/home/wsl/fchastanet/bash-dev-env",
         "/home/wsl/fchastanet/bash-dev-env/src/_tools/install/install-binary.yaml",
         "-t",
         "examples/generated",
         "-k"
       ],
-      "cwd": "/home/wsl/fchastanet/bash-compiler",
-      "env": {
-        "FRAMEWORK_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework",
-        "BASH_DEV_ENV_ROOT_DIR": "/home/wsl/fchastanet/bash-dev-env"
-      }
+      "cwd": "/home/wsl/fchastanet/bash-compiler"
     }
   ]
 }

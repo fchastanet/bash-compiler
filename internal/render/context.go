@@ -117,7 +117,7 @@ func newTemplate(
 	templateFile string,
 	funcMap template.FuncMap,
 ) (templateInstance *template.Template, templateName string, err error) {
-	filesList := []string{}
+	var filesList []string
 	for _, templateDir := range templateDirs {
 		myFiles, err := files.MatchPatterns(templateDir, "**/*")
 		if err != nil {
