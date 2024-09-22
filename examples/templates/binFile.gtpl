@@ -16,7 +16,8 @@
 {{ include "binFile.initDirs.gtpl" .Data.binData $context -}}
 
 # FUNCTIONS
-{{ range $file := .Data.binData.commands.default.definitionFiles }}
+{{- $sortedDefinitionFiles := .Data.binData.commands.default.definitionFiles | sortByKeys -}}
+{{ range $file := $sortedDefinitionFiles }}
 {{- includeFileAsTemplate $file $context }}
 {{ end }}
 {{- include "commands" .Data.binData.commands $context -}}

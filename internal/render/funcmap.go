@@ -63,6 +63,25 @@ func sortCallbacks(list []any) (any, error) {
 	return list2, nil
 }
 
+func sortByKeys(myMap map[string]any) (list []any, err error) {
+	keys := make([]int, 0, len(myMap))
+	list = make([]any, 0, len(myMap))
+
+	for k := range myMap {
+		kInt, err := strconv.Atoi(k)
+		if err != nil {
+			return nil, err
+		}
+		keys = append(keys, kInt)
+	}
+	sort.Ints(keys)
+
+	for _, k := range keys {
+		list = append(list, myMap[strconv.Itoa(k)])
+	}
+	return list, nil
+}
+
 func arrayDefaultValue(list []string, i int, defaultValue int) int {
 	if len(list) >= i+1 {
 		if number, err := strconv.Atoi(list[i]); err == nil {
@@ -79,6 +98,7 @@ func FuncMap() map[string]any {
 	funcMap["format"] = format
 	// callbacks
 	funcMap["sortCallbacks"] = sortCallbacks
+	funcMap["sortByKeys"] = sortByKeys
 	// templates functions
 	funcMap["include"] = Include
 	funcMap["includeFile"] = includeFile
