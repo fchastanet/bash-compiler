@@ -10,9 +10,9 @@ echo -e "${__HELP_TITLE_COLOR}SYNOPSIS:${__RESET_COLOR}"
     */}}{{ range $line := $synopsis -}}{{/*
     */}}{{   $line | quote }} {{/*
     */}}{{ end }}
-  {{ end }}
 echo
 echo
+{{- end }}
 
 # ------------------------------------------
 # usage section

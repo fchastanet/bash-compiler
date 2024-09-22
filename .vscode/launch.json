@@ -59,7 +59,7 @@
       "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
-      "name": "Launch Bash-dev-env install",
+      "name": "Launch Bash-dev-env Fasd",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -67,10 +67,7 @@
       "args": [
         "-r",
         "/home/wsl/fchastanet/bash-dev-env",
-        "/home/wsl/fchastanet/bash-dev-env/src/_tools/install/install-binary.yaml",
-        "-t",
-        "examples/generated",
-        "-k"
+        "/home/wsl/fchastanet/bash-dev-env/src/_installScripts/BashUtils/Fasd-binary.yaml"
       ],
       "cwd": "/home/wsl/fchastanet/bash-compiler"
     }

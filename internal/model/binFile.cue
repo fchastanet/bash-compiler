@@ -155,7 +155,7 @@ input: #Schema
   mainFile: string | *null
   // command definition files to include
   definitionFiles:
-    [=~"^[a-zA-Z0-9_]+$" & !~"^()$"]: string
+    [=~"^[0-9]+$"]: string
   // check for unique definitionFile
   _uniqueDefinitionFileName: true
   _uniqueDefinitionFileName: list.UniqueItems([
