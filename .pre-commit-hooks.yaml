@@ -3,7 +3,10 @@
   name: build bash binaries
   entry: bash-compiler
   language: golang
-  pass_filenames: true
+  pass_filenames: false
+  always_run: true
   fail_fast: true
-  files: /-binary\.(yml|yaml)$
+  args:
+    - -r
+    - .
   stages: [pre-commit]
