@@ -69,6 +69,11 @@ echo
 {{-      end }}
 {{-    end }}
 {{-   end }}
+{{   if .defaultValue -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
+echo
+{{   end }}
+
 {{- end }}
 {{ end -}}
 
