@@ -181,7 +181,7 @@ repos:
       - id: shellcheckLint
       - id: shellcheckLintGithubAction
       - id: plantuml
-        args: [--same-dir, -f, png, -f, svg, --limit-size, "7000"]
+        args: [--same-dir, -f, png, -f, svg, --limit-size, "8290"]
 
   - repo: https://github.com/fchastanet/bash-compiler
     rev: v0.3.5

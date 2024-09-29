@@ -2,6 +2,14 @@
 
 [![GoTemplate](https://img.shields.io/badge/go/template-black?logo=go)](https://github.com/SchwarzIT/go-template)
 
+> **_TIP:_** Checkout related projects of this suite
+>
+> - [My documents](https://fchastanet.github.io/my-documents/)
+> - [Bash Tools Framework](https://fchastanet.github.io/bash-tools-framework/)
+> - [Bash Tools](https://fchastanet.github.io/bash-tools/)
+> - [Bash Dev Env](https://fchastanet.github.io/bash-dev-env/)
+> - **[Bash Compiler](https://fchastanet.github.io/bash-compiler/)**
+
 <!-- markdownlint-capture -->
 
 <!-- markdownlint-disable MD013 -->
@@ -21,11 +29,7 @@
 - [2. Documentation](#2-documentation)
   - [2.1. Go Libraries used](#21-go-libraries-used)
   - [2.2. Template system](#22-template-system)
-  - [2.3. Compiler Algorithm](#23-compiler-algorithm)
-  - [2.4. Class diagram](#24-class-diagram)
-  - [2.5. Compiler annotations](#25-compiler-annotations)
-    - [2.5.1. @require](#251-require)
-  - [2.6. @embed](#26-embed)
+  - [2.3. Compiler](#23-compiler)
 - [3. Development](#3-development)
   - [3.1. Pre-commit hook](#31-pre-commit-hook)
     - [3.1.1. @embed](#311-embed)
@@ -116,225 +120,9 @@ Template filter functions, `internal/render/functions/index.go` includes:
       template
     - dynamicFile: resolve first matching filepath in paths provided as argument
 
-### 2.3. Compiler Algorithm
+### 2.3. Compiler
 
-The command to generate a bash binary file:
-
-```bash
-./bin/bash-compiler examples/configReference/shellcheckLint.yaml \
-  --root-dir /home/wsl/fchastanet/bash-dev-env/vendor/bash-tools-framework \
-  --target-dir examples/generated \
-  --keep-intermediate-files
-```
-
-This will trigger the following actions
-
-```plantuml
-@startuml "compiler"
-title compile
-skinparam {
-  ' https://github.com/plantuml/plantuml/blob/49115dfc7d4156961e5b49a81c09b474daa79823/src/net/sourceforge/plantuml/style/FromSkinparamToStyle.java#L145
-  activityDiamondBackgroundColor #AAAAAA
-  activityEndColor #red
-}
-
-start
-
-partition "cmd/bash-compiler/main.go" {
-
-  :parseArgs(cli *cli);
-  note right
-    Parses command arguments
-  endnote
-
-  partition "Load/Transform model" #LightSkyBlue {
-    #DeepSkyBlue:tempYamlFile = model.LoadModel(referenceDir, binaryModelFilePath, &modelMap);
-    note right
-      Loads yaml file
-      if property extends defined, load these files
-      merging them together.
-      ReferenceDir allows to be able to resolve aliases
-      in yaml files defined in this referenceDir
-    endnote
-
-    #DeepSkyBlue:model.TransformModel(*tempYamlFile, &resultWriter);
-    note right
-      Transforms previous yaml file using cue and loads it byte[]
-    endnote
-
-    #DeepSkyBlue:binaryModel = model.LoadBinaryModel(resultWriter.Bytes());
-    note right
-      binaryModel contains transformed yaml file in memory with the following structure
-      {
-        binFile:
-        vars:
-        binData:
-      }
-    endnote
-  }
-
-
-  partition "Render code using template" #LightSkyBlue {
-    #DeepSkyBlue:templateContext = binaryModel.InitTemplateContext();
-    #DeepSkyBlue:code = templateContext.RenderFromTemplateName();
-  }
-  partition "Compile" #LightSkyBlue {
-    #DeepSkyBlue:codeCompiled, err := compiler.Compile(code, templateContext, binaryModel);
-  }
-
-  :Save resulting file;
-
-}
-
-stop
-@enduml
-```
-
-### 2.4. Class diagram
-
-```plantuml
-@startuml "bash-compiler class diagram"
-!pragma layout elk
-
-!include doc/classDiagram.puml
-@enduml
-```
-
-```plantuml
-@startuml "bash-compiler class diagram with private methods"
-!pragma layout elk
-
-!include doc/classDiagramWithPrivateMethods.puml
-@enduml
-```
-
-### 2.5. Compiler annotations
-
-#### 2.5.1. @require
-
-The annotation @require added to a function like in this example:
-
-```bash
-# @require Env::requireLoad
-# @require Log::requireLoad
-Log::logMessage() {
-  # rest of the function content
-}
-```
-
-will do the following actions:
-
-- compiler checks that the required functions exist, if not an error is
-  triggered.
-- compiler adds code to the required function that will set an environment
-  variable to 1 when the function is called (eg:
-  REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED=1).
-- compiler adds code to the function that has these requirements in to check if
-  these environment variables are set and exit 1 if not.
-- compiler checks if the function is called at least once but it is the
-  developer's responsibility to call the require function at the right place.
-
-Code is generated using go templates. The go templates are configured in the
-yaml file at compiler config level.
-
-```yaml
-compilerConfig:
-  annotationsConfig:
-    requireTemplate: require
-    checkRequirementsTemplate: checkRequirements
-# rest of the config file content
-```
-
-`examples/templates/annotations/require.gtpl` => generates this code:
-
-```bash
-Env::RequireLoad() {
-  REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED=1
-  # rest of the function content
-}
-```
-
-`examples/templates/annotations/checkRequirements.gtpl` => generates this code:
-
-```bash
-# @require Env::requireLoad
-# @require Log::requireLoad
-Log::logMessage() {
-  if [[ "${REQUIRE_FUNCTION_ENV_REQUIRE_LOAD_LOADED:-0}" != 1 ]]; then
-    echo >&2 "Requirement Env::requireLoad has not been loaded"
-    exit 1
-  fi
-
-  if [[ "${REQUIRE_FUNCTION_LOG_REQUIRE_LOAD_LOADED:-0}" != 1 ]]; then
-    echo >&2 "Requirement Log::requireLoad has not been loaded"
-    exit 1
-  fi
-  # rest of the function content
-}
-```
-
-The aims of a require are the following:
-
-- be to be able to test for a requirement just before executing a function that
-  is marked with @require
-- when compiling be able to know if a function with a specific requirement has
-  been used (eg: ubuntu>20)
-- There are several kind of requirements:
-  - checking that a command is available
-    - this requirement needs to be called at the proper level if the binary
-      actually installs this command.
-    - @require Aws::requireAwsCommand
-    - @require Docker::requireDockerCommand
-    - @require Git::requireGitCommand
-    - @require Linux::requireCurlCommand
-    - @require Linux::requireJqCommand
-    - @require Linux::requireRealpathCommand
-    - @require Linux::requirePathchkCommand
-    - @require Linux::requireSudoCommand
-    - @require Linux::requireTarCommand
-    - @require Ssh::requireSshKeygenCommand
-    - @require Ssh::requireSshKeyscanCommand
-  - checking a feature is available
-    - @require Git::requireShallowClone actually based on git version
-  - checking a specific environment/state is available on execution
-    - @require Linux::requireUbuntu
-    - @require Linux::Wsl::requireWsl
-    - @require Linux::requireExecutedAsUser
-    - ubuntu>20
-  - ensuring some specific loading are made
-    - @require Env::requireLoad
-    - @require Log::requireLoad
-    - @require UI::requireTheme
-
-### 2.6. @embed
-
-The @embed annotation allows to embed as base64 encoded a file or a directory.
-
-The syntax is the following:
-
-```bash
-# @embed "${FRAMEWORK_ROOT_DIR}/README.md" as readme
-# @embed "${FRAMEWORK_ROOT_DIR}/.cspell" as cspell
-```
-
-This will generate the code below:
-
-```bash
-Compiler::Embed::extractFileFromBase64 \
-  "${PERSISTENT_TMPDIR:-/tmp}/1e26600f34bdaf348803250aa87f4924/readme" \
-  "base64 encode string" \
-  "644"
-
-declare -gx embed_file_readme="${PERSISTENT_TMPDIR:-/tmp}/1e26600f34bdaf348803250aa87f4924/readme"
-
-Compiler::Embed::extractDirFromBase64 \
-  "${PERSISTENT_TMPDIR:-/tmp}/5c12a039d61ab2c98111e5353362f380/cspell" \
-  "base64 encode string"
-
-declare -gx embed_dir_cspell="${PERSISTENT_TMPDIR:-/tmp}/5c12a039d61ab2c98111e5353362f380/cspell"
-```
-
-The embedded files will be automatically uncompressed.
+see [Compile command](CompileCommand.md).
 
 ## 3. Development
 

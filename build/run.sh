@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -e -o pipefail -o errexit
 
 go run ./cmd/bash-compiler/main.go
