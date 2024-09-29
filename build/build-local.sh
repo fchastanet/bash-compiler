@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -e -o pipefail -o errexit
 
 mkdir -pv bin || true
 

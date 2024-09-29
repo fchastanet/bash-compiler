@@ -1,0 +1,116 @@
+@startuml "compiler"
+title compiler algorithm
+skinparam {
+  ' https://github.com/plantuml/plantuml/blob/49115dfc7d4156961e5b49a81c09b474daa79823/src/net/sourceforge/plantuml/style/FromSkinparamToStyle.java#L145
+  activityDiamondBackgroundColor #AAAAAA
+  activityEndColor #red
+}
+
+start
+
+:compile binaryModelYamlFile;
+
+#SpringGreen:model.LoadBinaryModel binaryModelYamlFile;
+
+if (ok) then (binaryModel)
+else (error)
+  stop
+endif
+
+partition "compiler.GenerateCode" {
+
+  #SpringGreen:compiler.GenerateCode binaryModel;
+
+  :loadGoTemplate;
+
+  :renderGoTemplate;
+
+  note right
+    using binaryModel data
+    only commands part for the moment
+  endnote
+
+  if (ok) then (code)
+  else (error)
+    stop
+  endif
+}
+
+partition "compiler.Compile" {
+
+  :compiler.extractUniqueFrameworkFunctions &functionsMap, code;
+
+  partition "compiler.retrieveEachFunctionPath" #LightSkyBlue {
+    :compiler.retrieveEachFunctionPath &functionsMap, binaryModel.BinFile.SrcDirs;
+    note right
+      for each function retrieve the full src file path
+      try to get also _.sh and ZZZ.sh files if exists
+    endnote
+    repeat :each function of functionsMap;
+      if (function) then (not already retrieved)
+        :compile.findFunctionInSrcDirs function, binaryModel.BinFile.SrcDirs;
+        if (file not found) then (error)
+          stop
+        endif
+        :register function src file;
+        :register _.sh if exists;
+        :register ZZZ.sh if exists;
+      endif
+    repeat while (more function?)
+  }
+
+  partition "compiler.retrieveAllFunctionsContent" #LightSkyBlue {
+    :compiler.retrieveAllFunctionsContent &functionsMap;
+    note right
+      for each function retrieve content of each src file path
+    endnote
+  }
+
+
+  partition "Compiler::Require::requires" #LightSkyBlue {
+
+    #SpringGreen:Compiler::Require::filter scriptFile;
+    while (requireDirective?) is (<color:green>require directive found)
+      -[#green]->
+      #SpringGreen:Compiler::Require::parse $requireDirective
+        ~~uses Compiler::Require::assertInterface~~
+      ;
+      if (implement directive can't be parsed or function does not exist?) is (<color:red>invalid directive) then
+        -[#red]->
+        end
+      else
+        -[#green]->
+      endif
+      -[#green]->
+      :Compiler::Require::parse;
+    endwhile (no more require\ndirective to process)
+  }
+
+  :import functions from 2 previous task
+  and inject them before # FUNCTIONS token;
+}
+
+-[#green,dashed]-> compiler
+process
+continues
+;
+
+partition "Compiler::Require::requires" #LightSkyBlue {
+  note right
+  **second phase**
+  call again Compiler::Require::requires
+  to get final list of requires in reverse order
+  to add the calls to those require functions
+  just after the token ~~# REQUIRES~~
+  endnote
+  :File::insertFileAfterToken requires "# REQUIRES";
+}
+
+partition "compilerEnds" #pink {
+  :Compiler::Implement::mergeInterfacesFunctions;
+  :Compiler::Implement::validateInterfaceFunctions;
+  :Output result;
+}
+
+end
+@enduml

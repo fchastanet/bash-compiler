@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -e -o pipefail -o errexit
 
 echo >&2 "Runs Go coverage ..."
 # Displays coverage per func on cli

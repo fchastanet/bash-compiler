@@ -6,6 +6,7 @@ cobertura
 codespell
 cyclonedx
 dbnavigator
+docsify
 dotnet
 doublestar
 ecmascript
@@ -16,8 +17,10 @@ gofmt
 Gofmt
 golint
 goplantuml
+gtpl
 gzip
 Hadolint
+kics
 koanf
 kong
 linux
