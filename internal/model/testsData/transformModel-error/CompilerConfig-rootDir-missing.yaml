@@ -1,0 +1,3 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"

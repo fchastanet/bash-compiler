@@ -1,0 +1,13 @@
+compilerConfig:
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  annotationsConfig:
+    requireTemplateName: requireTemplateName
+    checkRequirementsTemplateName: checkRequirementsTemplateName
+binData:
+  commands:
+    default:
+      mainFile: valid
+      definitionFiles:
+        1: valid
+      options:
+        - max: invalid

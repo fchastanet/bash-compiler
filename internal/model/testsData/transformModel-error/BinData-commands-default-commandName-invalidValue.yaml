@@ -1,0 +1,19 @@
+compilerConfig:
+  targetFile: targetFile
+  templateFile: templateFile
+  rootDir: rootDir
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  templateDirs:
+    - item1
+  annotationsConfig:
+    requireTemplateName: requireTemplateName
+    checkRequirementsTemplateName: checkRequirementsTemplateName
+binData:
+  commands:
+    default:
+      mainFile: valid
+      definitionFiles:
+        1: valid
+      functionName: valid
+      commandName:
+        - invalid

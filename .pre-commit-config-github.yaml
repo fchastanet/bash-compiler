@@ -61,6 +61,10 @@ repos:
       - id: detect-private-key
       - id: fix-byte-order-marker
       - id: check-yaml
+        exclude: |
+          (?x)(
+            ^internal/model/testsData/transformModel-error/BinData-commands-default-definitionFiles-duplicateKey.yaml$
+          )
       - id: trailing-whitespace
         exclude: |
           (?x)(

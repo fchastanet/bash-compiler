@@ -1,0 +1,4 @@
+compilerConfig:
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  annotationsConfig:
+    invàlidKey: test

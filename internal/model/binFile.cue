@@ -210,8 +210,6 @@ input: #Schema
       // Title
       title: =~"^.*$" | *""
     }}
-
-    {[=~"examples" & !~"^()$"]: _}
   }
   functionName: #functionName | *"\(commandName)Function"
 
