@@ -104,12 +104,13 @@ func (binaryModelContext *BinaryModelLoader) Load(
 	var resultWriter bytes.Buffer
 	err = transformModel(*tempYamlFile, &resultWriter)
 	if err != nil {
+		fmt.Print(err)
 		return nil, err
 	}
 	err = intermediateFileContentCallback(
 		targetDir,
 		binaryModelBaseName,
-		"-2-cue-transformed.yaml",
+		"-2-kcl-transformed.yaml",
 		resultWriter.String(),
 	)
 	if err != nil {

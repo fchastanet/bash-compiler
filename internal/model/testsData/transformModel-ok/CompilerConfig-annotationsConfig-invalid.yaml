@@ -1,10 +1,9 @@
 compilerConfig:
   binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
-  rootDir: root
+  annotationsConfig:
+  rootDir: rootDir
   targetFile: target
   templateFile: template
-  annotationsConfig:
-    requireTemplateName: templateé
 binData:
   commands:
     default:

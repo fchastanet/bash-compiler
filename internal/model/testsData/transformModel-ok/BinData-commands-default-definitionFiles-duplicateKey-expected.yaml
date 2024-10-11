@@ -1,0 +1,40 @@
+binData:
+  commands:
+    default:
+      afterParseCallbacks: []
+      args: []
+      author: ""
+      beforeParseCallbacks: []
+      callbacks: []
+      commandName: command
+      copyright: ""
+      copyrightBeginYear: ""
+      definitionFiles:
+        "1": item2
+      everyArgumentCallbacks: []
+      functionName: commandFunction
+      help: ""
+      license: ""
+      longDescription: ""
+      mainFile: valid
+      options: []
+      sourceFile: ""
+      unknownArgumentCallbacks: []
+      unknownOptionCallbacks: []
+      version: 1.0.0
+compilerConfig:
+  annotationsConfig:
+    checkRequirementsTemplateName: checkRequirementsTemplateName
+    embedDirTemplateName: embedDir
+    embedFileTemplateName: embedFile
+    requireTemplateName: requireTemplateName
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  functionsIgnoreRegexpList: []
+  relativeRootDirBasedOnTargetDir: .
+  rootDir: root
+  srcDirs:
+  - root/src
+  targetFile: target
+  templateDirs:
+  - root/template
+  templateFile: template

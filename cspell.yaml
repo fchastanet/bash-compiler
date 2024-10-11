@@ -49,6 +49,9 @@ dictionaryDefinitions:
   - name: go
     path: ".cspell/go.txt"
     addWords: false
+  - name: kcl
+    path: ".cspell/kcl.txt"
+    addWords: false
   - name: dotFiles
     path: ".cspell/dotFiles.txt"
     addWords: true
@@ -125,6 +128,14 @@ languageSettings:
       - softwareTerms
       - software
 
+  - languageId: kcl
+    locale: "*"
+    dictionaries:
+      - kcl
+      - mySoftwares
+      - softwareTerms
+      - software
+
 # OVERRIDES
 overrides:
   - filename:
@@ -135,6 +146,10 @@ overrides:
       - "/package.json"
       - "!.golangci.yml"
     languageId: dotFiles
+
+  - filename:
+      - "**/*.k"
+    languageId: kcl
 
   - filename:
       - "**/Dockerfile"
@@ -170,6 +185,7 @@ overrides:
 
   - filename:
       - "**/*_test.go"
+      - "internal/model/kcl/testsKcl/Fasd-binary.yaml"
     languageId: go
     dictionaries:
       - test

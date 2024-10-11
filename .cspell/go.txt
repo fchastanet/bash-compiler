@@ -20,9 +20,12 @@ gostub
 gotestfmt
 goutils
 gtpl
+httprouter
 hugeparam
 isatty
+jsonv
 ldflags
+mapstructure
 maxprocs
 mergo
 missingkey
@@ -36,6 +39,8 @@ nolintlint
 pflag
 prealloc
 promlint
+protobuf
+protorpc
 reflectwalk
 runtimes
 skipcq

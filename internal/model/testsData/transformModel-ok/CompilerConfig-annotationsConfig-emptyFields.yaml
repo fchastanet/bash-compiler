@@ -4,7 +4,10 @@ compilerConfig:
   targetFile: target
   templateFile: template
   annotationsConfig:
-    requireTemplateName: templateé
+    checkRequirementsTemplateName:
+    embedDirTemplateName:
+    embedFileTemplateName:
+    requireTemplateName:
 binData:
   commands:
     default:

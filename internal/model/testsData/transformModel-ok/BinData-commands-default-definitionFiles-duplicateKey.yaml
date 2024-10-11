@@ -4,8 +4,13 @@ compilerConfig:
   targetFile: target
   templateFile: template
   annotationsConfig:
-    requireTemplateName: templateé
+    requireTemplateName: requireTemplateName
+    checkRequirementsTemplateName: checkRequirementsTemplateName
 binData:
   commands:
     default:
       commandName: command
+      mainFile: valid
+      definitionFiles:
+        1: item1
+        1: item2

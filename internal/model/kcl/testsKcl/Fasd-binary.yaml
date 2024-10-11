@@ -1,0 +1,302 @@
+binData:
+  commands:
+    default:
+      args:
+        - authorizedValues:
+            - help: Check if all commands below are available
+              value: isInterfaceImplemented
+            - help: Show help description of this install script.
+              value: helpDescription
+            - help: Show the internal name of this install script.
+              value: scriptName
+            - help: Show this install scripts's dependencies.
+              value: dependencies
+            - help: |-
+                Show the variables needed to execute this
+                install script.
+              value: listVariables
+            - help: |-
+                Show the fortunes sentences that this
+                install script can generate.
+              value: fortunes
+            - help: helpVariables
+              value: helpVariables
+            - help: defaultVariables
+              value: defaultVariables
+            - help: checkVariables
+              value: checkVariables
+            - help: breakOnConfigFailure
+              value: breakOnConfigFailure
+            - help: breakOnTestFailure
+              value: breakOnTestFailure
+            - help: isInstallImplemented
+              value: isInstallImplemented
+            - help: install
+              value: install
+            - help: isTestInstallImplemented
+              value: isTestInstallImplemented
+            - help: testInstall
+              value: testInstall
+            - help: isConfigureImplemented
+              value: isConfigureImplemented
+            - help: configure
+              value: configure
+            - help: isTestConfigureImplemented
+              value: isTestConfigureImplemented
+            - help: testConfigure
+              value: testConfigure
+          callbacks:
+            - argsInstallScriptCommandCallback
+          defaultValue: install
+          help: The command to run on this install script.
+          max: 1
+          min: 0
+          name: command
+          type: String
+          variableName: command
+      author: "[François Chastanet](https://github.com/fchastanet)"
+      beforeParseCallbacks:
+        - beforeParseCallback
+      callbacks:
+        - commandOptionParseFinished
+      commandName: Fasd
+      copyright: copyrightCallback
+      copyrightBeginYear: 2024
+      definitionFiles:
+        "10": ${FRAMEWORK_ROOT_DIR}/src/_binaries/commandDefinitions/optionsDefault.sh
+        "11": ${BASH_DEV_ENV_ROOT_DIR}/src/_installScripts/BashUtils/Fasd.sh
+        "5": ${BASH_DEV_ENV_ROOT_DIR}/src/_commandDefinitions/argsInstallScript.sh
+        "50": ${BASH_DEV_ENV_ROOT_DIR}/src/_commandDefinitions/default.sh
+      functionName: FasdCommand
+      help: helpDescriptionFunction
+      license: MIT License
+      longDescription: helpLongDescriptionFunction
+      mainFile: ${BASH_DEV_ENV_ROOT_DIR}/src/_commandDefinitions/installScript-main.sh
+      optionGroups:
+        OptionsGroup:
+          title: "OPTIONS:"
+        zzzGroupExport:
+          title: "EXPORT OPTIONS:"
+        zzzGroupGlobalOptionsGroup:
+          title: "GLOBAL OPTIONS:"
+        zzzGroupInstall:
+          title: "INSTALL OPTIONS:"
+        zzzGroupSkipOptionsGroup:
+          title: "SKIP OPTIONS:"
+      options:
+        - alts:
+            - --skip-config
+            - --skip-configure
+            - --skip-configuration
+            - -sc
+          group: zzzGroupSkipOptionsGroup
+          help: Skip software configuration.
+          type: Boolean
+          variableName: SKIP_CONFIGURE
+        - alts:
+            - --skip-install
+            - --skip-installation
+            - -si
+          group: zzzGroupSkipOptionsGroup
+          help: Skip software installation.
+          type: Boolean
+          variableName: SKIP_INSTALL
+        - alts:
+            - --skip-test
+            - --skip-tests
+            - -st
+          group: zzzGroupSkipOptionsGroup
+          help: Skip software installation test.
+          type: Boolean
+          variableName: SKIP_TEST
+        - alts:
+            - --skip-deps
+            - --skip-dependencies
+            - -sd
+          group: zzzGroupSkipOptionsGroup
+          help: Install the software requested without resolving dependencies.
+          type: Boolean
+          variableName: SKIP_DEPENDENCIES
+        - alts:
+            - --prepare-export
+            - -e
+          group: zzzGroupExport
+          help:
+            prepare the wsl installation for export (remove all sensitive files)
+          type: Boolean
+          variableName: PREPARE_EXPORT
+        - alts:
+            - --profile
+            - -p
+          callbacks:
+            - validateProfile
+          group: zzzGroupInstall
+          help: profileHelpFunction
+          helpValueName: profile
+          type: String
+          variableName: PROFILE
+        - alts:
+            - --help
+            - -h
+          callbacks:
+            - optionHelpCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Displays this command help
+          type: Boolean
+          variableName: optionHelp
+        - alts:
+            - --config
+          group: zzzGroupGlobalOptionsGroup
+          help: Displays configuration
+          type: Boolean
+          variableName: optionConfig
+        - alts:
+            - --bash-framework-config
+          callbacks:
+            - optionBashFrameworkConfigCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Use alternate bash framework configuration.
+          type: String
+          variableName: optionBashFrameworkConfig
+        - alts:
+            - --verbose
+            - -v
+          callbacks:
+            - optionInfoVerboseCallback
+            - updateArgListInfoVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Info level verbose mode (alias of --display-level INFO)
+          type: Boolean
+          variableName: optionInfoVerbose
+        - alts:
+            - -vv
+          callbacks:
+            - optionDebugVerboseCallback
+            - updateArgListDebugVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Debug level verbose mode (alias of --display-level DEBUG)
+          type: Boolean
+          variableName: optionDebugVerbose
+        - alts:
+            - -vvv
+          callbacks:
+            - optionTraceVerboseCallback
+            - updateArgListTraceVerboseCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Trace level verbose mode (alias of --display-level TRACE)
+          type: Boolean
+          variableName: optionTraceVerbose
+        - alts:
+            - --log-level
+          authorizedValues:
+            - value: "OFF"
+            - value: ERR
+            - value: ERROR
+            - value: WARN
+            - value: WARNING
+            - value: INFO
+            - value: DEBUG
+            - value: TRACE
+          callbacks:
+            - optionLogLevelCallback
+            - updateArgListLogLevelCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set log level
+          type: String
+          variableName: optionLogLevel
+        - alts:
+            - --log-file
+          callbacks:
+            - optionLogFileCallback
+            - updateArgListLogFileCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set log file
+          type: String
+          variableName: optionLogFile
+        - alts:
+            - --display-level
+          authorizedValues:
+            - value: "OFF"
+            - value: ERR
+            - value: ERROR
+            - value: WARN
+            - value: WARNING
+            - value: INFO
+            - value: DEBUG
+            - value: TRACE
+          callbacks:
+            - optionDisplayLevelCallback
+            - updateArgListDisplayLevelCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Set display level
+          type: String
+          variableName: optionDisplayLevel
+        - alts:
+            - --no-color
+          callbacks:
+            - optionNoColorCallback
+            - updateArgListNoColorCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Produce monochrome output. alias of --theme noColor.
+          type: Boolean
+          variableName: optionNoColor
+        - alts:
+            - --theme
+          authorizedValues:
+            - value: default
+            - value: default-force
+            - value: noColor
+          callbacks:
+            - optionThemeCallback
+            - updateArgListThemeCallback
+          defaultValue: default
+          group: zzzGroupGlobalOptionsGroup
+          help:
+            Choose color theme - default-force means colors will be produced
+            even if command is piped.
+          type: String
+          variableName: optionTheme
+        - alts:
+            - --version
+          callbacks:
+            - optionVersionCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Print version information and quit.
+          type: Boolean
+          variableName: optionVersion
+        - alts:
+            - --quiet
+            - -q
+          callbacks:
+            - optionQuietCallback
+            - updateArgListQuietCallback
+          group: zzzGroupGlobalOptionsGroup
+          help: Quiet mode, doesn't display any output.
+          type: Boolean
+          variableName: optionQuiet
+      sourceFile: ${REPOSITORY_URL}/tree/master/${SRC_FILE_PATH}
+      unknownOptionCallbacks: []
+      version: "3.0"
+compilerConfig:
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  functionsIgnoreRegexpList:
+    - Acquire::ForceIPv4
+    - Functions::myFunction
+    - IMPORT::dir::file
+    - M::MZ
+    - Namespace::functions
+    - Namespace::requireSomething
+  relativeRootDirBasedOnTargetDir: ..
+  rootDir: ${BASH_DEV_ENV_ROOT_DIR}
+  srcDirs:
+    - ${BASH_DEV_ENV_ROOT_DIR}/src
+    - ${FRAMEWORK_ROOT_DIR}/src
+  targetFile: ${BASH_DEV_ENV_ROOT_DIR}/installScripts/Fasd
+  templateDirs:
+    - ${BASH_DEV_ENV_ROOT_DIR}/src
+    - ${COMPILER_ROOT_DIR}/examples/templates
+  templateFile: binFile.gtpl
+vars:
+  MAIN_FUNCTION_NAME: main
+  REPOSITORY_URL: https://github.com/fchastanet/bash-dev-env
+  SRC_FILE_PATH: src/_installScripts/BashUtils/Fasd-binary.yaml

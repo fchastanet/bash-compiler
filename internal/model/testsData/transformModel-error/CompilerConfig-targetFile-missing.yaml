@@ -1,2 +1,6 @@
 compilerConfig:
   binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  rootDir: rootDir
+binData:
+  commands:
+    default:

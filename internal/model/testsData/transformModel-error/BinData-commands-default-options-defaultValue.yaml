@@ -11,9 +11,14 @@ compilerConfig:
 binData:
   commands:
     default:
+      commandName: command
       mainFile: valid
       definitionFiles:
         1: valid
       options:
-        - defaultValue:
+        - variableName: test
+          alts:
+            - test
+          type: String
+          defaultValue:
           - invalid

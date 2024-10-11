@@ -10,4 +10,5 @@ binData:
       definitionFiles:
         1: valid
       options:
-        - max: invalid
+        - variableName: test
+          max: invalid

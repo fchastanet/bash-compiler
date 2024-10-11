@@ -1,2 +1,6 @@
 compilerConfig:
   targetFile: "targetFile"
+  rootDir: rootDir
+binData:
+  commands:
+    default:

@@ -10,5 +10,6 @@ binData:
       definitionFiles:
         1: valid
       options:
-        - min: 2
+        - variableName: test
+          min: 2
           max: 1

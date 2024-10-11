@@ -10,6 +10,7 @@ docsify
 dotnet
 doublestar
 ecmascript
+Fasd
 fchastanet
 github
 gitleaks

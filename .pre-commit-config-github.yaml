@@ -63,7 +63,8 @@ repos:
       - id: check-yaml
         exclude: |
           (?x)(
-            ^internal/model/testsData/transformModel-error/BinData-commands-default-definitionFiles-duplicateKey.yaml$
+            ^internal/model/testsData/transformModel-error/|
+            ^internal/model/testsData/transformModel-ok/BinData-commands-default-definitionFiles-duplicateKey.yaml$
           )
       - id: trailing-whitespace
         exclude: |

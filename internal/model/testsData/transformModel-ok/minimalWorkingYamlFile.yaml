@@ -5,3 +5,7 @@ compilerConfig:
   binDir: "binDir"
   templateDirs:
     - srcDir
+binData:
+  commands:
+    default:
+      commandName: "command"

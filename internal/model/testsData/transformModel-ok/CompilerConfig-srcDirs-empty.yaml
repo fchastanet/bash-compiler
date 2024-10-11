@@ -2,4 +2,7 @@ compilerConfig:
   targetFile: "targetFile"
   templateFile: "templateFile"
   rootDir: "rootDir"
-  srcDirs:
+binData:
+  commands:
+    default:
+      commandName: "command"

@@ -1,0 +1,37 @@
+binData:
+  commands:
+    default:
+      afterParseCallbacks: []
+      args: []
+      author: ""
+      beforeParseCallbacks: []
+      callbacks: []
+      commandName: command
+      copyright: ""
+      copyrightBeginYear: ""
+      everyArgumentCallbacks: []
+      functionName: commandFunction
+      help: ""
+      license: ""
+      longDescription: ""
+      options: []
+      sourceFile: ""
+      unknownArgumentCallbacks: []
+      unknownOptionCallbacks: []
+      version: 1.0.0
+compilerConfig:
+  annotationsConfig:
+    checkRequirementsTemplateName: checkRequirements
+    embedDirTemplateName: embedDir
+    embedFileTemplateName: embedFile
+    requireTemplateName: require
+  binDir: binDir
+  functionsIgnoreRegexpList: []
+  relativeRootDirBasedOnTargetDir: .
+  rootDir: rootDir
+  srcDirs:
+  - srcDir
+  targetFile: targetFile
+  templateDirs:
+  - rootDir/template
+  templateFile: templateFile

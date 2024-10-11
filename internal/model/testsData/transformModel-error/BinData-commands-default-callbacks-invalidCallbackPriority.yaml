@@ -2,9 +2,9 @@ compilerConfig:
   targetFile: targetFile
   templateFile: templateFile
   rootDir: rootDir
-  templateDirs:
-    - dir1
   binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  templateDirs:
+    - item1
   annotationsConfig:
     requireTemplateName: requireTemplateName
     checkRequirementsTemplateName: checkRequirementsTemplateName
@@ -14,8 +14,5 @@ binData:
       mainFile: valid
       definitionFiles:
         1: valid
-      options:
-        - variableName: var
-          alts:
-          - -v
-          - -v
+      callbacks:
+        - invalid@invalidPriority
