@@ -8,6 +8,15 @@
 ###########################################
 extends: default
 rules:
+  truthy:
+    allowed-values:
+      - "true"
+      - "false"
+      - "on"
+      - "off"
+    check-keys: true
+  indentation:
+    spaces: consistent
   new-lines:
     level: warning
     type: unix

@@ -1,5 +1,9 @@
 ---
 run:
+  # Number of operating system threads (`GOMAXPROCS`) that can execute golangci-lint simultaneously.
+  # If it is explicitly set to 0 (i.e. not the default) then golangci-lint will automatically set the value to match Linux container CPU quota.
+  # Default: the number of logical CPUs in the machine
+  concurrency: 4
   timeout: 10m
   issues-exit-code: 1
   tests: true
@@ -53,7 +57,6 @@ linters:
     - tagalign
     - usestdlibvars
   disable:
-    # TODO later
     - errcheck # Errcheck is a program for checking for unchecked errors in Go code. These unchecked errors can be critical bugs in some cases.
     - nlreturn # missing auto fixer
     - testifylint # use this library ?

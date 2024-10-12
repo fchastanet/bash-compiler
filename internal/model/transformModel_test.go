@@ -327,8 +327,6 @@ func TestInvalidFiles(t *testing.T) {
 		err := checkFile(t, "testsData/transformModel-error/BinData-commands-default-optionGroups-group-undefined.yaml")
 		assert.ErrorContains(t, err, "The group missingGroup doesn't exists in optionGroups")
 	})
-
-	// TODO args
 }
 
 func TestMinimalWorkingFile(t *testing.T) {

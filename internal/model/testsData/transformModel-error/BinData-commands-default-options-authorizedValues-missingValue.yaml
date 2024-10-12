@@ -19,6 +19,6 @@ binData:
         - variableName: test
           type: String
           alts:
-          - alt
+            - alt
           authorizedValues:
-          - help: valid
+            - help: valid

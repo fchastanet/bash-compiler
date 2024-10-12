@@ -21,6 +21,8 @@ gocyclo
 goerr
 gofumpt
 goimports
+golangci
+GOMAXPROCS
 gomnd
 goprintffuncname
 GOROOT

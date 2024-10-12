@@ -17,5 +17,5 @@ binData:
       options:
         - variableName: var
           alts:
-          - -v
-          - -v
+            - -v
+            - -v

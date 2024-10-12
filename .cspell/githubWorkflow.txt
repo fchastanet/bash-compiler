@@ -3,6 +3,7 @@ COND
 DOCKERHUB
 friday
 goimports
+GOTOOLCHAIN
 gpgsign
 precommit
 Sarif

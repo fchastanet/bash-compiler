@@ -1,8 +1,6 @@
 module github.com/fchastanet/bash-compiler
 
-go 1.23
-
-toolchain go1.23.1
+go 1.23.1
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3

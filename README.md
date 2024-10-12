@@ -86,10 +86,10 @@ associated to the template has the following structure:
 
 ```go
 type Context struct {
-	Template *template.Template
-	Name     string
-	RootData any
-	Data     any
+ Template *template.Template
+ Name     string
+ RootData any
+ Data     any
 }
 ```
 

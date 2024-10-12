@@ -21,4 +21,4 @@ binData:
             - test
           type: String
           defaultValue:
-          - invalid
+            - invalid

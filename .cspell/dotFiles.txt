@@ -16,6 +16,7 @@ gtpl
 ignoreFuncs
 logrus
 Println
+sarif
 sbom
 Setenv
 shellcheckrc
