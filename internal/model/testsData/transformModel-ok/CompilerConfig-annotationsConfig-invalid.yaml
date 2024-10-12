@@ -1,0 +1,10 @@
+compilerConfig:
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  annotationsConfig:
+  rootDir: rootDir
+  targetFile: target
+  templateFile: template
+binData:
+  commands:
+    default:
+      commandName: command

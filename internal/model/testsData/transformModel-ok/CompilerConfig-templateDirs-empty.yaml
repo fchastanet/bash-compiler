@@ -1,0 +1,12 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"
+  rootDir: "rootDir"
+  srcDirs:
+    - srcDir
+  binDir: "binDir"
+  templateDirs:
+binData:
+  commands:
+    default:
+      commandName: command

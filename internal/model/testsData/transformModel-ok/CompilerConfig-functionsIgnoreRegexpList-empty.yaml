@@ -1,0 +1,14 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"
+  rootDir: "rootDir"
+  srcDirs:
+    - srcDir
+  binDir: "binDir"
+  templateDirs:
+    - dir1
+  functionsIgnoreRegexpList:
+binData:
+  commands:
+    default:
+      commandName: command

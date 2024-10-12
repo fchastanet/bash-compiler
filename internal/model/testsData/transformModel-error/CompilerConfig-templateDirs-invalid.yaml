@@ -1,0 +1,8 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"
+  rootDir: "rootDir"
+  srcDirs:
+    - srcDir
+  binDir: "binDir"
+  templateDirs: invalid

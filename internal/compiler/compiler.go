@@ -576,7 +576,6 @@ func (context CompileContext) retrieveEachFunctionPath(
 		addedFiles = addedFiles || newZZZAddedFiles || newUnderscoreAddedFiles
 	}
 
-	// TODO https://go.dev/play/p/0yJNk065ftB to format functionMap as json
 	slog.Debug("Found these",
 		logger.LogFieldVariableName, "bashFrameworkFunctions",
 		logger.LogFieldVariableValue, getSortedFunctionNamesFromMap(compileContextData.functionsMap),

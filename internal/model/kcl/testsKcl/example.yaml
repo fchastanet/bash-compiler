@@ -1,0 +1,57 @@
+---
+vars:
+  AA: test
+compilerConfig:
+  rootDir: testsKcl
+  targetFile: targetFile
+  templateFile: data.yaml
+binData:
+  commands:
+    default:
+      mainFile: binFile.k
+      definitionFiles:
+        - file: ${rootDir}/root
+          order: 1
+        - file: binFile.k
+          order: 2
+      copyrightBeginYear: 2000
+      commandName: test
+      version: 1.2.3
+      callbacks:
+        - titi::test
+      unknownOptionCallbacks:
+        - titi::test
+      optionGroups:
+        default:
+          title: "OPTIONS:"
+        zzzGroupGlobalOptionsGroup:
+          title: "GLOBAL OPTIONS:"
+      options:
+        - variableName: "test"
+          type: Boolean
+          regexp: "regexp"
+          onValue: 12
+          alts:
+            - -o
+            - -ob
+          group: test
+        - variableName: "test4"
+          type: Boolean
+          regexp: "regexp"
+          onValue: 12
+          alts:
+            - -o1
+            - -ob1
+          group: test
+
+      args:
+        - variableName: "test3"
+          type: String
+          authorizedValues:
+            - value: "ddd"
+          name: "dsd"
+        - variableName: "test2"
+          type: String
+          authorizedValues:
+            - value: "ddd"
+          name: "dsd1"

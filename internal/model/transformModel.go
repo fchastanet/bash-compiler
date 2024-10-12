@@ -5,41 +5,66 @@ import (
 	_ "embed"
 	"log/slog"
 	"os"
+	"path"
 
-	sidekick "cuelang.org/go/cmd/cue/cmd"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
+	"github.com/goccy/go-yaml"
+	"kcl-lang.io/kcl-go"
 )
 
-//go:embed binFile.cue
-var binFileCueSchema string
+//go:embed kcl/binFile.k
+var kclBinFileSchema string
+
+//go:embed kcl/libs.k
+var kclLibs string
 
 func transformModel(tempYamlFile os.File, resultWriter *bytes.Buffer) (err error) {
-	// write cue file to temp file
-	tempCueFile, err := os.CreateTemp("", "binFile*.cue")
+	tempKclTempDir, err := os.MkdirTemp("", "kcl")
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tempCueFile.Name())
-	_, err = tempCueFile.WriteString(binFileCueSchema)
+	defer os.RemoveAll(tempKclTempDir)
+
+	// write k files to temp files
+	tempKclFilePath := path.Join(tempKclTempDir, "binFile.k")
+	err = os.WriteFile(tempKclFilePath, []byte(kclBinFileSchema), files.UserReadWriteExecutePerm)
+	if err != nil {
+		return err
+	}
+	slog.Debug("Temp file containing binFile.k file", logger.LogFieldFilePath, tempKclFilePath)
+
+	tempKclLibsFilePath := path.Join(tempKclTempDir, "libs.k")
+	err = os.WriteFile(tempKclLibsFilePath, []byte(kclLibs), files.UserReadWriteExecutePerm)
+	if err != nil {
+		return err
+	}
+	slog.Debug("Temp file containing libs.k file", logger.LogFieldFilePath, tempKclLibsFilePath)
+
+	// Run the KCL script
+	result, err := kcl.Run(
+		tempKclFilePath,
+		kcl.WithOptions(
+			"-D", "configFile="+tempYamlFile.Name(),
+			"-S", "configYaml",
+		),
+		kcl.WithSortKeys(true),
+	)
 	if err != nil {
 		return err
 	}
 
-	slog.Debug("Temp file containing cue file", logger.LogFieldFilePath, tempCueFile.Name())
-	// transform using cue
-	cmd, err := sidekick.New([]string{
-		"export",
-		"-l", "input:", tempYamlFile.Name(),
-		tempCueFile.Name(),
-		"--out", "yaml", "-e", "output",
-	})
+	// Check the result
+	first := result.First()
+	configYaml, err := first.ToMap()
 	if err != nil {
 		return err
 	}
-
-	// outputs result
-	cmd.SetOutput(resultWriter)
-	err = cmd.Run(cmd.Context())
+	yamlResult, err := yaml.Marshal(configYaml["configYaml"])
+	if err != nil {
+		return err
+	}
+	_, err = resultWriter.Write(yamlResult)
 
 	return err
 }

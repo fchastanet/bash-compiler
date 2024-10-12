@@ -19,6 +19,8 @@ DISABLE_LINTERS:
   - SPELL_PROSELINT
   - GO_REVIVE
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
+  # TEMPORARY DISABLE waiting megalinter to support go 1.23
+  - GO_GOLANGCI_LINT
 # DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 EXCLUDED_DIRECTORIES:
   - ".history"
@@ -40,7 +42,7 @@ FILTER_REGEX_EXCLUDE: |
   )
 FILEIO_REPORTER: false
 PRE_COMMANDS:
-  - command: env
+  - command: go env -w GOTOOLCHAIN=go1.23.1+auto
     cwd: "workspace"
   - command: yarn add --dev eslint-plugin-json eslint-config-prettier
     cwd: "workspace"
@@ -82,6 +84,8 @@ EDITORCONFIG_EDITORCONFIG_CHECKER_FILTER_REGEX_EXCLUDE: |
   )
 
 GIT_GIT_DIFF_PRE_COMMANDS:
+  - command: git config --global --add safe.directory /tmp/lint/.git
+    continue_if_failed: false
   - command: git config --global core.autocrlf false
     continue_if_failed: false
   - command: git config --global core.eol lf
@@ -157,6 +161,12 @@ YAML_V8R_FILTER_REGEX_EXCLUDE: |
 
 YAML_V8R_DISABLE_ERRORS_IF_LESS_THAN: 5
 
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: |
+  (?x)(
+    ^internal/model/testsData/transformModel-error/|
+    ^internal/model/testsData/transformModel-ok/
+  )
+
 MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: |
   (?x)(
     ^pages/Commands.md|
@@ -169,5 +179,9 @@ MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: |
   )
 
 GO_GOLANGCI_LINT_CLI_LINT_MODE: project # will remove the list of files as arguments and run the linter with root workspace cwd
-GO_GOLANGCI_LINT_ARGUMENTS: ["./..."]
+GO_GOLANGCI_LINT_ARGUMENTS:
+  ["--go", "1.23.1", "--out-format", "sarif", "--verbose", "./..."]
 LOG_LEVEL: DEBUG # will show you the exact command run
+
+REPOSITORY_DEVSKIM_ARGUMENTS:
+  ["analyze", "--file-format", "sarif", "--skip-git-ignored-files"]

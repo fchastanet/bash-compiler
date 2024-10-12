@@ -1,0 +1,14 @@
+compilerConfig:
+  binDir: ${BASH_DEV_ENV_ROOT_DIR}/bin
+  rootDir: root
+  targetFile: target
+  templateFile: template
+  annotationsConfig:
+    requireTemplateName: requireTemplateName
+    checkRequirementsTemplateName: checkRequirementsTemplateName
+    embedFileTemplateName: embedFileTemplateName
+    embedDirTemplateName: invalidé
+binData:
+  commands:
+    default:
+      commandName: command

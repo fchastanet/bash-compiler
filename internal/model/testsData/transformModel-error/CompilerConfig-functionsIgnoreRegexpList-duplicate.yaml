@@ -1,0 +1,12 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"
+  rootDir: "rootDir"
+  srcDirs:
+    - srcDir
+  binDir: "binDir"
+  templateDirs:
+    - dir1
+  functionsIgnoreRegexpList:
+    - regexp1
+    - regexp1

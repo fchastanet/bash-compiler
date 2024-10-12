@@ -85,8 +85,6 @@ func DirExists(filePath string) (err error) {
 // at dstPath. If the file named by dstPath already exists, it is
 // truncated. The function does not copy the file mode, file
 // permission bits, or file attributes.
-// @todo replace with os.CopyFS when released
-// @see https://github.com/golang/go/issues/62484
 func Copy(srcPath string, dstPath string) (err error) {
 	r, err := os.Open(srcPath)
 	if err != nil {

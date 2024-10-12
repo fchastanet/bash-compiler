@@ -40,7 +40,8 @@
     - [3.2.4. run the binary](#324-run-the-binary)
     - [3.2.5. Clean](#325-clean)
 - [4. Commands](#4-commands)
-- [5. Alternatives](#5-alternatives)
+- [5. KCL](#5-kcl)
+- [6. Alternatives](#6-alternatives)
 
 ## 1. Excerpt
 
@@ -85,10 +86,10 @@ associated to the template has the following structure:
 
 ```go
 type Context struct {
-	Template *template.Template
-	Name     string
-	RootData any
-	Data     any
+ Template *template.Template
+ Name     string
+ RootData any
+ Data     any
 }
 ```
 
@@ -231,7 +232,16 @@ cue export \
   -e output >examples/generated/shellcheckLint-cue-transformed.yaml
 ```
 
-## 5. Alternatives
+## 5. KCL
+
+<https://www.kcl-lang.io/docs/user_docs/getting-started/install>
+
+```bash
+cd internal/model/kcl
+kcl -D configFile=testsKcl/example.yaml
+```
+
+## 6. Alternatives
 
 - Convert ecmascript to bash
   - <https://github.com/Ph0enixKM/Amber> alpha version - 2024-05-25

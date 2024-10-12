@@ -1,0 +1,8 @@
+compilerConfig:
+  targetFile: "targetFile"
+  templateFile: "templateFile"
+  rootDir: "rootDir"
+binData:
+  commands:
+    default:
+      commandName: "command"
