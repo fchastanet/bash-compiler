@@ -5,11 +5,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"runtime"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
-	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
 const constMaxScreenSize = 80
@@ -22,25 +21,69 @@ func (*getCurrentFilenameError) Error() string {
 	return "unable to get the current filename"
 }
 
+type rootDirError struct {
+	error
+}
+
+func (*rootDirError) Error() string {
+	return "please provide rootDir option"
+}
+
+type missingBashCompilerFileError struct {
+	error
+}
+
+func (*missingBashCompilerFileError) Error() string {
+	return "current directory should contain file .bash-compiler"
+}
+
+type rootDirOptionShouldNotBeProvidedError struct {
+	error
+}
+
+func (*rootDirOptionShouldNotBeProvidedError) Error() string {
+	return "rootDir option should not be provided"
+}
+
 type cli struct {
-	YamlFiles             YamlFiles            `arg:""    optional:"" type:"path"            help:"Yaml files"`                                                 //nolint:tagalign //avoid reformat annotations
-	RootDirectory         Directory            `short:"r" required:"" type:"path"            help:"Root directory containing binary files"`                     //nolint:tagalign //avoid reformat annotations
-	TargetDir             Directory            `short:"t" optional:""                        help:"Directory that will contain generated files"`                //nolint:tagalign //avoid reformat annotations
-	BinaryFilesExtension  BinaryFilesExtension `          optional:"" default:"-binary.yaml" help:"Provide the extension for automatic search of binary files"` //nolint:tagalign //avoid reformat annotations
-	Version               VersionFlag          `short:"v" name:"version"                     help:"Print version information and quit"`                         //nolint:tagalign //avoid reformat annotations
-	KeepIntermediateFiles bool                 `short:"k"                                    help:"Keep intermediate files in target directory"`                //nolint:tagalign //avoid reformat annotations
-	Debug                 bool                 `short:"d"                                    help:"Set log in debug level"`                                     //nolint:tagalign //avoid reformat annotations
-	LogLevel              int                  `hidden:""`                                                                                                      //nolint:tagalign //avoid reformat annotations
-	CompilerRootDir       Directory            `hidden:""`
+	YamlFiles            YamlFiles            `arg:""    optional:"" type:"path"                help:"Yaml files"`                                                            //nolint:tagalign //avoid reformat annotations
+	RootDirectory        RootDirectory        `short:"r" optional:"" type:"path" name:"rootDir" help:"Root directory containing binary files"`                                //nolint:tagalign //avoid reformat annotations
+	IntermediateFilesDir IntermediateFilesDir `short:"t" optional:""                            help:"Directory that will contain generated files (no save if not provided)"` //nolint:tagalign //avoid reformat annotations
+	BinaryFilesExtension BinaryFilesExtension `          optional:"" default:"-binary.yaml"     help:"Provide the extension for automatic search of binary files"`            //nolint:tagalign //avoid reformat annotations
+	Version              VersionFlag          `short:"v" name:"version"                         help:"Print version information and quit"`                                    //nolint:tagalign //avoid reformat annotations
+	Debug                bool                 `short:"d"                                        help:"Set log in debug level"`                                                //nolint:tagalign //avoid reformat annotations
+	LogLevel             int                  `hidden:""`
 }
 
 type (
 	VersionFlag          string
-	Directory            string
+	IntermediateFilesDir string
+	RootDirectory        string
 	ConfigFile           string
 	BinaryFilesExtension string
 	YamlFiles            []string
 )
+
+func isUsingGoRun() bool {
+	executable := filepath.Base(os.Args[0])
+	return strings.HasPrefix(executable, "__debug_bin") ||
+		strings.HasPrefix(os.Args[0], "/tmp")
+}
+
+func (
+	o cli, //nolint:gocritic // hugeparam: no need to optimize, called one time
+) BeforeReset(ctx *kong.Context) error { //nolint:unparam // need to conform to interface
+	if isUsingGoRun() {
+		return nil
+	}
+	for _, flag := range ctx.Kong.Model.Flags {
+		if flag.Name == "rootDir" {
+			// hide rootDir as needed only for debug or when using go run
+			flag.Hidden = true
+		}
+	}
+	return nil
+}
 
 func (yamlFiles *YamlFiles) Validate() error {
 	for _, yamlFile := range *yamlFiles {
@@ -62,13 +105,17 @@ func (VersionFlag) BeforeApply(
 	return nil
 }
 
-func (directory *Directory) Validate() error {
-	directoryPath := string(*directory)
-	return files.DirExists(directoryPath)
+func (intermediateFilesDir *IntermediateFilesDir) Validate(
+	_ *kong.Kong, _ kong.Vars,
+) error {
+	if (*intermediateFilesDir) == "" {
+		return nil
+	}
+	return files.IsWritableDirectory(string(*intermediateFilesDir))
 }
 
 func parseArgs(cli *cli) (err error) {
-	// just need the yaml file, from which all the dependencies will deduced
+	// just need the yaml file, from which all the dependencies will be deduced
 	kong.Parse(cli,
 		kong.Name("bash-compiler"),
 		kong.Description("From a yaml file describing the bash application, "+
@@ -85,36 +132,30 @@ func parseArgs(cli *cli) (err error) {
 			WrapUpperBound:      constMaxScreenSize,
 		}),
 		kong.Vars{
-			"version": "0.1.0",
+			"version": "3.0.0",
 		},
 	)
 
-	// current dir
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return &getCurrentFilenameError{nil}
-	}
-	compilerRootDir, err := filepath.Abs(filepath.Dir(filename) + "/../..")
+	currentDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	slog.Debug(
-		"parseArgs",
-		logger.LogFieldVariableName, "compilerRootDir",
-		logger.LogFieldVariableValue, compilerRootDir,
-	)
-
-	cli.CompilerRootDir = Directory(compilerRootDir)
-	if cli.TargetDir == "" {
-		cli.TargetDir = Directory(compilerRootDir)
-	}
-	if cli.RootDirectory == "" {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			return err
+	if isUsingGoRun() {
+		if cli.RootDirectory == "" {
+			return &rootDirError{nil}
 		}
-		cli.RootDirectory = Directory(currentDir)
+	} else {
+		if cli.RootDirectory != "" {
+			return &rootDirOptionShouldNotBeProvidedError{nil}
+		}
+		cli.RootDirectory = RootDirectory(currentDir)
 	}
+	bashCompilerFile := filepath.Join(string(cli.RootDirectory), ".bash-compiler")
+	if _, err = os.Stat(bashCompilerFile); err != nil {
+		slog.Error("current directory should contain file .bash-compiler", "expectedFile", bashCompilerFile)
+		return &missingBashCompilerFileError{err}
+	}
+
 	if cli.Debug {
 		cli.LogLevel = int(slog.LevelDebug)
 	}

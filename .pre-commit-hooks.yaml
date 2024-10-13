@@ -6,7 +6,4 @@
   pass_filenames: false
   always_run: true
   fail_fast: true
-  args:
-    - -r
-    - .
   stages: [pre-commit]

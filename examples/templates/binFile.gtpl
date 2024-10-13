@@ -12,7 +12,7 @@
 ###############################################################################
 # shellcheck disable=SC2288,SC2034
 
-{{ include "binFile.headers.sh" .Data.binData $context -}}
+{{ include "binFile.headers.gtpl" .Data.binData $context -}}
 {{ include "binFile.initDirs.gtpl" .Data.binData $context -}}
 
 # FUNCTIONS

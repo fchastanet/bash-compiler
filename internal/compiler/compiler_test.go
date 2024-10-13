@@ -72,7 +72,7 @@ func newMockedCompiler(
 			Data:            nil,
 		},
 		&model.CompilerConfig{ //nolint:exhaustruct // test
-			KeepIntermediateFiles: false,
+			IntermediateFilesDir: "",
 		},
 	)
 	return compileContextData

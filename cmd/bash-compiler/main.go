@@ -29,12 +29,10 @@ func main() {
 
 	compilerPipelineService := services.NewCompilerPipelineService(
 		string(cli.RootDirectory),
-		string(cli.CompilerRootDir),
-		string(cli.TargetDir),
 		[]string(cli.YamlFiles),
 		string(cli.BinaryFilesExtension),
 		cli.Debug,
-		cli.KeepIntermediateFiles,
+		string(cli.IntermediateFilesDir),
 	)
 	err = compilerPipelineService.Init()
 	logger.Check(err)

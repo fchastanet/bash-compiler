@@ -5,6 +5,7 @@ DEBCONF
 EPOCHREALTIME
 EPOCHSECONDS
 exitcode
+GOBIN
 golangci
 lastpipe
 ldflags

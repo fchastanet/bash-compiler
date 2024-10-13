@@ -22,8 +22,7 @@ type CompilerConfig struct {
 	FunctionsIgnoreRegexpList       []string              `yaml:"functionsIgnoreRegexpList"`
 	SrcDirs                         []string              `yaml:"srcDirs"`
 	SrcDirsExpanded                 []string              `yaml:"-"`
-	TargetDir                       string                `yaml:"-"`
-	KeepIntermediateFiles           bool                  `yaml:"-"`
+	IntermediateFilesDir            string                `yaml:"-"`
 	BinaryModelFilePath             string                `yaml:"-"`
 	BinaryModelBaseName             string                `yaml:"-"`
 	IntermediateFilesCount          int                   `yaml:"-"`
@@ -33,10 +32,10 @@ func (compilerConfig *CompilerConfig) DebugSaveIntermediateFile(
 	code string,
 	suffix string,
 ) {
-	if compilerConfig.KeepIntermediateFiles {
+	if compilerConfig.IntermediateFilesDir != "" {
 		compilerConfig.IntermediateFilesCount++
 		logger.DebugSaveIntermediateFile(
-			compilerConfig.TargetDir,
+			compilerConfig.IntermediateFilesDir,
 			compilerConfig.BinaryModelBaseName,
 			fmt.Sprintf("-4-compiler-%d%s.sh", compilerConfig.IntermediateFilesCount, suffix),
 			code,
