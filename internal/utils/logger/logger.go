@@ -20,6 +20,7 @@ const (
 	LogFieldErr                    string = "err"
 	LogFieldLineNumber             string = "lineNumber"
 	LogFieldLineContent            string = "line"
+	LogFieldTemplateDirs           string = "templateDirs"
 	LogFieldTemplateName           string = "templateName"
 	LogFieldTemplateData           string = "templateData"
 	LogFieldAvailableTemplateFiles string = "availableTemplateFiles"
