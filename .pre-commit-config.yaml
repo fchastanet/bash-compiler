@@ -20,7 +20,7 @@ repos:
 
   - repo: https://github.com/executablebooks/mdformat
     # Do this before other tools "fixing" the line endings
-    rev: 0.7.17
+    rev: 0.7.19
     hooks:
       - id: mdformat
         name: Format Markdown
@@ -83,7 +83,7 @@ repos:
           )
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.3
+    rev: v1.7.4
     hooks:
       - id: actionlint
         stages: [pre-commit, pre-push, manual]
@@ -149,12 +149,12 @@ repos:
           )
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.15.1
+    rev: v8.16.0
     hooks:
       - id: cspell
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.61.0
+    rev: v1.62.0
     hooks:
       - id: golangci-lint-config-verify
       - id: golangci-lint
