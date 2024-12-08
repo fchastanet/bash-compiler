@@ -149,12 +149,12 @@ repos:
           )
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.16.0
+    rev: v8.16.1
     hooks:
       - id: cspell
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.62.0
+    rev: v1.62.2
     hooks:
       - id: golangci-lint-config-verify
       - id: golangci-lint
