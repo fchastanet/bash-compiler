@@ -12,10 +12,15 @@ type ValidationError struct {
 }
 
 func (e *ValidationError) Error() string {
-	return fmt.Sprintf(
+	message := fmt.Sprintf(
 		"validation failed invalid value : context %s field %s value %v",
 		e.Context, e.FieldName, e.FieldValue,
 	)
+	if e.InnerError == nil {
+		return message
+	}
+	errMessage := e.InnerError.Error()
+	return fmt.Sprintf("%s inner error %s", message, errMessage)
 }
 
 type closeInterface interface {

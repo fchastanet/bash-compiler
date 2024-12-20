@@ -5,11 +5,13 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/dotenv"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
@@ -123,7 +125,19 @@ func (service *CompilerPipelineService) ProcessPipeline() error {
 	if err != nil {
 		return err
 	}
+	filterRegexpExclude, _ := getFilterRegexpExclude()
 	for _, binaryModelFilePath := range service.yamlFiles {
+		if filterRegexpExclude != nil {
+			relativePath, err := filepath.Rel(service.rootDirectory, binaryModelFilePath)
+			if err != nil {
+				return err
+			}
+			slog.Debug("check if path needs to be excluded", "filepath", relativePath)
+			if filterRegexpExclude.MatchString(relativePath) {
+				slog.Info("Skipping file excluded by FILTER_REGEX_EXCLUDE", "filepath", relativePath)
+				continue
+			}
+		}
 		slog.SetDefault(defaultLogger.With("binaryModelFilePath", binaryModelFilePath))
 		binaryModelServiceContextData, err := service.binaryModelService.Init(
 			service.intermediateFilesDir,
@@ -149,6 +163,7 @@ func (service *CompilerPipelineService) loadConfFile() error {
 		return nil //nolint:nilerr // error ignored
 	}
 	os.Unsetenv("TEMPLATES_ROOT_DIR")
+	os.Unsetenv("FILTER_REGEX_EXCLUDE")
 	slog.Info("Loading", logger.LogFieldFilePath, configFile)
 	err = dotenv.LoadEnvFile(configFile)
 	if err != nil {
@@ -165,7 +180,30 @@ func (service *CompilerPipelineService) loadConfFile() error {
 	if !stat.IsDir() {
 		return &invalidTemplateRootDir{nil, nil}
 	}
+
+	_, err = getFilterRegexpExclude()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func getFilterRegexpExclude() (*regexp.Regexp, error) {
+	filterRegexpExclude, exists := os.LookupEnv("FILTER_REGEX_EXCLUDE")
+	if exists {
+		regex, err := regexp.Compile(filterRegexpExclude)
+		if err != nil {
+			return nil, &errors.ValidationError{
+				InnerError: err,
+				Context:    fmt.Sprintf(".bash-compiler - invalid regular expression FILTER_REGEX_EXCLUDE=%s", regex),
+				FieldName:  "FILTER_REGEX_EXCLUDE",
+				FieldValue: filterRegexpExclude,
+			}
+		}
+		return regex, nil
+	}
+	return nil, nil
 }
 
 func (service *CompilerPipelineService) computeYamlFiles() (err error) {

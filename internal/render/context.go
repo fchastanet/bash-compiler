@@ -130,6 +130,7 @@ func newTemplate(
 	templateName = strings.TrimSuffix(templateBaseFile, filepath.Ext(templateBaseFile))
 	slog.Debug(
 		"Loaded template",
+		logger.LogFieldTemplateDirs, templateDirs,
 		logger.LogFieldTemplateName, templateName,
 		logger.LogFieldAvailableTemplateFiles, filesList,
 	)
