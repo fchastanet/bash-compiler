@@ -112,15 +112,12 @@ repos:
               ^internal/utils/encoding/testsData/content.txt$
           )
 
-  - repo: local
+  - repo: https://github.com/ComPWA/prettier-pre-commit
+    rev: v3.4.2
     hooks:
       - id: prettier
-        name: prettier
-        entry: prettier --ignore-unknown --write
+        args: [--cache, --ignore-unknown]
         stages: [pre-commit]
-        language: node
-        pass_filenames: true
-        always_run: false
         exclude: |
           (?x)(
             \.md$|

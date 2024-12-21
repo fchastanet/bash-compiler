@@ -41,6 +41,7 @@ prealloc
 promlint
 protobuf
 protorpc
+purego
 reflectwalk
 runtimes
 skipcq
