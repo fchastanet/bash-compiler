@@ -78,7 +78,7 @@ func TestRequireInitInvalidCompileContextDataMissingRequirementsTemplateName(t *
 	})
 	// jscpd:ignore-end
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field checkRequirementsTemplateName value <nil>")
+		"context compileContextData.config.AnnotationsConfig field checkRequirementsTemplateName value <nil> inner error missing key: checkRequirementsTemplateName")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T) {
@@ -95,7 +95,7 @@ func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T
 		ignoreFunctionsRegexp: []*regexp.Regexp{},
 	})
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil>")
+		"context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil> inner error missing key: requireTemplateName")
 }
 
 func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {

@@ -8,6 +8,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
@@ -124,13 +125,17 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 		binaryModelBaseName:  binaryModelBaseName,
 	}
 
+	err = binaryModelServiceContext.Validate(binaryModelFilePath, binaryModelData)
+	if err != nil {
+		return nil, err
+	}
+
 	// init template context
 	data := make(map[string]any)
 	data["binData"] = binaryModelData.BinData
 	data["compilerConfig"] = binaryModelData.CompilerConfig
 	data["vars"] = binaryModelData.Vars
 	templateDirs := structures.ExpandStringList(binaryModelData.CompilerConfig.TemplateDirs)
-	slog.Debug("templateDirs", "dirs", templateDirs)
 
 	templateContextData, err := binaryModelServiceContext.templateContext.Init(
 		templateDirs,
@@ -158,6 +163,34 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	binaryModelServiceContextData.compileContextData = compileContextData
 
 	return binaryModelServiceContextData, nil
+}
+
+func (binaryModelServiceContext *BinaryModelServiceContext) Validate(
+	binaryModelFilePath string,
+	binaryModelData *model.BinaryModel,
+) error {
+	templateDirs := structures.ExpandStringList(binaryModelData.CompilerConfig.TemplateDirs)
+	slog.Debug("templateDirs", "dirs", templateDirs)
+	if len(templateDirs) == 0 {
+		return &errors.ValidationError{
+			Context:    binaryModelFilePath,
+			FieldName:  "templateDirs",
+			FieldValue: "you should provide at least one item",
+			InnerError: nil,
+		}
+	}
+	for _, dir := range templateDirs {
+		err := files.DirExists(dir)
+		if err != nil {
+			return &errors.ValidationError{
+				InnerError: err,
+				Context:    binaryModelFilePath,
+				FieldName:  "templateDirs",
+				FieldValue: dir,
+			}
+		}
+	}
+	return nil
 }
 
 func (binaryModelServiceContext *BinaryModelServiceContext) Compile(

@@ -69,7 +69,7 @@ func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateName(t *testi
 	})
 	// jscpd:ignore-end
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field embedFileTemplateName value <nil>")
+		"context compileContextData.config.AnnotationsConfig field embedFileTemplateName value <nil> inner error missing key: embedFileTemplateName")
 }
 
 func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateDir(t *testing.T) {
@@ -86,7 +86,7 @@ func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateDir(t *testin
 		[]*regexp.Regexp{},
 	})
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field embedDirTemplateName value <nil>")
+		"context compileContextData.config.AnnotationsConfig field embedDirTemplateName value <nil> inner error missing key: embedDirTemplateName")
 }
 
 func getValidEmbedProcessor(t *testing.T) AnnotationProcessorInterface {
