@@ -29,6 +29,7 @@ mdformat
 megalinter
 mysqldump
 Parens
+pipx
 plantuml
 podman
 promlinter
@@ -38,3 +39,4 @@ shellcheckrc
 shfmt
 structslop
 stylelint
+yapf

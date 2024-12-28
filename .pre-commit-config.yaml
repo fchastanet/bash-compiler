@@ -4,6 +4,16 @@ default_stages: [pre-commit, manual]
 minimum_pre_commit_version: 3.5.0
 fail_fast: true
 repos:
+  # enables pre-commit to install the hooks using pipx
+  - repo: https://github.com/pypa/pipx
+    rev: 1.7.1
+    hooks:
+      - id: pipx
+        alias: yapf
+        name: yapf
+        args: ["yapf", "-i"]
+        types: ["python"]
+
   - repo: local
     # this hook is not intended to be run on github
     # it just allows to generate the same pre-commit
@@ -172,10 +182,11 @@ repos:
       - id: go-revive-repo-mod
 
   - repo: https://github.com/fchastanet/bash-tools-framework
-    rev: 6.1.1
+    rev: 6.1.4
     hooks:
       - id: awkLint
       - id: shellcheckLint
       - id: shellcheckLintGithubAction
+      - id: megalinterCheckVersion
       - id: plantuml
         args: [--same-dir, -f, png, -f, svg, --limit-size, "8290"]
