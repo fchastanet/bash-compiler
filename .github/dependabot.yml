@@ -1,4 +1,3 @@
----
 # Set update schedule for GitHub Actions
 
 version: 2
@@ -7,6 +6,8 @@ updates:
     directory: "/"
     schedule:
       # Check for updates to GitHub Actions every week
-      interval: "weekly"
+      interval: "monthly"
       day: "friday"
+      time: "22:00"
+      timezone: "Europe/Paris"
     open-pull-requests-limit: 1
