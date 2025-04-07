@@ -117,7 +117,11 @@ echo
 {{-      end }}
 {{-    end }}
 {{     if .defaultValue -}}
+{{       if hasSuffix "Function" .defaultValue -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "$({{ .defaultValue }})"
+{{       else -}}
 Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
+{{       end -}}
 echo
 {{     end }}
 {{- $previousGroupId = $groupId -}}

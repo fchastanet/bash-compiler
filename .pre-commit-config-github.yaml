@@ -192,6 +192,5 @@ repos:
       - id: awkLint
       - id: shellcheckLint
       - id: shellcheckLintGithubAction
-      - id: megalinterCheckVersion
       - id: plantuml
         args: [--same-dir, -f, png, -f, svg, --limit-size, "8290"]
