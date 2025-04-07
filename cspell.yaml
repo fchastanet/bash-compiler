@@ -93,6 +93,7 @@ languageSettings:
 
   - languageId: dotFiles
     locale: "*"
+    caseSensitive: true
     dictionaries:
       - dotFiles
       - mySoftwares
@@ -122,6 +123,7 @@ languageSettings:
 
   - languageId: go
     locale: "*"
+    caseSensitive: true
     dictionaries:
       - go
       - mySoftwares
