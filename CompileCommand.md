@@ -6,7 +6,6 @@
   - [1.3. what does this compiler tool do ?](#13-what-does-this-compiler-tool-do-)
 - [2. The compile command](#2-the-compile-command)
 - [3. The compiler - How this compiler works ?](#3-the-compiler---how-this-compiler-works-)
-  - [3.1. .framework-config environment variables](#31-framework-config-environment-variables)
   - [3.2. Template variables](#32-template-variables)
   - [3.3. Compiler Algorithm](#33-compiler-algorithm)
   - [3.4. Class diagram](#34-class-diagram)
@@ -60,8 +59,7 @@ framework that respects the following naming convention:
     in small case
   - function name authorized characters are `[a-zA-Z0-9_-]+`
 - the function source code using namespace convention will be searched under
-  srcDirs provided to the compiler via --src-dir argument or via
-  .framework-config file
+  srcDirs provided to the compiler via --src-dir argument
   - each namespace corresponds to a folder
   - the filename of the function is the function name with .sh extension
   - eg: Filters::camel2snakeCase source code can be found in
@@ -111,9 +109,6 @@ bin/compile <fileToCompile>
 **Mandatory Arguments:**
 
 - `<fileToCompile>` the relative or absolute path to compile into one file
-
-**Options note:** Prefer using .framework-config file, to set the compiler
-options as it makes them more reusable.
 
 **Options:**
 
@@ -188,33 +183,6 @@ bin/compile "$(pwd)/src/_binaries/doc.sh" --s "$(pwd)/src" \
 ```
 
 ## 3. The compiler - How this compiler works ?
-
-### 3.1. .framework-config environment variables
-
-You can define global environment variables inside `.framework-config` file that
-could be used in your templates.
-
-_Example:_
-
-- `REPOSITORY_URL`: used in template to indicate from which github repo the file
-  has been generated
-
-```bash
-# describe the functions that will be skipped from being imported
-FRAMEWORK_FUNCTIONS_IGNORE_REGEXP='^Namespace::functions$|^Functions::myFunction$|^IMPORT::dir::file$|^Acquire::ForceIPv4$'
-# describe the files that do not contain function to be imported
-NON_FRAMEWORK_FILES_REGEXP="(.bats$|/testsData/|/_.sh$|/ZZZ.sh$|/__all.sh$|^src/_|^src/batsHeaders.sh$)"
-# describe the files that are allowed to not have a function matching the filename
-FRAMEWORK_FILES_FUNCTION_MATCHING_IGNORE_REGEXP="^bin/|^\.framework-config$|^tests/|\.tpl$|testsData/binaryFile$"
-# Source directories
-FRAMEWORK_SRC_DIRS=()
-
-# export here all the variables that will be used in your templates
-# Use this when variables are common to most of your bin files.
-# You can alternatively use VAR_* directive to declare a constant
-# specific to your bin file
-export REPOSITORY_URL="https://github.com/fchastanet/bash-tools-framework"
-```
 
 ### 3.2. Template variables
 
@@ -368,7 +336,6 @@ dependent framework functions will be injected in your resulting bash file.
 
 The compiler during successive passes:
 
-- will load `.framework-config`
 - use existing compiler passes (injectImportedFunctions)
   - will parse `# @require` directives of each newly injected functions
     - error if require name does not begin with require
