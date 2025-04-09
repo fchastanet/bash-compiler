@@ -69,11 +69,15 @@ echo
 {{-      end }}
 {{-    end }}
 {{-   end }}
-{{   if .defaultValue -}}
-Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
+{{     if .defaultValue -}}
+{{-    $defaultValue := (toString .defaultValue) }}
+{{       if hasSuffix "Function" $defaultValue -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "$({{ $defaultValue }})"
+{{       else -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "{{ $defaultValue }}"
+{{       end -}}
 echo
-{{   end }}
-
+{{     end }}
 {{- end }}
 {{ end -}}
 
@@ -117,10 +121,11 @@ echo
 {{-      end }}
 {{-    end }}
 {{     if .defaultValue -}}
-{{       if hasSuffix "Function" .defaultValue -}}
-Array::wrap2 ' ' 76 6 "    Default value: " "$({{ .defaultValue }})"
+{{-    $defaultValue := (toString .defaultValue) }}
+{{       if hasSuffix "Function" $defaultValue -}}
+Array::wrap2 ' ' 76 6 "    Default value: " "$({{ $defaultValue }})"
 {{       else -}}
-Array::wrap2 ' ' 76 6 "    Default value: " "{{ .defaultValue }}"
+Array::wrap2 ' ' 76 6 "    Default value: " "{{ $defaultValue }}"
 {{       end -}}
 echo
 {{     end }}
