@@ -12,6 +12,7 @@ doublestar
 ecmascript
 Fasd
 fchastanet
+François
 github
 gitleaks
 gofmt
