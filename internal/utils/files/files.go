@@ -14,6 +14,7 @@ import (
 const (
 	UserReadWritePerm        os.FileMode = 0o600
 	UserReadWriteExecutePerm os.FileMode = 0o700
+	UserGroupReadExecutePerm os.FileMode = 0o750
 	AllReadExecutePerm       os.FileMode = 0o755
 	AllReadPerm              os.FileMode = 0o644
 )

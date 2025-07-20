@@ -90,14 +90,14 @@ binData:
           alts:
             - "--log-level"
           authorizedValues:
-            - value: OFF
-            - value: ERR
-            - value: ERROR
-            - value: WARN
-            - value: WARNING
-            - value: INFO
-            - value: DEBUG
-            - value: TRACE
+            - value: "OFF"
+            - value: "ERR"
+            - value: "ERROR"
+            - value: "WARN"
+            - value: "WARNING"
+            - value: "INFO"
+            - value: "DEBUG"
+            - value: "TRACE"
           callbacks:
             - optionLogLevelCallback
             - updateArgListLogLevelCallback

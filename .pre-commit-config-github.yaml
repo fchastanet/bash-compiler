@@ -161,12 +161,12 @@ repos:
           )
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v8.17.3
+    rev: v9.2.0
     hooks:
       - id: cspell
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v2.0.2
+    rev: v2.2.2
     hooks:
       - id: golangci-lint-config-verify
       - id: golangci-lint
@@ -180,14 +180,14 @@ repos:
       - id: go-mod-tidy-repo
       - id: go-test-mod
       - id: go-vet-repo-mod
-      - id: go-fmt-repo
       - id: go-fumpt-repo
         args: [-w]
+        exclude: '^\.history/'
       - id: go-imports-repo
       - id: go-revive-repo-mod
 
   - repo: https://github.com/fchastanet/bash-tools-framework
-    rev: 6.2.0
+    rev: 6.2.3
     hooks:
       - id: awkLint
       - id: shellcheckLint

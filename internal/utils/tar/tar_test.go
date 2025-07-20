@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
 )
 
 func TestCreateArchive(assert *testing.T) {
@@ -13,7 +15,7 @@ func TestCreateArchive(assert *testing.T) {
 	os.Create(file)
 	filesList = append(filesList, file)
 	subDirectory1 := filepath.Join(directory, "directory")
-	os.Mkdir(subDirectory1, os.ModePerm)
+	os.Mkdir(subDirectory1, files.UserGroupReadExecutePerm)
 	file2 := filepath.Join(subDirectory1, "file2")
 	os.Create(file2)
 	filesList = append(filesList, file2)

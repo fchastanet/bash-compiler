@@ -30,6 +30,19 @@ func (e *duplicatedAsNameError) Error() string {
 	)
 }
 
+type writeError struct {
+	error
+	lineNumber int
+	message    string
+}
+
+func (e *writeError) Error() string {
+	return fmt.Sprintf(
+		"Failed to write full line from src line %d : %s",
+		e.lineNumber, e.message,
+	)
+}
+
 type embedAnnotationProcessor struct {
 	annotationProcessor
 	annotationEmbedGenerate annotationEmbedGenerateInterface
@@ -122,22 +135,70 @@ func (annotationProcessor *embedAnnotationProcessor) PostProcess(
 		lineNumber++
 		matches := embedRegexp.FindStringSubmatch(line)
 		if matches != nil {
-			embedCode, err := annotationProcessor.generateEmbedCode(
-				matches[embedRegexpResourceGroupIndex],
-				matches[embedRegexpAsNameGroupIndex],
+			err := annotationProcessor.processEmbedMatch(
+				&bufferOutput,
+				matches,
+				embedRegexpResourceGroupIndex,
+				embedRegexpAsNameGroupIndex,
 				lineNumber,
 			)
-			if logger.FancyHandleError(err) {
+			if err != nil {
 				return "", err
 			}
-			bufferOutput.Write([]byte(embedCode))
 		} else {
-			bufferOutput.Write([]byte(line))
+			err := annotationProcessor.processRegularLine(&bufferOutput, line, lineNumber)
+			if err != nil {
+				return "", err
+			}
 		}
 		bufferOutput.WriteByte('\n')
 	}
 
 	return bufferOutput.String(), nil
+}
+
+func (annotationProcessor *embedAnnotationProcessor) processEmbedMatch(
+	bufferOutput *bytes.Buffer,
+	matches []string,
+	resourceIndex, asNameIndex, lineNumber int,
+) error {
+	embedCode, err := annotationProcessor.generateEmbedCode(
+		matches[resourceIndex],
+		matches[asNameIndex],
+		lineNumber,
+	)
+	if logger.FancyHandleError(err) {
+		return err
+	}
+	return annotationProcessor.writeToBuffer(bufferOutput, embedCode, lineNumber, "annotationEmbed - failed to write full embed code")
+}
+
+func (annotationProcessor *embedAnnotationProcessor) processRegularLine(
+	bufferOutput *bytes.Buffer,
+	line string,
+	lineNumber int,
+) error {
+	return annotationProcessor.writeToBuffer(bufferOutput, line, lineNumber, "annotationEmbed - failed to write full line")
+}
+
+func (*embedAnnotationProcessor) writeToBuffer(
+	bufferOutput *bytes.Buffer,
+	content string,
+	lineNumber int,
+	errorMessage string,
+) error {
+	n, err := bufferOutput.WriteString(content)
+	if logger.FancyHandleError(err) {
+		return err
+	}
+	if n != len(content) {
+		return &writeError{
+			error:      nil,
+			lineNumber: lineNumber,
+			message:    errorMessage,
+		}
+	}
+	return nil
 }
 
 func (annotationProcessor *embedAnnotationProcessor) generateEmbedCode(

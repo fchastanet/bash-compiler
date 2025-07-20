@@ -34,7 +34,7 @@ func TestMatchFullDirectoryRelativeEmptyDir(t *testing.T) {
 
 	t.Run("directory with several directories", func(t *testing.T) {
 		os.Create(path.Join(emptyDir, ".file1"))
-		os.Mkdir(path.Join(emptyDir, "dir"), os.ModePerm)
+		os.Mkdir(path.Join(emptyDir, "dir"), UserGroupReadExecutePerm)
 		os.Create(path.Join(emptyDir, "dir", "file2"))
 		files, err := MatchFullDirectoryRelative(emptyDir)
 		assert.DeepEqual(t, files, []string{

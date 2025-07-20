@@ -94,6 +94,13 @@ func DebugSaveIntermediateFile(
 		"KeepIntermediateFiles - merged config file",
 		LogFieldFilePath, targetFile,
 	)
+	if err != nil {
+		slog.Error(
+			"Error saving intermediate file",
+			LogFieldFilePath, targetFile,
+			LogFieldErr, err,
+		)
+	}
 
 	return err
 }

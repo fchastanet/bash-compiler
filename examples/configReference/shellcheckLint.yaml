@@ -1,3 +1,4 @@
+---
 extends:
   - defaultCommand.yaml
   - frameworkConfig.yaml

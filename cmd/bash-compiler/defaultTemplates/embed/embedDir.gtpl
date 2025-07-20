@@ -3,7 +3,7 @@
 Linux::requireTarCommand
 Compiler::Embed::extractDirFromBase64 \
   {{ $targetDir | quote }} \
-  {{ .Data.base64 | quote }}
+  "{{ .Data.base64 | chunkBase64 }}"
 
 declare -gx embed_dir_{{ .Data.asName }}={{ $targetDir | quote }}
 {{ end }}

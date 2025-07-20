@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/google/go-cmp/cmp"
 	"gotest.tools/v3/assert"
 )
@@ -405,7 +406,7 @@ func TestMinimalWorkingFile(t *testing.T) {
 }
 
 func AssertFileIsWorking(t *testing.T, filePath string, expectedFilePath string) {
-	file, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
+	file, err := os.Open(filePath)
 	defer errors.SafeCloseDeferCallback(file, &err)
 	assert.NilError(t, err)
 	var resultWriter bytes.Buffer
@@ -415,7 +416,7 @@ func AssertFileIsWorking(t *testing.T, filePath string, expectedFilePath string)
 	expectedFileContent, err := os.ReadFile(expectedFilePath)
 	assert.NilError(t, err)
 	if diff := cmp.Diff(string(expectedFileContent), resultWriter.String()); diff != "" {
-		goldenFile, err := os.OpenFile(expectedFilePath, os.O_WRONLY, os.ModePerm)
+		goldenFile, err := os.OpenFile(expectedFilePath, os.O_WRONLY, files.UserReadWritePerm)
 		defer errors.SafeCloseDeferCallback(goldenFile, &err)
 		goldenFile.Write(resultWriter.Bytes())
 		goldenFile.Close()
@@ -425,7 +426,7 @@ func AssertFileIsWorking(t *testing.T, filePath string, expectedFilePath string)
 }
 
 func checkFile(t *testing.T, fileName string) error {
-	file, err := os.OpenFile(fileName, os.O_RDONLY, os.ModePerm)
+	file, err := os.Open(fileName)
 	defer errors.SafeCloseDeferCallback(file, &err)
 	assert.NilError(t, err)
 	var resultWriter bytes.Buffer

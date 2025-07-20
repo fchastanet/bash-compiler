@@ -18,7 +18,7 @@ var (
 )
 
 func LoadEnvFile(confFile string) error {
-	confFileContent, err := os.OpenFile(confFile, os.O_RDONLY, os.ModePerm)
+	confFileContent, err := os.Open(confFile)
 	if err != nil {
 		return err
 	}

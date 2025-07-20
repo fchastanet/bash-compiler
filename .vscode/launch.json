@@ -59,7 +59,7 @@
       "cwd": "/home/wsl/fchastanet/bash-compiler"
     },
     {
-      "name": "Launch Bash-dev-env Fasd",
+      "name": "Launch Bash-dev-env VsCodeConfig",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -67,7 +67,7 @@
       "args": [
         "-r",
         "/home/wsl/fchastanet/bash-dev-env",
-        "/home/wsl/fchastanet/bash-dev-env/src/_installScripts/BashUtils/Fasd-binary.yaml"
+        "/home/wsl/fchastanet/bash-dev-env/src/_installScripts/_Configs/VsCodeConfig-binary.yaml"
       ],
       "cwd": "/home/wsl/fchastanet/bash-compiler"
     }

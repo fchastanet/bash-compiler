@@ -165,7 +165,7 @@ func (binaryModelServiceContext *BinaryModelServiceContext) Init(
 	return binaryModelServiceContextData, nil
 }
 
-func (binaryModelServiceContext *BinaryModelServiceContext) Validate(
+func (*BinaryModelServiceContext) Validate(
 	binaryModelFilePath string,
 	binaryModelData *model.BinaryModel,
 ) error {

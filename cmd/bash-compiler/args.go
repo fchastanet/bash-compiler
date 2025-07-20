@@ -13,14 +13,6 @@ import (
 
 const constMaxScreenSize = 80
 
-type getCurrentFilenameError struct {
-	error
-}
-
-func (*getCurrentFilenameError) Error() string {
-	return "unable to get the current filename"
-}
-
 type rootDirError struct {
 	error
 }
@@ -71,12 +63,12 @@ func isUsingGoRun() bool {
 }
 
 func (
-	o cli, //nolint:gocritic // hugeparam: no need to optimize, called one time
+	cli,
 ) BeforeReset(ctx *kong.Context) error { //nolint:unparam // need to conform to interface
 	if isUsingGoRun() {
 		return nil
 	}
-	for _, flag := range ctx.Kong.Model.Flags {
+	for _, flag := range ctx.Model.Flags {
 		if flag.Name == "rootDir" {
 			// hide rootDir as needed only for debug or when using go run
 			flag.Hidden = true

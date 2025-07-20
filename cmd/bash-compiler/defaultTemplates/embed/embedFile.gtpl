@@ -3,7 +3,7 @@
 Linux::requireTarCommand
 Compiler::Embed::extractFileFromBase64 \
   {{ $targetFile | quote }} \
-  {{ .Data.base64 | quote }} \
+  "{{ .Data.base64 | chunkBase64 }}" \
   {{ .Data.fileMode | quote }}
 
 declare -gx embed_file_{{ .Data.asName }}={{ $targetFile | quote }}

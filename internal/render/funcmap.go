@@ -91,11 +91,35 @@ func arrayDefaultValue(list []string, i int, defaultValue int) int {
 	return defaultValue
 }
 
+// chunkBase64 splits a base64 string into chunks of 76 characters with bash line continuation
+func chunkBase64(s string) string {
+	chunkSize := 76 // Standard base64 line length
+
+	var result strings.Builder
+	for i := 0; i < len(s); i += chunkSize {
+		end := i + chunkSize
+		if end > len(s) {
+			end = len(s)
+		}
+
+		// Add the chunk
+		result.WriteString(s[i:end])
+
+		// Add bash line continuation if not the last chunk
+		if end < len(s) {
+			result.WriteString(" \\\n")
+		}
+	}
+
+	return result.String()
+}
+
 func FuncMap() map[string]any {
 	funcMap := sprig.FuncMap()
 	// string functions
 	funcMap["len"] = stringLength
 	funcMap["format"] = format
+	funcMap["chunkBase64"] = chunkBase64
 	// callbacks
 	funcMap["sortCallbacks"] = sortCallbacks
 	funcMap["sortByKeys"] = sortByKeys
