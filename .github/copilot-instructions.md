@@ -426,14 +426,16 @@ tag: 1.0.0
 
 ### 3. golangci-lint Disabled in CI
 
-Currently disabled for Go 1.23 compatibility:
+Currently disabled in MegaLinter configuration:
 
 ```yaml
 DISABLE_LINTERS:
   - GO_GOLANGCI_LINT  # TEMPORARY waiting megalinter to support go 1.23
 ```
 
-**Action:** Re-enable when MegaLinter supports Go 1.23
+**Note:** This is a temporary measure while MegaLinter's golangci-lint integration
+catches up with the latest Go version. The underlying issue may be resolved, but
+the configuration remains. Check if re-enabling is appropriate for your changes.
 
 ### 4. Pre-commit Hook Generation
 
