@@ -92,8 +92,11 @@ pre-commit run --all-files
 # Specific linters
 go fmt ./...                    # Go formatting
 shellcheck script.sh            # Bash script linting
-golangci-lint run              # Go linting (currently disabled in CI for Go 1.23)
+golangci-lint run              # Go linting (see note below about CI)
 ```
+
+**Note:** golangci-lint is temporarily disabled in CI's MegaLinter due to
+integration compatibility. See "Common Gotchas" section for details.
 
 **Key Linter Configs:**
 
@@ -283,12 +286,15 @@ Marks where framework functions should be injected during compilation.
 
 ### Framework Function Pattern
 
-Functions must follow: `Namespace::Namespace::functionName`
+Functions must follow: `Namespace1::Namespace2::functionName`
 
 - Multiple namespaces separated by `::`
 - Namespace: starts with `[A-Z]`, contains `[A-Za-z0-9_-]`
 - Function name: camelCase, starts lowercase, contains `[a-zA-Z0-9_-]`
-- File location: `srcDirs/Namespace/functionName.sh`
+- File location: `srcDirs/Namespace1/Namespace2/functionName.sh`
+
+**Example:** `Filters::String::camel2snakeCase` would be located at
+`srcDirs/Filters/String/camel2snakeCase.sh`
 
 ## Testing Approach
 
@@ -413,10 +419,14 @@ tag: 1.0.0
 
 ### 1. Go Version
 
-- Project uses **Go 1.24** (specified in `go.mod`)
-- CI uses **Go 1.23.1** (specified in workflow)
-- Docker uses **Go 1.24** (specified in Dockerfile)
-- **Action:** Ensure compatibility across versions
+The project uses different Go versions in different contexts:
+
+- **go.mod:** Requires Go **1.24** (minimum language version)
+- **Dockerfile:** Uses Go **1.24-alpine** for production builds
+- **CI Workflows:** Uses Go **1.23.1** (specified in GitHub Actions matrix)
+
+**Action:** Development should use Go 1.24 or later. The CI using 1.23.1 is
+likely pending update. Ensure compatibility if making language-specific changes.
 
 ### 2. Template Parsing
 
