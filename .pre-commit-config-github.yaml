@@ -43,6 +43,10 @@ repos:
         language: python
         types: [markdown]
         args: [--wrap, "80", --number]
+        exclude: |
+          (?x)(
+            .github/
+          )
         additional_dependencies:
           - mdformat-toc
           - mdformat-shfmt
@@ -124,7 +128,8 @@ repos:
         exclude: >
           (?x)(
               ^.cspell/codespellrc-.*.txt$|
-              ^internal/utils/encoding/testsData/content.txt$
+              ^internal/utils/encoding/testsData/content.txt$|
+              ^.github/
           )
 
   - repo: https://github.com/ComPWA/prettier-pre-commit
