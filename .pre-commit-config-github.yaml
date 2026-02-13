@@ -11,7 +11,7 @@ fail_fast: false
 repos:
   # enables pre-commit to install the hooks using pipx
   - repo: https://github.com/pypa/pipx
-    rev: 1.7.1
+    rev: 1.8.0
     hooks:
       - id: pipx
         alias: yapf
@@ -43,6 +43,10 @@ repos:
         language: python
         types: [markdown]
         args: [--wrap, "80", --number]
+        exclude: |
+          (?x)(
+            .github/
+          )
         additional_dependencies:
           - mdformat-toc
           - mdformat-shfmt
@@ -52,7 +56,7 @@ repos:
           - mdformat-gfm
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: mixed-line-ending
       - id: end-of-file-fixer
@@ -98,7 +102,7 @@ repos:
           )
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
+    rev: v1.7.10
     hooks:
       - id: actionlint
         stages: [pre-commit, pre-push, manual]
@@ -124,11 +128,12 @@ repos:
         exclude: >
           (?x)(
               ^.cspell/codespellrc-.*.txt$|
-              ^internal/utils/encoding/testsData/content.txt$
+              ^internal/utils/encoding/testsData/content.txt$|
+              ^.github/
           )
 
   - repo: https://github.com/ComPWA/prettier-pre-commit
-    rev: v3.4.2
+    rev: v3.8.1
     hooks:
       - id: prettier
         args: [--cache, --ignore-unknown]
@@ -161,12 +166,12 @@ repos:
           )
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v9.2.0
+    rev: v9.6.0
     hooks:
       - id: cspell
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v2.2.2
+    rev: v2.9.0
     hooks:
       - id: golangci-lint-config-verify
       - id: golangci-lint
@@ -174,7 +179,7 @@ repos:
         stages: [pre-push, manual]
 
   - repo: https://github.com/tekwizely/pre-commit-golang
-    rev: v1.0.0-rc.1
+    rev: v1.0.0-rc.4
     hooks:
       - id: go-build-repo-mod
       - id: go-mod-tidy-repo
@@ -187,7 +192,7 @@ repos:
       - id: go-revive-repo-mod
 
   - repo: https://github.com/fchastanet/bash-tools-framework
-    rev: 6.2.3
+    rev: 6.2.4
     hooks:
       - id: awkLint
       - id: shellcheckLint

@@ -16,6 +16,11 @@
     "out": true,
     "bin": true
   },
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": "../copilot-prompts/.github/commit-message.instructions.md"
+    }
+  ],
   "markdown.extension.toc.omittedFromToc": {
     "*.md": ["# %%"]
   },
