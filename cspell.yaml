@@ -116,6 +116,7 @@ languageSettings:
       - bash
       - myBash
       - go
+      - .githubWorkflow
       - mySoftwares
       - softwareTerms
       - software

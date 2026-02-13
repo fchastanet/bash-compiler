@@ -2,9 +2,11 @@ copystructure
 difflib
 dotenv
 envsubst
+Errorf
 errorlint
 exhaustruct
 exportloopref
+funcmap
 funlen
 Gname
 GOARCH
@@ -29,6 +31,7 @@ mapstructure
 maxprocs
 mergo
 missingkey
+modcache
 nakedret
 nestif
 nilerr

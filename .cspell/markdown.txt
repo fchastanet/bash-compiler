@@ -1,7 +1,11 @@
 Chastanet
 cuelang
+distroless
+DOCKERHUB
 inlines
 Michał
+nullary
+stdlib
 templating
 TMPDIR
 Tratif
