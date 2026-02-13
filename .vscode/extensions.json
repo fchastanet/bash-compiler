@@ -4,6 +4,7 @@
     "yzhang.markdown-all-in-one",
     "jebbs.plantuml",
     "timonwong.shellcheck",
-    "babakks.vscode-go-test-suite"
+    "babakks.vscode-go-test-suite",
+    "timheuer.awesome-copilot"
   ]
 }
