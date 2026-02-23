@@ -34,7 +34,7 @@ jobs:
       statuses: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -120,7 +120,7 @@ jobs:
       statuses: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -178,7 +178,6 @@ jobs:
 
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
-        if: false
         id: preCommit
         with:
           extra_args: >-
@@ -188,10 +187,10 @@ jobs:
         id: ml
         if: ${{ always() }}
         # You can override MegaLinter flavor used to have faster performances
-        # More info at https://megalinter.io/flavors/
-        uses: oxsecurity/megalinter/flavors/go@v8
+        # More info at https://megalinter.io/latest/flavors/
+        uses: oxsecurity/megalinter/flavors/go@v9
         # All available variables are described in documentation
-        # https://megalinter.io/configuration/
+        # https://megalinter.io/latest/config-file/
         env:
           # Validates all source when push on master,
           # else just the git diff with master.
@@ -211,34 +210,17 @@ jobs:
             megalinter-reports
             mega-linter.log
 
-      - name: MegaLinter/Precommit has updated sources
+      - name: Create Pull Request
+        id: cpr
         if: >
-          steps.preCommit.outcome == 'failure' || (
-            steps.ml.outputs.has_updated_sources == 1 && (
-              env.APPLY_FIXES_EVENT == 'all' ||
-              env.APPLY_FIXES_EVENT == github.event_name
-            )
-          )
-        run: |
-          echo "COND_UPDATED_SOURCES=true" >> "${GITHUB_ENV}"
-
-      - name: is apply fixes needed ?
-        if: >
-          env.APPLY_FIXES_MODE == 'pull_request' && (
+          (
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name ==
             github.repository
-          )
-        run: |
-          echo "COND_APPLY_FIXES_NEEDED=true" >> "${GITHUB_ENV}"
-
-      - name: Create Pull Request
-        id: cpr
-        # prettier-ignore
-        if: >
-          env.COND_UPDATED_SOURCES == 'true' &&
-          env.COND_APPLY_FIXES_NEEDED == 'true' &&
-          !contains(github.event.head_commit.message, 'skip fix')
+          ) && (
+            steps.preCommit.conclusion == 'failure' ||
+            steps.ml.conclusion == 'failure'
+          ) && !contains(github.event.head_commit.message, 'skip fix')
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ steps.generate-token.outputs.token }}
@@ -254,7 +236,7 @@ jobs:
       - name: Print Pull request created
         if: |
           steps.cpr.outputs.pull-request-number &&
-          steps.cpr.outcome == 'success'
+          steps.cpr.conclusion == 'success'
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
@@ -287,7 +269,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Downloads the dependencies
         run: go mod download
