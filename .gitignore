@@ -83,3 +83,13 @@ node_modules/
 
 examples/generated
 megalinter-reports/
+
+########
+# Hugo #
+########
+build/
+public/
+sites/
+resources/
+.hugo_build.lock
+hugo.yaml

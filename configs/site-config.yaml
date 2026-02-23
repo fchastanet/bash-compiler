@@ -1,0 +1,43 @@
+# Site-specific configuration for bash-compiler
+title: Bash Compiler Documentation
+baseURL: https://fchastanet.github.io/bash-compiler/
+
+params:
+  description: 'Bash Compiler - Go tool allowing to aggregate bash files into one allowing bash script reusability'
+  keywords: 'bash,golang,gtpl,reusability,bash-tools-framework,ubuntu,alpine'
+
+  # Repository configuration
+  github_repo: https://github.com/fchastanet/bash-compiler
+  github_project_repo: https://github.com/fchastanet/bash-compiler
+
+  # UI Configuration - Blue theme
+  ui:
+    navbar_bg_color: '#007bff'
+
+  # Links
+  links:
+    user:
+      - name: GitHub
+        url: https://github.com/fchastanet/bash-compiler
+        icon: fab fa-github
+        desc: bash-compiler repository
+      - name: Issues
+        url: https://github.com/fchastanet/bash-compiler/issues
+        icon: fas fa-bug
+        desc: Report issues
+
+  # SEO
+  meta:
+    description: 'Bash Compiler documentation - Go tool allowing to aggregate bash files into one allowing bash script reusability'
+    keywords: 'bash,golang,gtpl,reusability,bash-tools-framework,ubuntu,alpine'
+
+menu:
+  site:
+    - name: GitHub
+      url: https://github.com/fchastanet/bash-compiler
+      weight: 10
+      post: <sup><i class="ps-1 fa-solid fa-up-right-from-square fa-xs" aria-hidden="true"></i></sup>
+    - name: Release Notes
+      url: https://github.com/fchastanet/bash-compiler/releases
+      weight: 20
+      post: <sup><i class="ps-1 fa-solid fa-up-right-from-square fa-xs" aria-hidden="true"></i></sup>
