@@ -22,6 +22,7 @@ goplantuml
 gtpl
 gzip
 Hadolint
+hugo
 kics
 koanf
 kong

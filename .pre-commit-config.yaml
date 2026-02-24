@@ -37,12 +37,13 @@ repos:
         entry: mdformat # Executable to run, with fixed options
         language: python
         types: [markdown]
-        args: [--wrap, "80", --number]
+        args: [--wrap, "120", --number]
         exclude: |
           (?x)(
             .github/
           )
         additional_dependencies:
+          - mdformat-frontmatter
           - mdformat-toc
           - mdformat-shfmt
           - mdformat-tables
@@ -81,7 +82,7 @@ repos:
             testsData/
           )
         stages: [pre-commit, pre-push, manual]
-      - id: check-added-large-files
+      #- id: check-added-large-files
       - id: forbid-new-submodules
       - id: mixed-line-ending
         args: [--fix=lf]

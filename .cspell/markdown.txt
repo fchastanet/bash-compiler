@@ -6,6 +6,7 @@ DOCKERHUB
 inlines
 Michał
 nullary
+pageinfo
 stdlib
 templating
 TMPDIR
