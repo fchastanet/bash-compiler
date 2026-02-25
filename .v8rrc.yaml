@@ -19,7 +19,7 @@ customCatalog:
     - name: golangci
       description: golangci
       fileMatch: [".golangci.yml"]
-      location: https://golangci-lint.run/jsonschema/golangci.v2.jsonschema.json
+      location: https://golangci-lint.run/jsonschema/golangci.jsonschema.json
     - name: megalinter
       description: megalinter
       fileMatch: [".mega-linter*.yml"]
@@ -36,3 +36,10 @@ customCatalog:
       description: dependabot
       fileMatch: [".github/dependabot.yml"]
       location: https://json.schemastore.org/dependabot-2.0.json
+    - name: bash-tools-framework
+      description: "bash-tools-framework command definition"
+      fileMatch:
+        - src/_binaries/**/*.yaml
+        - examples/configReference/*.yaml
+        - internal/model/kcl/testsKcl/*.yaml
+      location: https://raw.githubusercontent.com/fchastanet/bash-tools-framework/master/bash-tools-framework-schema.json

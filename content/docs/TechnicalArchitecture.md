@@ -9,7 +9,7 @@ lastUpdated: 2026-02-24
 version: '1.0'
 ---
 
-### 2.1. Go Libraries used
+## 1. Go Libraries used
 
 - [slog](https://pkg.go.dev/golang.org/x/exp/slog) is logging system
   - [slog tutorial](https://betterstack.com/community/guides/logging/logging-in-go/#customizing-the-default-logger)
@@ -17,7 +17,7 @@ version: '1.0'
 - [Kong](https://github.com/alecthomas/kong) used for command arguments parsing
 - [cuelang](https://github.com/cue-lang/cue) allows to transform yaml file in another one
 
-### 2.2. Template system
+## 2. Template system
 
 [template system](https://pkg.go.dev/text/template@go1.22.3)
 [doc 1](https://lets-go.alexedwards.net/sample/02.08-html-templating-and-inheritance.html)
@@ -67,6 +67,6 @@ Template filter functions, `internal/render/functions/index.go` includes:
     - includeFileAsTemplate: same as includeFile but interpreting the file as a template
     - dynamicFile: resolve first matching filepath in paths provided as argument
 
-### 2.3. Compiler
+## 3. Compiler
 
 see [Compile command](content/docs/CompileCommand.md).

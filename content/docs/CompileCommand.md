@@ -157,7 +157,7 @@ bin/compile "$(pwd)/src/_binaries/doc.sh" --s "$(pwd)/src" \
 
 ## 3. The compiler - How this compiler works ?
 
-### 3.2. Template variables
+### 3.1. Template variables
 
 Other variables are automatically generated to be used in your templates:
 
@@ -171,7 +171,7 @@ The following variables depends upon parameters passed to this script:
 - `SRC_ABSOLUTE_PATH` is the path of the file being compiled, it can be useful if you need to access a path relative to
   this file during compilation.
 
-### 3.3. Compiler Algorithm
+### 3.2. Compiler Algorithm
 
 The command to generate a bash binary file:
 
@@ -188,7 +188,7 @@ This will trigger the following actions
 
 {{< codeExpand title="Source code: Activity diagram" lang="plantuml" src="assets/compilerActivityDiagram.puml" >}}
 
-### 3.4. Class diagram
+### 3.3. Class diagram
 
 {{< img src="assets/classDiagram.png" alt="bash-compiler class diagram" >}}
 
@@ -199,7 +199,7 @@ This will trigger the following actions
 {{< codeExpand title="Source code: bash-compiler class diagram with private methods" lang="plantuml"
 src="assets/classDiagramWithPrivateMethods.puml" >}}
 
-### Dependency diagram
+### 3.4. Dependency diagram
 
 {{< img src="assets/dependencyDiagram.png" alt="bash-compiler dependency diagram" >}}
 
@@ -233,7 +233,8 @@ sudo "${embed_file_backupFile}" # ...
 The above file header allows to generate the `bin/binaryExample` binary file. It uses `@embed` directive to allow the
 usage of `Backup::file` function as a binary, named backupFile that can even be called using `sudo`.
 
-In previous example, the directive `# FUNCTIONS` is injected via the file `_includes/facadeDefault/facadeDefault.tpl`.
+In previous example, the directive `# FUNCTIONS` is injected via the file
+`cmd/bash-compiler/defaultTemplates/binFile.gtpl`.
 
 The srcFile should contains at least the directive `BIN_FILE` at top of the bash script file (see example above).
 

@@ -26,23 +26,12 @@
 
 <!-- markdownlint-restore -->
 
+<!--TOC-->
+
 - [1. Excerpt](#1-excerpt)
-- [2. Documentation](#2-documentation)
-  - [2.1. Go Libraries used](#21-go-libraries-used)
-  - [2.2. Template system](#22-template-system)
-  - [2.3. Compiler](#23-compiler)
-- [3. Development](#3-development)
-  - [3.1. Pre-commit hook](#31-pre-commit-hook)
-    - [3.1.1. @embed](#311-embed)
-  - [3.2. Build/run/clean](#32-buildrunclean)
-    - [3.2.1. Build](#321-build)
-    - [3.2.2. Tests](#322-tests)
-    - [3.2.3. Coverage](#323-coverage)
-    - [3.2.4. run the binary](#324-run-the-binary)
-    - [3.2.5. Clean](#325-clean)
-- [4. Commands](#4-commands)
-- [5. KCL](#5-kcl)
-- [6. Alternatives](#6-alternatives)
+- [2. Alternatives](#2-alternatives)
+
+<!--TOC-->
 
 ## 1. Excerpt
 

@@ -9,7 +9,7 @@ lastUpdated: 2026-02-24
 version: '1.0'
 ---
 
-## 3.1. Pre-commit hook
+## 1. Pre-commit hook
 
 This repository uses pre-commit software to ensure every commits respects a set of rules specified by the
 `.pre-commit-config.yaml` file. It supposes pre-commit software is [installed](https://pre-commit.com/#install) in your
@@ -23,11 +23,11 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
 
 Now each time you commit or push, some linters/compilation tools are launched automatically
 
-## 3.2. Build/run/clean
+## 2. Build/run/clean
 
 Formatting is managed exclusively by pre-commit hooks.
 
-### 3.2.1. Build
+### 2.1. Build
 
 ```bash
 build/build-docker.sh
@@ -37,31 +37,31 @@ build/build-docker.sh
 build/build-local.sh
 ```
 
-### 3.2.2. Tests
+### 2.2. Tests
 
 ```bash
 build/test.sh
 ```
 
-### 3.2.3. Coverage
+### 2.3. Coverage
 
 ```bash
 build/coverage.sh
 ```
 
-### 3.2.4. Run the binary
+### 2.4. Run the binary
 
 ```bash
 build/run.sh
 ```
 
-### 3.2.5. Clean
+### 2.5. Clean
 
 ```bash
 build/clean.sh
 ```
 
-## 4. Commands
+## 3. Commands
 
 Compile bin file
 
@@ -80,11 +80,11 @@ cue export \
   -e output >examples/generated/shellcheckLint-cue-transformed.yaml
 ```
 
-## 5. KCL
+## 4. KCL
 
 <https://www.kcl-lang.io/docs/user_docs/getting-started/install>
 
 ```bash
 cd internal/model/kcl
-kcl -D configFile=testsKcl/example.yaml
+kcl -D configFile=testsKcl/bad-example.yaml
 ```
