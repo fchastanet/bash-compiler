@@ -124,7 +124,7 @@ repos:
         exclude: >
           (?x)(
               ^.cspell/codespellrc-.*.txt$|
-              ^internal/utils/encoding/testsData/content.txt$|
+              ^internal/utils/digesthelper/testsData/content.txt$|
               ^.github/
           )
 

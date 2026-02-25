@@ -1,4 +1,4 @@
-package encoding
+package digesthelper
 
 import (
 	"crypto/sha256"

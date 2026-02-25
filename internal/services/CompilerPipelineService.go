@@ -10,8 +10,8 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/dotenv"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
@@ -194,7 +194,7 @@ func getFilterRegexpExclude() (*regexp.Regexp, error) {
 	if exists {
 		regex, err := regexp.Compile(filterRegexpExclude)
 		if err != nil {
-			return nil, &errors.ValidationError{
+			return nil, &customerrors.ValidationError{
 				InnerError: err,
 				Context:    fmt.Sprintf(".bash-compiler - invalid regular expression FILTER_REGEX_EXCLUDE=%s", regex),
 				FieldName:  "FILTER_REGEX_EXCLUDE",

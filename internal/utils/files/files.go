@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	myErrors "github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 )
 
 const (
@@ -93,14 +93,14 @@ func Copy(srcPath string, dstPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer myErrors.SafeCloseDeferCallback(r, &err)
+	defer customerrors.SafeCloseDeferCallback(r, &err)
 
 	w, err := os.Create(dstPath)
 	if err != nil {
 		return err
 	}
 
-	defer myErrors.SafeCloseDeferCallback(w, &err)
+	defer customerrors.SafeCloseDeferCallback(w, &err)
 
 	_, err = io.Copy(w, r)
 	return err

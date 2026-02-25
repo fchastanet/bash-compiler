@@ -1,6 +1,7 @@
 package render
 
 import (
+	"strings"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -88,14 +89,16 @@ func countOccurrences(s, substr string) int {
 func removeLineContinuations(s string) string {
 	result := ""
 	i := 0
+	var resultSb91 strings.Builder
 	for i < len(s) {
 		if i+3 < len(s) && s[i:i+3] == " \\\n" {
 			// Skip the line continuation
 			i += 3
 		} else {
-			result += string(s[i])
+			resultSb91.WriteString(string(s[i]))
 			i++
 		}
 	}
+	result += resultSb91.String()
 	return result
 }

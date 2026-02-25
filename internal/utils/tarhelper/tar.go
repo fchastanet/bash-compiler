@@ -1,4 +1,4 @@
-package tar
+package tarhelper
 
 import (
 	"archive/tar"
@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -24,9 +24,9 @@ func CreateArchive(
 	// write to the gzip writer which in turn will write to
 	// the "buf" writer
 	gw := gzip.NewWriter(buf)
-	defer errors.SafeCloseDeferCallback(gw, &err)
+	defer customerrors.SafeCloseDeferCallback(gw, &err)
 	tw := tar.NewWriter(gw)
-	defer errors.SafeCloseDeferCallback(tw, &err)
+	defer customerrors.SafeCloseDeferCallback(tw, &err)
 
 	// Iterate over files and add them to the tar archive
 	for _, file := range files {
@@ -98,7 +98,7 @@ func addToArchive(
 	if err != nil {
 		return err
 	}
-	defer errors.SafeCloseDeferCallback(file, &err)
+	defer customerrors.SafeCloseDeferCallback(file, &err)
 
 	header, err := getFileHeader(fileInfo, filename, relativeDir)
 	if err != nil {

@@ -1,4 +1,4 @@
-package tar
+package tarhelper
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestCreateArchive(assert *testing.T) {
-	var filesList []string
+	filesList := make([]string, 0, 2)
 	directory, _ := os.MkdirTemp("", "directory")
 	file := filepath.Join(directory, "file1")
 	os.Create(file)

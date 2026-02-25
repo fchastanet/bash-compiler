@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/a8m/envsubst"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -22,7 +22,7 @@ func LoadEnvFile(confFile string) error {
 	if err != nil {
 		return err
 	}
-	defer errors.SafeCloseDeferCallback(confFileContent, &err)
+	defer customerrors.SafeCloseDeferCallback(confFileContent, &err)
 
 	variables := make(map[string]string)
 	scanFile(confFileContent, variables)

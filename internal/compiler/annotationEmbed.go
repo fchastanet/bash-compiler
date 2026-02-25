@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -54,7 +54,7 @@ func NewEmbedAnnotationProcessor() AnnotationProcessorInterface {
 }
 
 func validationError(fieldName string, fieldValue any) error {
-	return &errors.ValidationError{
+	return &customerrors.ValidationError{
 		InnerError: nil,
 		Context:    "annotationEmbed",
 		FieldName:  fieldName,
@@ -80,7 +80,7 @@ func (annotationProcessor *embedAnnotationProcessor) Init(
 
 	embedFileTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
 	if logger.FancyHandleError(err) {
-		return &errors.ValidationError{
+		return &customerrors.ValidationError{
 			InnerError: err,
 			Context:    "compileContextData.config.AnnotationsConfig",
 			FieldName:  "embedFileTemplateName",
@@ -90,7 +90,7 @@ func (annotationProcessor *embedAnnotationProcessor) Init(
 
 	embedDirTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
 	if logger.FancyHandleError(err) {
-		return &errors.ValidationError{
+		return &customerrors.ValidationError{
 			InnerError: err,
 			Context:    "compileContextData.config.AnnotationsConfig",
 			FieldName:  "embedDirTemplateName",

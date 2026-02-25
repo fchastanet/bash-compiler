@@ -8,7 +8,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/compiler"
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
@@ -172,7 +172,7 @@ func (*BinaryModelServiceContext) Validate(
 	templateDirs := structures.ExpandStringList(binaryModelData.CompilerConfig.TemplateDirs)
 	slog.Debug("templateDirs", "dirs", templateDirs)
 	if len(templateDirs) == 0 {
-		return &errors.ValidationError{
+		return &customerrors.ValidationError{
 			Context:    binaryModelFilePath,
 			FieldName:  "templateDirs",
 			FieldValue: "you should provide at least one item",
@@ -182,7 +182,7 @@ func (*BinaryModelServiceContext) Validate(
 	for _, dir := range templateDirs {
 		err := files.DirExists(dir)
 		if err != nil {
-			return &errors.ValidationError{
+			return &customerrors.ValidationError{
 				InnerError: err,
 				Context:    binaryModelFilePath,
 				FieldName:  "templateDirs",
