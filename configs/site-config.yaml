@@ -37,7 +37,7 @@ params:
     keywords: "bash,golang,gtpl,reusability,bash-tools-framework,ubuntu,alpine"
 
 menu:
-  site:
+  main:
     - name: GitHub
       url: https://github.com/fchastanet/bash-compiler
       weight: 10
