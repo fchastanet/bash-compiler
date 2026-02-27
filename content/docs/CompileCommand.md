@@ -555,3 +555,5 @@ of the file/dir/framework function embedding feature.
 
 for more information see
 [Bash Tips #6 – Embedding Files In A Single Bash Script](https://blog.tratif.com/2023/02/17/bash-tips-6-embedding-files-in-a-single-bash-script/)
+
+[Backup page of the above article](https://bash-tools-framework.fchastanet.com/docs/backups/bash-tips-6-embedding-files-in-a-single-bash-script/)

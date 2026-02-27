@@ -5,6 +5,13 @@ distroless
 DOCKERHUB
 inlines
 Michał
+noarchive
+nocache
+nofollow
+noimageindex
+noindex
+nosnippet
+notranslate
 nullary
 pageinfo
 stdlib
