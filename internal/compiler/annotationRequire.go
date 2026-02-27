@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	myTemplateFunctions "github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -80,7 +80,7 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 	checkRequirementsTemplateName, err := compileContextData.config.AnnotationsConfig.
 		GetStringValue("checkRequirementsTemplateName")
 	if err != nil {
-		return &errors.ValidationError{
+		return &customerrors.ValidationError{
 			InnerError: err,
 			Context:    "compileContextData.config.AnnotationsConfig",
 			FieldName:  "checkRequirementsTemplateName",
@@ -90,7 +90,7 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 	requireTemplateName, err := compileContextData.config.AnnotationsConfig.
 		GetStringValue("requireTemplateName")
 	if err != nil {
-		return &errors.ValidationError{
+		return &customerrors.ValidationError{
 			InnerError: err,
 			Context:    "compileContextData.config.AnnotationsConfig",
 			FieldName:  "requireTemplateName",

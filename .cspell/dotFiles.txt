@@ -7,6 +7,7 @@ distro
 dylib
 ecma
 errorf
+frontmatter
 fumpt
 gitleaks
 gitmodules
@@ -15,6 +16,7 @@ GRYPE
 gtpl
 ignoreFuncs
 logrus
+pageinfo
 Println
 sarif
 sbom

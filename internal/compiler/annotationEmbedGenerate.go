@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"github.com/fchastanet/bash-compiler/internal/render"
-	"github.com/fchastanet/bash-compiler/internal/utils/encoding"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
+	"github.com/fchastanet/bash-compiler/internal/utils/digesthelper"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
-	"github.com/fchastanet/bash-compiler/internal/utils/tar"
+	"github.com/fchastanet/bash-compiler/internal/utils/tarhelper"
 )
 
 type annotationEmbedGenerateInterface interface {
@@ -66,19 +66,19 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	asName string,
 	resource string,
 	fileMode os.FileMode,
-) (string, error) {
+) (code string, err error) {
 	file, err := os.Open(resource)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	defer errors.SafeCloseDeferCallback(file, &err)
+	defer customerrors.SafeCloseDeferCallback(file, &err)
 
-	md5sum, err := encoding.ChecksumFromFile(file)
+	md5sum, err := digesthelper.ChecksumFromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
 	file.Seek(0, 0)
-	base64, err := encoding.Base64FromFile(file)
+	base64, err := digesthelper.Base64FromFile(file)
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
@@ -89,7 +89,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 		"base64":   base64,
 		"md5sum":   md5sum,
 	}
-	code, err := annotationEmbedGenerate.renderTemplate(
+	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedFileTemplateName,
 	)
 	if logger.FancyHandleError(err) {
@@ -101,7 +101,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	asName string,
 	resource string,
-) (string, error) {
+) (code string, err error) {
 	directoryArchive, err := os.CreateTemp("", "directoryArchive*.tgz")
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -111,7 +111,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if logger.FancyHandleError(err) {
 		return "", err
 	}
-	defer errors.SafeCloseDeferCallback(directoryArchive, &err)
+	defer customerrors.SafeCloseDeferCallback(directoryArchive, &err)
 	err = directoryArchive.Sync()
 	if err != nil {
 		return "", err
@@ -120,7 +120,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if err != nil {
 		return "", err
 	}
-	md5sum, err := encoding.ChecksumFromFile(directoryArchive)
+	md5sum, err := digesthelper.ChecksumFromFile(directoryArchive)
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +128,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	if err != nil {
 		return "", err
 	}
-	base64, err := encoding.Base64FromFile(directoryArchive)
+	base64, err := digesthelper.Base64FromFile(directoryArchive)
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +138,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 		"base64": base64,
 		"md5sum": md5sum,
 	}
-	code, err := annotationEmbedGenerate.renderTemplate(
+	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedDirTemplateName,
 	)
 	if logger.FancyHandleError(err) {
@@ -154,11 +154,11 @@ func createDirectoryArchive(directory string, buf io.Writer) error {
 	}
 	files.SortFilesByPath(filesList)
 
-	err = tar.CreateArchive(
+	err = tarhelper.CreateArchive(
 		filesList,
 		directory,
 		buf,
-		tar.ReproducibleTarOptions,
+		tarhelper.ReproducibleTarOptions,
 	)
 	if err != nil {
 		return err

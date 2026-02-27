@@ -227,6 +227,9 @@ linters:
               desc: not allowed
             - pkg: "github.com/pkg/errors"
               desc: Should be replaced by standard lib errors package
+    gosec:
+      excludes:
+        - G706 # This rule is triggered by the use of `slog.Info` with user-controlled data, which is not a security issue in this context.
 
   exclusions:
     generated: lax

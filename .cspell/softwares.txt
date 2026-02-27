@@ -1,11 +1,13 @@
 actionlint
 apdisk
 Chastanet
+checkov
 checkstyle
 cobertura
 codespell
 cyclonedx
 dbnavigator
+devskim
 docsify
 dotnet
 doublestar
@@ -22,6 +24,7 @@ goplantuml
 gtpl
 gzip
 Hadolint
+hugo
 kics
 koanf
 kong
@@ -40,4 +43,5 @@ shellcheckrc
 shfmt
 structslop
 stylelint
+trivy
 yapf

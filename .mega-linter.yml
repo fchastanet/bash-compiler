@@ -11,16 +11,17 @@ DISABLE_LINTERS:
   - JAVASCRIPT_ES
   - JAVASCRIPT_PRETTIER
   - RUBY_RUBOCOP
+  - YAML_V8R # already included in pre-commit
   - REPOSITORY_CHECKOV
   - REPOSITORY_TRIVY
   - REPOSITORY_KICS
   - SPELL_VALE
   - SPELL_LYCHEE
   - SPELL_PROSELINT
-  - GO_REVIVE
+  - GO_REVIVE # already included in pre-commit
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
   # TEMPORARY DISABLE waiting megalinter to support go 1.23
-  - GO_GOLANGCI_LINT
+  - GO_GOLANGCI_LINT # already included in pre-commit
 # DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 EXCLUDED_DIRECTORIES:
   - ".history"
@@ -83,7 +84,7 @@ EDITORCONFIG_EDITORCONFIG_CHECKER_FILTER_REGEX_EXCLUDE: |
     ^.*-megalinter_file_names_cspell.txt
   )
 
-GIT_GIT_DIFF_PRE_COMMANDS:
+REPOSITORY_GIT_DIFF_PRE_COMMANDS:
   - command: git config --global --add safe.directory /tmp/lint/.git
     continue_if_failed: false
   - command: git config --global core.autocrlf false
@@ -106,7 +107,7 @@ JAVASCRIPT_DEFAULT_STYLE: prettier
 JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.js
 JAVASCRIPT_ES_FILTER_REGEX_EXCLUDE: (report/)
 
-JSON_ESLINT_PLUGIN_JSONC_FILE_NAME: .eslintrc.js
+JSON_ESLINT_PLUGIN_JSONC_CONFIG_FILE: .eslintrc.js
 
 JSON_JSONLINT_FILTER_REGEX_EXCLUDE: |
   (?x)(
@@ -145,21 +146,6 @@ ACTION_ACTIONLINT_FILTER_REGEX_EXCLUDE: |
   (?x)(
     ^\.github/workflows/dependabot\.yml$
   )
-
-YAML_V8R_FILTER_REGEX_EXCLUDE: |
-  (?x)(
-    ^\.vscode/.*$|
-    ^\.github/workflows/dependabot\.yml$|
-    ^\.secretlintrc\.yml$|
-    ^\.secretlintrc\.json$|
-    /examples/configReference/.*\.yaml$|
-    /testsData/.*\.yaml$|
-    ^\.grype\.yaml$|
-    ^\.checkov\.yaml$|
-    ^\.trivy\.yaml
-  )
-
-YAML_V8R_DISABLE_ERRORS_IF_LESS_THAN: 5
 
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: |
   (?x)(

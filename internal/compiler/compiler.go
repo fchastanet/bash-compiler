@@ -15,7 +15,7 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
 	"github.com/fchastanet/bash-compiler/internal/utils/bash"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/files"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
@@ -111,7 +111,7 @@ type CompileContextData struct {
 }
 
 func compilerValidationError(fieldName string, fieldValue any) error {
-	return &errors.ValidationError{
+	return &customerrors.ValidationError{
 		InnerError: nil,
 		Context:    "compiler",
 		FieldName:  fieldName,

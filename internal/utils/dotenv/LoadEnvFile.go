@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/a8m/envsubst"
-	"github.com/fchastanet/bash-compiler/internal/utils/errors"
+	"github.com/fchastanet/bash-compiler/internal/utils/customerrors"
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
@@ -17,17 +17,18 @@ var (
 	variableSetRegexp = regexp.MustCompile(`^[ \t]*(?P<name>[A-Za-z_]+)=(?P<value>.*)$`)
 )
 
-func LoadEnvFile(confFile string) error {
+func LoadEnvFile(confFile string) (err error) {
 	confFileContent, err := os.Open(confFile)
 	if err != nil {
 		return err
 	}
-	defer errors.SafeCloseDeferCallback(confFileContent, &err)
+	defer customerrors.SafeCloseDeferCallback(confFileContent, &err)
 
 	variables := make(map[string]string)
-	scanFile(confFileContent, variables)
+	variableNames := make([]string, 0)
+	scanFile(confFileContent, variables, &variableNames)
 
-	err = interpolateVariables(variables)
+	err = interpolateVariables(variables, variableNames)
 	if logger.FancyHandleError(err) {
 		return err
 	}
@@ -35,7 +36,7 @@ func LoadEnvFile(confFile string) error {
 	return nil
 }
 
-func scanFile(confFileContent *os.File, variables map[string]string) {
+func scanFile(confFileContent *os.File, variables map[string]string, variableNames *[]string) {
 	variableSetRegexpNameGroupIndex := variableSetRegexp.SubexpIndex("name")
 	variableSetRegexpValueGroupIndex := variableSetRegexp.SubexpIndex("value")
 
@@ -64,12 +65,14 @@ func scanFile(confFileContent *os.File, variables map[string]string) {
 			)
 		}
 		variables[name] = value
+		*variableNames = append(*variableNames, name)
 		lineNumber++
 	}
 }
 
-func interpolateVariables(variables map[string]string) error {
-	for name, value := range variables {
+func interpolateVariables(variables map[string]string, variableNames []string) error {
+	for _, name := range variableNames {
+		value := variables[name]
 		valueInterpolated, err := envsubst.String(value)
 		if logger.FancyHandleError(err) {
 			return err

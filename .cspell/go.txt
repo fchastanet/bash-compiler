@@ -1,5 +1,7 @@
 copystructure
+customerrors
 difflib
+digesthelper
 dotenv
 envsubst
 Errorf
@@ -50,6 +52,7 @@ runtimes
 skipcq
 struct
 tagalign
+tarhelper
 txtpbfmt
 Typef
 unconvert
