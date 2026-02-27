@@ -17,7 +17,7 @@ var (
 	variableSetRegexp = regexp.MustCompile(`^[ \t]*(?P<name>[A-Za-z_]+)=(?P<value>.*)$`)
 )
 
-func LoadEnvFile(confFile string) error {
+func LoadEnvFile(confFile string) (err error) {
 	confFileContent, err := os.Open(confFile)
 	if err != nil {
 		return err

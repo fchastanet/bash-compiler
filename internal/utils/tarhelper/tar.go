@@ -84,7 +84,7 @@ func addToArchive(
 	filename string,
 	relativeDir string,
 	updateFileInfoHeader func(info *tar.Header, fi fs.FileInfo) error,
-) error {
+) (err error) {
 	fileInfo, err := os.Stat(filename)
 	if err != nil {
 		return err

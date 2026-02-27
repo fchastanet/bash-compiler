@@ -87,7 +87,6 @@ func countOccurrences(s, substr string) int {
 
 // Helper function to remove line continuations and get back the original string
 func removeLineContinuations(s string) string {
-	result := ""
 	i := 0
 	var resultSb strings.Builder
 	for i < len(s) {
@@ -99,6 +98,5 @@ func removeLineContinuations(s string) string {
 			i++
 		}
 	}
-	result += resultSb.String()
-	return result
+	return resultSb.String()
 }

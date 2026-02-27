@@ -66,7 +66,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	asName string,
 	resource string,
 	fileMode os.FileMode,
-) (string, error) {
+) (code string, err error) {
 	file, err := os.Open(resource)
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -89,7 +89,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 		"base64":   base64,
 		"md5sum":   md5sum,
 	}
-	code, err := annotationEmbedGenerate.renderTemplate(
+	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedFileTemplateName,
 	)
 	if logger.FancyHandleError(err) {
@@ -101,7 +101,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	asName string,
 	resource string,
-) (string, error) {
+) (code string, err error) {
 	directoryArchive, err := os.CreateTemp("", "directoryArchive*.tgz")
 	if logger.FancyHandleError(err) {
 		return "", err
@@ -138,7 +138,7 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 		"base64": base64,
 		"md5sum": md5sum,
 	}
-	code, err := annotationEmbedGenerate.renderTemplate(
+	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedDirTemplateName,
 	)
 	if logger.FancyHandleError(err) {

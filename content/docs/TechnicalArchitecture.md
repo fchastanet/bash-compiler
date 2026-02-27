@@ -69,4 +69,4 @@ Template filter functions, `internal/render/functions/index.go` includes:
 
 ## 3. Compiler
 
-see [Compile command](content/docs/CompileCommand.md).
+see [Compile command](CompileCommand.md).
