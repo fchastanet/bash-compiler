@@ -1,14 +1,12 @@
 ---
 # based on https://github.com/mvdan/github-actions-golang
-name: CI
+name: Lint, Test, Build and Deploy
 on: # yamllint disable-line rule:truthy
   pull_request:
     branches: ["**"]
-    paths-ignore: ["docs/**"]
 
   push:
     branches: ["master"]
-    paths-ignore: ["docs/**"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -361,3 +359,24 @@ jobs:
         with:
           name: unit-tests-${{matrix.os}}
           status: ${{ job.status }}
+
+  # -------------------------------------------------------
+  # Build and deploy documentation
+  # -------------------------------------------------------
+  build-deploy:
+    needs:
+      - test
+      - pre-commit
+    # Only run if the test and pre-commit jobs succeeded, and if the push is on master branch or if it's a workflow dispatch event
+    if:
+      ${{ needs.test.result == 'success' && needs.pre-commit.result == 'success'
+      && (github.ref == 'refs/heads/master') }}
+    uses: fchastanet/my-documents/.github/workflows/build-site-action.yml@master
+    with:
+      site-name: "bash-compiler"
+      site-dir: "_site-content"
+      checkout-repo: "fchastanet/bash-compiler"
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

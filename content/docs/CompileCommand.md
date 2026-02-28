@@ -15,20 +15,17 @@ version: '1.0'
 
 Before answering what this tool is, let's begin by why this tool exists ?
 
-Scripts using multiple sourced files are not easy to distribute. We usually distribute those as archives and rely on the
-end user to unpack and run them from a predetermined location. To improve the experience we can instead prepare a single
-script with other files embedded inside it.
+Distributing scripts that rely on multiple sourced files is inconvenient, as users must unpack and run them from
+specific locations. To improve this, the goal is to create a single script file that embeds all necessary files. This
+approach ensures:
 
-Here are the goals:
+- Easy distribution as a single file
+- Reliable copy-paste across systems and editors
+- Support for embedding binary (non-printable) files
+- Reusability of bash functions
 
-- The script should consist of a single file, making it easy to distribute
-- The script should be copy-paste-able between systems and different editors, even if multiple hops are required
-- Files being embedded can be binary files i.e. can contain non-printable characters
-- The script allows bash functions reusability
-
-The first requirement implies that we should somehow store the contents of other files in our main script. The second
-requires us to avoid non-printable characters, as they tend to cause problems when performing a copy-paste operation.
-Especially when we are talking about sending such characters over messaging programs.
+To achieve this, the script must store other files' contents in a way that avoids non-printable characters, which can
+cause issues during copy-paste or transmission over messaging programs.
 
 ### 1.2. what is a bash framework function ?
 

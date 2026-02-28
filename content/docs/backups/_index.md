@@ -74,7 +74,7 @@ This ensures:
 
 Every backup page displays a prominent notice showing:
 
-```
+```text
 📦 This is a Backup Copy
 
 This page is a backup archive of external reference material.
