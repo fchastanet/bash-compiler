@@ -13,8 +13,10 @@ go build -ldflags="-w -s" ./...
 echo >&2 "Installing ..."
 go install ./...
 
-if [[ -f ${HOME}/go/bin/bash-compiler ]]; then
-  echo >&2 "you can run ${HOME}/go/bin/bash-compiler"
+GO_BIN="$(go env GOBIN)"
+if [[ -f ${GO_BIN}/bash-compiler ]]; then
+  echo >&2 "you can run ${GO_BIN}/bash-compiler"
 else
-  echo >&2 "${HOME}/go/bin/bash-compiler has not been generated"
+  echo >&2 "${GO_BIN}/bash-compiler has not been generated"
+  exit 1
 fi

@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        go-version: [1.23.1]
+        go-version: [1.25.7]
         os: [ubuntu-latest]
     permissions:
       # needed by akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
@@ -164,13 +164,12 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23.1"
+          go-version: "1.25.7"
           check-latest: false
 
       - run: |
-          go install mvdan.cc/gofumpt@latest
-          go install golang.org/x/tools/cmd/goimports@latest
-          go install github.com/mgechev/revive@latest
+          set -exo pipefail
+          ./.github/scripts/install-dev.sh
 
       - uses: fchastanet/github-action-setup-shfmt@v4.0.0
 
@@ -197,7 +196,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MEGALINTER_CONFIG: .mega-linter-githubAction.yml
           CI_MODE: 1
-          GOTOOLCHAIN: go1.23.1+auto
+          GOTOOLCHAIN: go1.25.7+auto
 
       - name: Upload MegaLinter artifacts
         if: success() || failure()
@@ -251,7 +250,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.23.1]
+        go-version: [1.25.7]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -286,7 +285,7 @@ jobs:
       - name: build the binary
         run: |
           set -exo pipefail
-          ./build/build-local.sh
+          ./.github/scripts/build-local.sh
 
       - uses: akatov/commit-status-updater@a9e988ec5454692ff7745a509452422a35172ad6
         if: ${{ always() }}
@@ -302,8 +301,7 @@ jobs:
       - name: Install gocover-cobertura
         run: |
           set -exo pipefail
-          go get github.com/boumenot/gocover-cobertura
-          go install github.com/boumenot/gocover-cobertura
+          go install github.com/boumenot/gocover-cobertura@latest
 
       # Install gotestfmt on the VM running the action.
       - name: Set up gotestfmt

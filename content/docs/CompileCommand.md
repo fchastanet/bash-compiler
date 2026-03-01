@@ -129,10 +129,11 @@ bin/compile <fileToCompile>
 
 _Examples:_
 
-Let's say you want to generate the binary file `bin/buildDoc` from the source file `src/build/buildDoc.sh`
+Let's say you want to generate the binary file `bin/shellcheckLint` from the source file
+`examples/configReference/shellcheckLint.yaml`
 
 ```bash
-bin/compile "$(pwd)/src/_binaries/doc.sh" --src-dir "$(pwd)/src" \
+bin/compile "$(pwd)/examples/configReference/shellcheckLint.yaml" --src-dir "$(pwd)/src" \
   --bin-dir "$(pwd)/bin" --root-dir "$(pwd)"
 ```
 
@@ -140,14 +141,14 @@ Here you want to generate the binary but overriding some or all functions of `ve
 `src` folder
 
 ```bash
-bin/compile "$(pwd)/src/_binaries/doc.sh" --s "$(pwd)/src" \
+bin/compile "$(pwd)/examples/configReference/shellcheckLint.yaml" --s "$(pwd)/src" \
   -s "$(pwd)/vendor/bash-tools-framework/src" --bin-dir "$(pwd)/bin" --root-dir "$(pwd)"
 ```
 
 Here you want to override the default templates too
 
 ```bash
-bin/compile "$(pwd)/src/_binaries/doc.sh" --s "$(pwd)/src" \
+bin/compile "$(pwd)/examples/configReference/shellcheckLint.yaml" --s "$(pwd)/src" \
   -s "$(pwd)/vendor/bash-tools-framework/src" --bin-dir "$(pwd)/bin" \
   --root-dir "$(pwd)" --template-dir "$(pwd)/src/templates"
 ```

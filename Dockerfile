@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1.2
 
 # get modules, if they don't change the cache can be used for faster builds
-FROM golang:1.24-alpine3.22 AS base
+FROM golang:1.25.7-alpine3.23 AS base
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOOS=linux
@@ -21,8 +21,8 @@ RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -ldflags="-w -s" -o /app/main ./cmd/bash-compiler/*.go
 
+FROM alpine:3.23 as prd
 # Import the binary from build stage
-FROM gcr.io/distroless/static:nonroot@sha256:ed05c7a5d67d6beebeba19c6b9082a5513d5f9c3e22a883b9dc73ec39ba41c04 as prd
 COPY --from=build /app/main /
 # this is the numeric version of user nonroot:nonroot to check runAsNonRoot in kubernetes
 USER 65532:65532

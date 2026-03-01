@@ -20,7 +20,7 @@ DISABLE_LINTERS:
   - SPELL_PROSELINT
   - GO_REVIVE # already included in pre-commit
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
-  # TEMPORARY DISABLE waiting megalinter to support go 1.23
+  # TEMPORARY DISABLE waiting megalinter to support go 1.25.7
   - GO_GOLANGCI_LINT # already included in pre-commit
 # DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 EXCLUDED_DIRECTORIES:
@@ -43,7 +43,7 @@ FILTER_REGEX_EXCLUDE: |
   )
 FILEIO_REPORTER: false
 PRE_COMMANDS:
-  - command: go env -w GOTOOLCHAIN=go1.23.1+auto
+  - command: go env -w GOTOOLCHAIN=go1.25.7+auto
     cwd: "workspace"
   - command: yarn add --dev eslint-plugin-json eslint-config-prettier
     cwd: "workspace"
@@ -166,7 +166,7 @@ MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: |
 
 GO_GOLANGCI_LINT_CLI_LINT_MODE: project # will remove the list of files as arguments and run the linter with root workspace cwd
 GO_GOLANGCI_LINT_ARGUMENTS:
-  ["--go", "1.23.1", "--out-format", "sarif", "--verbose", "./..."]
+  ["--go", "1.25.7", "--out-format", "sarif", "--verbose", "./..."]
 LOG_LEVEL: DEBUG # will show you the exact command run
 
 REPOSITORY_DEVSKIM_ARGUMENTS:

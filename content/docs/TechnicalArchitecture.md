@@ -69,4 +69,4 @@ Template filter functions, `internal/render/functions/index.go` includes:
 
 ## 3. Compiler
 
-see [Compile command](CompileCommand.md).
+see [Compile command](https://fchastanet.github.io/bash-compiler/docs/compilecommand/).

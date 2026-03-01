@@ -20,28 +20,29 @@ templates, and imports necessary bash functions recursively.
 
 ```text
 bash-compiler/
-├── cmd/bash-compiler/        # Main entry point and CLI
-│   ├── args.go              # Kong-based CLI argument parsing
-│   ├── main.go              # Application entry point
-│   └── defaultTemplates/    # Built-in Go templates (*.gtpl)
+├── .github/                     # GitHub-related files (workflows, etc.)
+│   ├──  scripts/                # Build scripts
+├── cmd/bash-compiler/           # Main entry point and CLI
+│   ├── args.go                  # Kong-based CLI argument parsing
+│   ├── main.go                  # Application entry point
+│   └── defaultTemplates/        # Built-in Go templates (*.gtpl)
 ├── internal/
-│   ├── compiler/            # Core compiler logic
-│   │   ├── compiler.go      # Main compilation orchestration
-│   │   ├── annotationEmbed.go    # @embed directive processing
-│   │   └── annotationRequire.go  # Function dependency tracking
-│   ├── model/               # Data structures and YAML models
-│   ├── render/              # Template rendering engine
-│   │   ├── templates.go     # Template loading and parsing
-│   │   ├── funcmap.go       # Custom template functions
-│   │   └── context.go       # Template execution context
-│   ├── services/            # High-level service orchestration
-│   └── utils/               # Utility packages
-├── pkg/                     # Public API (if any)
-├── examples/                # Example configurations
-│   └── configReference/     # Reference YAML configs
-├── build/                   # Build scripts
-├── doc/                     # Diagrams and documentation
-└── .github/workflows/       # CI/CD pipelines
+│   ├── compiler/                # Core compiler logic
+│   │   ├── compiler.go          # Main compilation orchestration
+│   │   ├── annotationEmbed.go   # @embed directive processing
+│   │   └── annotationRequire.go # Function dependency tracking
+│   ├── model/                   # Data structures and YAML models
+│   ├── render/                  # Template rendering engine
+│   │   ├── templates.go         # Template loading and parsing
+│   │   ├── funcmap.go           # Custom template functions
+│   │   └── context.go           # Template execution context
+│   ├── services/                # High-level service orchestration
+│   └── utils/                   # Utility packages
+├── pkg/                         # Public API (if any)
+├── examples/                    # Example configurations
+│   └── configReference/         # Reference YAML configs
+├── doc/                         # Diagrams and documentation
+└── .github/workflows/           # CI/CD pipelines
 ```
 
 ## Development Workflow
@@ -50,10 +51,10 @@ bash-compiler/
 
 ```bash
 # Local build (recommended for development)
-./build/build-local.sh
+./.github/scripts/build-local.sh
 
 # Docker build
-./build/build-docker.sh
+./.github/scripts/build-docker.sh
 
 # Binary location after build
 ~/go/bin/bash-compiler
@@ -63,13 +64,13 @@ bash-compiler/
 
 ```bash
 # Run all tests
-./build/test.sh
+./.github/scripts/test.sh
 
 # Run specific package tests
 go test ./internal/compiler/...
 
 # Run tests with coverage
-./build/coverage.sh
+./.github/scripts/coverage.sh
 
 # Tests are located in *_test.go files alongside source
 ```
@@ -335,7 +336,7 @@ func TestSomething(t *testing.T) {
 
 - Coverage reports in `logs/coverage.log`
 - CI requires reasonable coverage (thresholds: 60% warning, 80% good)
-- Use `./build/coverage.sh` to generate local reports
+- Use `./.github/scripts/coverage.sh` to generate local reports
 
 ## CI/CD Workflows
 
@@ -344,7 +345,7 @@ func TestSomething(t *testing.T) {
 **Jobs:**
 
 1. **build-docker-images** - Builds and pushes Docker image
-   - Go 1.23.1, Ubuntu 22.04
+   - Go 1.25.7, Ubuntu 24.04
    - Uses BuildKit caching
    - Pushes to DockerHub
 
@@ -419,14 +420,53 @@ tag: 1.0.0
 
 ### 1. Go Version
 
-The project uses different Go versions in different contexts:
+**Current Status (March 2026):** Project upgraded to **Go 1.25.7**
 
-- **go.mod:** Requires Go **1.24** (minimum language version)
-- **Dockerfile:** Uses Go **1.24-alpine** for production builds
-- **CI Workflows:** Uses Go **1.23.1** (specified in GitHub Actions matrix)
+The project uses Go 1.25.7 across all contexts:
 
-**Action:** Development should use Go 1.24 or later. The CI using 1.23.1 is
-likely pending update. Ensure compatibility if making language-specific changes.
+- **go.mod:** `go 1.25.7` (minimum language version)
+- **toolchain:** `toolchain go1.25.7+auto` (ensures consistent Go version)
+- **Dockerfile:** Uses Go 1.25.7-alpine for production builds
+- **CI Workflows:** Uses Go 1.25.7 in GitHub Actions matrix
+
+**Development Setup:**
+- Install Go 1.25.7 from [golang.org/dl](https://golang.org/dl)
+- Verify: `go version` should show `go1.25.7`
+
+**Upgrading from Previous Versions:**
+
+1. Install Go 1.25.7
+2. Update `go.mod` to specify new version:
+   ```go
+   go 1.25.7
+   toolchain go1.25.7+auto
+   ```
+3. Update all dependencies:
+   ```bash
+   go get -u ./...
+   ```
+4. Tidy and verify:
+   ```bash
+   go mod tidy
+   go mod verify
+   ```
+5. Run tests:
+   ```bash
+   go test ./... -race
+   ```
+6. Build to verify:
+   ```bash
+   go build ./cmd/bash-compiler
+   ```
+
+**Dependency Updates:** With Go 1.25.7, the following key dependencies were updated:
+- `kcl-lang.io/kcl-go` → v0.12.3 (now supports Go 1.25.7)
+- `google.golang.org/grpc` → v1.79.1
+- `google.golang.org/protobuf` → v1.36.11
+- `golang.org/x/net` → v0.51.0
+- Additional improvements to OpenTelemetry and other transitive dependencies
+
+**Action:** Ensure all development uses Go 1.25.7 for consistency with CI/CD and production builds.
 
 ### 2. Template Parsing
 
@@ -440,7 +480,7 @@ Currently disabled in MegaLinter configuration:
 
 ```yaml
 DISABLE_LINTERS:
-  - GO_GOLANGCI_LINT  # TEMPORARY waiting megalinter to support go 1.23
+  - GO_GOLANGCI_LINT  # TEMPORARY waiting megalinter to support go 1.25.7
 ```
 
 **Note:** This is a temporary measure while MegaLinter's golangci-lint integration
@@ -505,8 +545,8 @@ These are strict - follow them in generated bash code.
 
 1. **Explore** - Use grep/glob to find relevant code
 2. **Understand** - Read existing tests to understand behavior
-3. **Build** - Run `./build/build-local.sh` to verify compilation
-4. **Test** - Create/modify tests; run `./build/test.sh`
+3. **Build** - Run `./.github/scripts/build-local.sh` to verify compilation
+4. **Test** - Create/modify tests; run `./.github/scripts/test.sh`
 5. **Lint** - Run pre-commit hooks or rely on CI
 6. **Commit** - Follow commit message format
 7. **CI** - Monitor GitHub Actions for failures
@@ -544,7 +584,7 @@ These are strict - follow them in generated bash code.
 ### Build Fails
 
 - Check Go version: `go version`
-- Clean and rebuild: `./build/clean.sh && ./build/build-local.sh`
+- Clean and rebuild: `./.github/scripts/clean.sh && ./.github/scripts/build-local.sh`
 - Check module cache: `go clean -modcache`
 
 ### Tests Fail
@@ -581,19 +621,19 @@ This is part of a suite:
 
 ```bash
 # Build
-./build/build-local.sh
+./.github/scripts/build-local.sh
 
 # Test
-./build/test.sh
+./.github/scripts/test.sh
 
 # Run
 ~/go/bin/bash-compiler <yaml-file>
 
 # Clean
-./build/clean.sh
+./.github/scripts/clean.sh
 
 # Coverage
-./build/coverage.sh
+./.github/scripts/coverage.sh
 
 # Pre-commit
 pre-commit run --all-files

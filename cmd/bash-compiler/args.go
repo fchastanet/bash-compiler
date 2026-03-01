@@ -122,6 +122,7 @@ func parseArgs(cli *cli) (err error) {
 			Indenter:            kong.LineIndenter,
 			NoExpandSubcommands: true,
 			WrapUpperBound:      constMaxScreenSize,
+			ValueFormatter:      kong.DefaultHelpValueFormatter,
 		}),
 		kong.Vars{
 			"version": "3.0.0",

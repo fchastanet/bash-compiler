@@ -6,6 +6,8 @@ EPOCHREALTIME
 EPOCHSECONDS
 exitcode
 GOBIN
+gocover
+goimports
 golangci
 lastpipe
 ldflags
