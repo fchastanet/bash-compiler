@@ -1,6 +1,6 @@
 # Bash Compiler
 
-> **_NOTE:_** Documentation is best viewed on [github-pages](https://fchastanet.github.io/bash-compiler/)
+> **_NOTE:_** Documentation is best viewed on [github-pages](https://devlab.top/bash-compiler/)
 
 <!-- markdownlint-capture -->
 
