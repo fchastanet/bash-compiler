@@ -411,5 +411,5 @@ Before releasing:
 - [Go Modules Documentation](https://golang.org/ref/mod)
 - [Go Testing](https://golang.org/pkg/testing/)
 - [Pre-commit Documentation](https://pre-commit.com/)
-- [bash-compiler Compilation Command](https://devlab.top/bash-compiler/docs/compilecommand/)
-- [Technical Architecture](https://devlab.top/bash-compiler/docs/technicalarchitecture/)
+- [bash-compiler Compilation Command](https://bash-compiler.devlab.top/docs/compilecommand/)
+- [Technical Architecture](https://bash-compiler.devlab.top/docs/technicalarchitecture/)

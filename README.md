@@ -1,6 +1,6 @@
 # Bash Compiler
 
-> **_NOTE:_** Documentation is best viewed on [github-pages](https://devlab.top/bash-compiler/)
+> **_NOTE:_** Documentation is best viewed on [github-pages](https://bash-compiler.devlab.top/)
 
 <!-- markdownlint-capture -->
 
@@ -23,6 +23,16 @@ This tool allows to detect all the framework functions used inside a given sh fi
 pattern Namespace::functionName (we can have several namespaces separated by the characters ::). These framework
 functions will be injected inside a compiled file. The process is recursive so that every framework functions used by
 imported framework functions will be imported as well (of course only once).
+
+> **_TIP:_** Checkout related projects of this suite
+>
+> - [My documents](https://devlab.top/)
+> - [Bash Tools Framework](https://bash-tools-framework.devlab.top/)
+> - [Bash Tools](https://bash-tools.devlab.top/)
+> - [Bash Dev Env](https://bash-dev-env.devlab.top/)
+> - **[Bash Compiler](https://bash-compiler.devlab.top/)**
+
+## 1. Technical architecture
 
 [Development](content/docs/Development.md) and [Technical architecture](content/docs/TechnicalArchitecture.md)
 documentation are available for more details about the project.

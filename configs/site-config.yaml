@@ -1,7 +1,7 @@
 ---
 # Site-specific configuration for bash-compiler
 title: Bash Compiler Documentation
-baseURL: https://devlab.top/bash-compiler/
+baseURL: https://bash-compiler.devlab.top/
 
 params:
   description:
@@ -41,12 +41,6 @@ menu:
     - name: GitHub
       url: https://github.com/fchastanet/bash-compiler
       weight: 10
-      post: |
-        <sup><i class="ps-1 fa-solid fa-up-right-from-square fa-xs"
-        aria-hidden="true"></i></sup>
     - name: Release Notes
       url: https://github.com/fchastanet/bash-compiler/releases
       weight: 20
-      post: |
-        <sup><i class="ps-1 fa-solid fa-up-right-from-square fa-xs"
-        aria-hidden="true"></i></sup>
