@@ -1,6 +1,7 @@
 autoupdate
 COND
 DOCKERHUB
+fchastanetl
 friday
 goimports
 GOTOOLCHAIN
