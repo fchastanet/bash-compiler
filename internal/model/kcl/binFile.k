@@ -73,17 +73,17 @@ schema CallbacksSchema[callbacks: [str], propertyName: str]:
       CallbackSchema(callback, propertyName)
     }
     isunique([_callback for _, _callback in callbacks]), \
-      "${propertyName}: check for duplicates"
+      "${propertyName}: check for duplicates ${_callbacks}"
 
 schema PropertyDuplicateSchema[myList: DefinitionFilesSchema, listName: str]:
   _myList = myList
   check:
     isunique([ _x for _, _x in _myList]) \
       if _myList, \
-        "${listName} list, check for duplicates"
+        "${listName} list, check for duplicates ${_myList}"
     isunique([ _x for _x, _ in _myList]) \
       if _myList, \
-        "${listName}: list, check for index duplicates"
+        "${listName}: list, check for index duplicates ${_myList}"
 
 schema OptionGroupSchema:
   title: str
@@ -206,26 +206,26 @@ schema CommandSchema:
     CallbacksSchema(afterParseCallbacks, "Command ${commandName} - afterParseCallbacks") if afterParseCallbacks
 
     isunique([_x.title for _, _x in optionGroups]) if optionGroups, \
-      "Command ${commandName} - optionGroups - title should be unique, check for duplicates"
+      "Command ${commandName} - optionGroups - title should be unique, check for duplicates ${optionGroups}"
     libs.assertFunctionName(functionName)
     isunique([_x.name for _, _x in args]) if args, \
-      "Command ${commandName} - args - name should be unique, check for duplicates"
+      "Command ${commandName} - args - name should be unique, check for duplicates ${args}"
     isunique([_x.variableName for _, _x in args]) if args, \
-      "Command ${commandName} - args - variableName should be unique, check for duplicates"
+      "Command ${commandName} - args - variableName should be unique, check for duplicates ${args}"
     isunique([_x.variableName for _, _x in options]) if options, \
-      "Command ${commandName} - options - variableName should be unique, check for duplicates"
+      "Command ${commandName} - options - variableName should be unique, check for duplicates ${options}"
     isunique(
       [_x.variableName for _, _x in args] + [_x.variableName for _, _x in options]
     ) if options and args, \
-      "Command ${commandName} - variableName should be unique across options and args, check for duplicates"
+      "Command ${commandName} - variableName should be unique across options and args, check for duplicates options=${options} args=${args}"
     isunique(
       [_x.functionName for _, _x in args if args] + [_x.functionName for _, _x in options if options]
     ), \
-      "Command ${commandName} - functionName should be unique across options and args, check for duplicates"
+      "Command ${commandName} - functionName should be unique across options and args, check for duplicates options=${options} args=${args}"
     isunique(
       [_alt for _, _x in options for _, _alt in _x.alts]
     ) if options, \
-      "Command ${commandName} - alts should be unique across options, check for duplicates"
+      "Command ${commandName} - alts should be unique across options, check for duplicates ${options}"
     all _group in _optionGroups {
       AssertOptionGroupExists(_group, optionGroups, "Command ${commandName}")
     } if typeof(optionGroups) == "OptionGroupsSchema"
