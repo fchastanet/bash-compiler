@@ -6,7 +6,7 @@ fail_fast: true
 repos:
   # enables pre-commit to install the hooks using pipx
   - repo: https://github.com/pypa/pipx
-    rev: 1.8.0
+    rev: 1.11.1
     hooks:
       - id: pipx
         alias: yapf
@@ -58,7 +58,7 @@ repos:
 
   - repo: https://github.com/executablebooks/mdformat
     # Do this before other tools "fixing" the line endings
-    rev: 0.7.22
+    rev: 1.0.0
     hooks:
       - id: mdformat
         name: Format Markdown
@@ -158,13 +158,13 @@ repos:
           )
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.11
+    rev: v1.7.12
     hooks:
       - id: actionlint
         stages: [pre-commit, pre-push, manual]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         args:
@@ -226,7 +226,7 @@ repos:
       - id: cspell
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v2.10.1
+    rev: v2.11.4
     hooks:
       - id: golangci-lint
       - id: golangci-lint-full
@@ -246,7 +246,7 @@ repos:
       - id: go-revive-repo-mod
 
   - repo: https://github.com/fchastanet/bash-tools-framework
-    rev: 6.2.4
+    rev: 6.2.9
     hooks:
       - id: awkLint
       - id: shellcheckLint
