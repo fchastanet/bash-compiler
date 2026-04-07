@@ -4,6 +4,7 @@ cuelang
 distroless
 DOCKERHUB
 inlines
+lastmod
 Michał
 noarchive
 nocache

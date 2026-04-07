@@ -10,7 +10,7 @@ start
 
 :compile binaryModelYamlFile;
 
-#SpringGreen:model.LoadBinaryModel binaryModelYamlFile;
+:model.LoadBinaryModel binaryModelYamlFile; <<#SpringGreen>>
 
 if (ok) then (binaryModel)
 else (error)
@@ -19,7 +19,7 @@ endif
 
 partition "compiler.GenerateCode" {
 
-  #SpringGreen:compiler.GenerateCode binaryModel;
+  :compiler.GenerateCode binaryModel; <<#SpringGreen>>
 
   :loadGoTemplate;
 
@@ -38,10 +38,10 @@ partition "compiler.GenerateCode" {
 
 partition "compiler.Compile" {
 
-  :compiler.extractUniqueFrameworkFunctions &functionsMap, code;
+  :compiler.extractUniqueFrameworkFunctions &functionsMap, code; <<#SpringGreen>>
 
   partition "compiler.retrieveEachFunctionPath" #LightSkyBlue {
-    :compiler.retrieveEachFunctionPath &functionsMap, binaryModel.BinFile.SrcDirs;
+    :compiler.retrieveEachFunctionPath &functionsMap, binaryModel.BinFile.SrcDirs; <<#SpringGreen>>
     note right
       for each function retrieve the full src file path
       try to get also _.sh and ZZZ.sh files if exists
@@ -69,12 +69,12 @@ partition "compiler.Compile" {
 
   partition "Compiler::Require::requires" #LightSkyBlue {
 
-    #SpringGreen:Compiler::Require::filter scriptFile;
+    :Compiler::Require::filter scriptFile; <<#SpringGreen>>
     while (requireDirective?) is (<color:green>require directive found)
       -[#green]->
-      #SpringGreen:Compiler::Require::parse $requireDirective
+      :Compiler::Require::parse $requireDirective
         ~~uses Compiler::Require::assertInterface~~
-      ;
+      ;<<#SpringGreen>>
       if (implement directive can't be parsed or function does not exist?) is (<color:red>invalid directive) then
         -[#red]->
         end

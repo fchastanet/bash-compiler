@@ -16,7 +16,6 @@ GOARCH
 gochecknoglobals
 goconst
 gocritic
-gocritic
 gocyclo
 goerr
 gofumpt

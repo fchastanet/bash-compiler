@@ -13,8 +13,8 @@ lastpipe
 ldflags
 mktemp
 noargs
-noninteractive
 NONINTERACTIVE
+noninteractive
 nullglob
 Pathchk
 pipefail

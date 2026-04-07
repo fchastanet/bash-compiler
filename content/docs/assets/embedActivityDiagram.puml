@@ -9,16 +9,16 @@ start
 
 :compiler;
 
-#SpringGreen:Compiler::Embed::inject fromFile;
+:Compiler::Embed::inject fromFile; <<#SpringGreen>>
 
-#SpringGreen:Compiler::Embed::filter fromFile;
+:Compiler::Embed::filter fromFile; <<#SpringGreen>>
 while (embedDirective?) is (<color:green>embed found)
   -[#green]->
-  partition Compiler::Embed::embed #SpringGreen {
-    #SpringGreen:Compiler::Embed::parse $embedDirective
+  partition Compiler::Embed::embed<<#SpringGreen>> {
+    :Compiler::Embed::parse $embedDirective
       ~~uses Compiler::Embed::assertAsName~~
       ~~uses Compiler::Embed::assertResource~~
-    ;
+    ;<<#SpringGreen>>
     if (embed directive can be parsed?) is (<color:green>valid directive) then
       -[#green]->
     else (<color:red>invalid embed\n<color:red>directive)
@@ -35,15 +35,15 @@ while (embedDirective?) is (<color:green>embed found)
       :display warning;
     endif
     partition Compiler::Embed::embed #LightGray {
-      #SpringGreen:__Compiler::Embed::embed__ **$resource** **$asName**;
+      :Compiler::Embed::embed **$resource** **$asName**;<<#SpringGreen>>
       switch (resource type?)
       case ( resource is a file )
-        #SpringGreen:Compiler::Embed::embedFile;
+        :Compiler::Embed::embedFile;<<#SpringGreen>>
       case ( resource is a directory )
-        #SpringGreen:Compiler::Embed::embedDir;
+        :Compiler::Embed::embedDir;<<#SpringGreen>>
       case ( resource is a bash\nframework function )
-        #SpringGreen:Compiler::Embed::embedFrameworkFunction;
-        #SpringGreen:bin/compile;
+        :Compiler::Embed::embedFrameworkFunction;<<#SpringGreen>>
+        :Compiler::Embed::bin/compile;<<#SpringGreen>>
       case ( <color:red>error )
         -[#red]->
         end

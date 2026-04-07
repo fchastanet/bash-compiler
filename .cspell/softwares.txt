@@ -17,8 +17,8 @@ fchastanet
 François
 github
 gitleaks
-gofmt
 Gofmt
+gofmt
 golint
 goplantuml
 gtpl
@@ -37,8 +37,8 @@ pipx
 plantuml
 podman
 promlinter
-shellcheck
 SHELLCHECK
+shellcheck
 shellcheckrc
 shfmt
 structslop

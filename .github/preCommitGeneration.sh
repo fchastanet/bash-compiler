@@ -13,4 +13,5 @@ awk \
 sed -i -E \
   -e '0,/fail_fast: true/s//fail_fast: false/' \
   -e 's/stages: \[\] # GITHUB/stages: \[manual\] # GITHUB/' \
+  -e 's/shellcheckLint/shellcheckLintGithubAction/' \
   .pre-commit-config-github.yaml

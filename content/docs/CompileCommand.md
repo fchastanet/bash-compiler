@@ -6,7 +6,9 @@ categories: [documentation]
 tags: [compile, directives, templates]
 creationDate: 2026-02-14
 lastUpdated: 2026-02-14
-version: '1.0'
+date: '2026-04-07T21:20:53+02:00'
+lastmod: '2026-04-07T21:20:53+02:00'
+version: '1.1'
 ---
 
 ## 1. What is it ?
@@ -182,13 +184,13 @@ The command to generate a bash binary file:
 
 This will trigger the following actions
 
-{{< img src="assets/compilerActivityDiagram.png" alt="activity diagram to explain how compile command works" >}}
+{{< img src="assets/compilerActivityDiagram.svg" alt="activity diagram to explain how compile command works" >}}
 
 {{< codeExpand title="Source code: Activity diagram" lang="plantuml" src="assets/compilerActivityDiagram.puml" >}}
 
 ### 3.3. Class diagram
 
-{{< img src="assets/classDiagram.png" alt="bash-compiler class diagram" >}}
+{{< img src="assets/classDiagram.svg" alt="bash-compiler class diagram" >}}
 
 {{< codeExpand title="Source code: bash-compiler class diagram" lang="plantuml" src="assets/classDiagram.puml" >}}
 
@@ -199,7 +201,7 @@ src="assets/classDiagramWithPrivateMethods.puml" >}}
 
 ### 3.4. Dependency diagram
 
-{{< img src="assets/dependencyDiagram.png" alt="bash-compiler dependency diagram" >}}
+{{< img src="assets/dependencyDiagram.svg" alt="bash-compiler dependency diagram" >}}
 
 {{< codeExpand title="Source code: bash-compiler dependency diagram" lang="plantuml" src="assets/dependencyDiagram.puml"
 \>}}

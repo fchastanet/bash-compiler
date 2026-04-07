@@ -7,101 +7,79 @@ caseSensitive: true
 useGitignore: true
 enableGlobDot: true
 ignorePaths:
-  - "bin/**"
-  - "logs/**"
-  - "**/testsData/**"
-  - package-lock.json
-  - "**/*/svg"
-  - .vscode
-  - ".cspell/**"
   - .git/**
   - "**/.git/**"
-  - ".history/**"
   - "**/node_modules/**"
-  - "**/vscode-extension/**"
+  - .history/**
+  - logs/**
   - "**/logs/**"
+  - bin/**
+  - "**/bin/**"
+  - "**/testsData/**"
+  - package-lock.json
   - "**/*.svg"
-  - megalinter-reports
+  - .vscode
+  - .cspell/**
   - report
   - .jscpd.json
+  - megalinter-reports
   - "*-megalinter_file_names_cspell.txt"
   - "**/*megalinter_file_names_cspell.txt"
   - .shellcheckrc
-  - "**/bin/**"
-  - "vendor/**"
+  - vendor/**
   - "**/backup/**"
   - commit-msg.md
-  - ".mega-linter*.yml"
-  - ".env"
-  - "go.sum"
+  - .mega-linter*.yml
+  - TODO.md
+  - .env
+  - go.sum
   - internal/utils/encoding/testsData/content.txt
-
 dictionaryDefinitions:
+  - name: forbidden
+    addWords: false
+    path: .cspell/forbidden.txt
   - name: myBash
-    path: ".cspell/bash.txt"
+    path: .cspell/bash.txt
     addWords: true
   - name: githubWorkflow
-    path: ".cspell/githubWorkflow.txt"
+    path: .cspell/githubWorkflow.txt
     addWords: true
-  - name: plantuml
-    path: ".cspell/plantuml.txt"
-    addWords: false
-  - name: go
-    path: ".cspell/go.txt"
-    addWords: false
-  - name: kcl
-    path: ".cspell/kcl.txt"
-    addWords: false
-  - name: dotFiles
-    path: ".cspell/dotFiles.txt"
+  - name: config
+    path: .cspell/config.txt
     addWords: true
   - name: mySoftwares
-    path: ".cspell/softwares.txt"
+    path: .cspell/softwares.txt
     addWords: true
   - name: markdown
-    path: ".cspell/markdown.txt"
+    path: .cspell/markdown.txt
     addWords: true
+  - name: lintersConfig
+    path: .cspell/lintersConfig.txt
+    addWords: true
+  # Specific dictionaries for this repo
+  - name: plantuml
+    path: .cspell/plantuml.txt
+    addWords: false
   - name: docker
-    path: ".cspell/docker.txt"
+    path: .cspell/docker.txt
     addWords: true
+  - name: go
+    path: .cspell/go.txt
+    addWords: false
+  - name: kcl
+    path: .cspell/kcl.txt
+    addWords: false
   - name: golangYml
-    path: ".cspell/golangYml.txt"
+    path: .cspell/golangYml.txt
     addWords: true
   - name: test
-    path: ".cspell/test.txt"
+    path: .cspell/test.txt
     addWords: true
   - name: generic
-    path: ".cspell/generic.txt"
+    path: .cspell/generic.txt
     addWords: true
 
-# https://github.com/streetsidesoftware/cspell/blob/main/packages/cspell/README.md#languagesettings
 languageSettings:
-  - languageId: shellscript
-    locale: "*"
-    dictionaries:
-      - bash
-      - myBash
-      - mySoftwares
-      - software
-
-  - languageId: dockerFiles
-    locale: "*"
-    dictionaries:
-      - bash
-      - myBash
-      - docker
-      - go
-      - mySoftwares
-      - software
-
-  - languageId: dotFiles
-    locale: "*"
-    caseSensitive: true
-    dictionaries:
-      - dotFiles
-      - mySoftwares
-      - software
-
   - languageId: githubWorkflow
     locale: "*"
     dictionaries:
@@ -111,20 +89,43 @@ languageSettings:
       - myBash
       - mySoftwares
       - software
-
+  - languageId: config
+    locale: "*"
+    caseSensitive: true
+    dictionaries:
+      - config
+      - mySoftwares
+      - software
+  - languageId: shellscript
+    locale: "*"
+    dictionaries:
+      - bash
+      - myBash
+      - mySoftwares
+      - software
   - languageId: markdown
     locale: "*"
     dictionaries:
       - markdown
+      - mySoftwares
+      - softwareTerms
       - bash
       - myBash
       - go
       - .githubWorkflow
-      - mySoftwares
-      - softwareTerms
       - software
       - plantuml
 
+  # Specific language settings for this repo
+  - languageId: dockerFiles
+    locale: "*"
+    dictionaries:
+      - bash
+      - myBash
+      - docker
+      - go
+      - mySoftwares
+      - software
   - languageId: go
     locale: "*"
     caseSensitive: true
@@ -133,7 +134,6 @@ languageSettings:
       - mySoftwares
       - softwareTerms
       - software
-
   - languageId: kcl
     locale: "*"
     dictionaries:
@@ -142,64 +142,66 @@ languageSettings:
       - softwareTerms
       - software
 
-# OVERRIDES
+# ----------
 overrides:
   - filename:
-      - "/.*"
-      - "/*.yml"
-      - "/configs/site-config.yaml"
-      - "/*.yaml"
-      - "/*.toml"
-      - "/package.json"
+      - ".*"
+      - "*.yml"
+      - "*.yaml"
+      - "configs/site-config.yaml"
+      - "*.toml"
+      - "package.json"
       - "!.golangci.yml"
-    languageId: dotFiles
-
+    languageId: config
   - filename:
-      - "**/*.k"
-    languageId: kcl
-
-  - filename:
-      - "**/Dockerfile"
-    languageId: dockerFiles
-
-  - filename:
-      - ".github/**/*.yml"
-      - "templates-examples/**"
+      - .github/**/*.yml
+      - .github/*.yml
+      - templates-examples/**
     languageId: githubWorkflow
-
-  - filename: "**/*.puml"
+  - filename:
+      - "*.yml"
+      - "*.yaml"
+      - "*.toml"
+    dictionaries:
+      - lintersConfig
+  - filename:
+      - LICENSE
+      - "**/*.md"
+      - "**/*-help.txt"
+    languageId: markdown
+  - filename:
+      - "**/*.puml"
     dictionaries:
       - plantuml
-
   - filename: "**/*.html"
     dictionaries:
       - mySoftwares
       - software
 
-  - filename:
-      - LICENSE
-      - "**/*.md"
-    languageId: markdown
-
-  - filename:
+  # Specific overrides for this repo
+  - languageId: shellscript
+    filename:
       - "**/*.sh"
-    languageId: shellscript
-
+  - filename:
+      - "**/*.k"
+    languageId: kcl
+  - filename:
+      - "**/Dockerfile"
+    languageId: dockerFiles
   - filename:
       - "**/*.go"
-      - "go.mod"
+      - go.mod
     languageId: go
-
   - filename:
       - "**/*_test.go"
-      - "internal/model/kcl/testsKcl/Fasd-binary.yaml"
+      - internal/model/kcl/testsKcl/Fasd-binary.yaml
     languageId: go
     dictionaries:
       - test
-
   - filename:
       - "**/*.gtpl"
-      - "examples/**/*.yaml"
+      - examples/**/*.yaml
+      - .golangci.yml
     dictionaries:
       - golangYml
       - go
@@ -207,18 +209,9 @@ overrides:
       - software
       - bash
       - myBash
-
   - filename:
       - "**/*.cue"
     dictionaries:
-      - mySoftwares
-      - software
-
-  - filename:
-      - ".golangci.yml"
-    dictionaries:
-      - golangYml
-      - go
       - mySoftwares
       - software
 
@@ -226,14 +219,15 @@ patterns:
   - name: urls
     pattern: "/https?://([^ \t\"'()]+)/g"
   - name: packages
-    pattern: "/[-A-Za-z0-9.]+/[-A-Za-z0-9.]+/g"
+    pattern: /[-A-Za-z0-9.]+/[-A-Za-z0-9.]+/g
   - name: markdownToc
-    pattern: "\\]\\(#[^)]+\\)$"
-
+    pattern: \]\(#[^)]+\)$
 ignoreRegExpList:
   - urls
   - packages
   - markdownToc
-
 enableFiletypes:
   - shellscript
+
+dictionaries:
+  - forbidden
