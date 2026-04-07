@@ -83,3 +83,6 @@ node_modules/
 
 examples/generated
 megalinter-reports/
+
+.cspell/forbidden.txt
+.pre-commit-config-github.yaml

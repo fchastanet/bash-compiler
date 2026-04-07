@@ -1,6 +1,7 @@
 Aftertabs
 allowInts
 allowStrs
+CPES
 cpes
 crashlytics
 distro
@@ -15,6 +16,7 @@ golangci
 GRYPE
 gtpl
 ignoreFuncs
+Lastmod
 logrus
 pageinfo
 Println
@@ -25,5 +27,5 @@ shellcheckrc
 structslop
 tabwidth
 tagname
-unindexed
 UNINDEXED
+unindexed
