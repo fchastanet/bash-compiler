@@ -125,7 +125,7 @@ func parseArgs(cli *cli) (err error) {
 			ValueFormatter:      kong.DefaultHelpValueFormatter,
 		}),
 		kong.Vars{
-			"version": "3.0.0",
+			"version": "3.1.0",
 		},
 	)
 
