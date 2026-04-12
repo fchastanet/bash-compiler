@@ -1,58 +1,81 @@
 ---
+# Lint the code base and launch unit test at each push or pull request
 # based on https://github.com/mvdan/github-actions-golang
 name: Lint, Test, Build and Deploy
-on: # yamllint disable-line rule:truthy
-  pull_request:
-    branches: ["**"]
-
+"on":
   push:
-    branches: ["master"]
-
-  # Allows you to run this workflow manually from the Actions tab
+    # execute when pushing only branches and tags
+    branches:
+      - "**"
+      # avoid infinite loop for auto created PRs
+      - "!update/pre-commit-*"
+    tags:
+      - "**"
   workflow_dispatch:
 
 # cancel previous build if several pushes
 concurrency:
-  group: >-
+  group: |
     ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+env:
+  # Apply linter fixes configuration
+  # When active, APPLY_FIXES must also be defined as
+  # environment variable (in github/workflows/mega-linter.yml
+  # or other CI tool)
+  APPLY_FIXES: all
+  # Decide which event triggers application of fixes in a
+  # commit or a PR (pull_request, push, all)
+  APPLY_FIXES_EVENT: all
+  # If APPLY_FIXES is used, defines if the fixes are
+  # directly committed (commit) or posted in a PR (pull_request)
+  APPLY_FIXES_MODE: pull_request
+  # variables to compute complex conditions
+  COND_UPDATED_SOURCES: false
+  COND_APPLY_FIXES_NEEDED: false
+  COND_PUSH_OR_PR: >-
+    ${{
+      github.event_name == 'pull_request' ||
+      github.event_name == 'push'
+    }}
 
 jobs:
   # -------------------------------------------------------
   # Build docker images
   # -------------------------------------------------------
   build-docker-images:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Forces Node 24 runtime
+    permissions:
+      # needed by guibranco/github-status-action-v2@v1
+      statuses: write
     strategy:
+      fail-fast: true
       matrix:
         go-version: [1.25.7]
         os: [ubuntu-latest]
-    permissions:
-      # needed by akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-      statuses: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # overall process
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-docker
-          status: pending
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: build-docker
+          state: pending
 
       - name: Set env vars
         id: vars
@@ -65,19 +88,16 @@ jobs:
             echo "branch_name=${GITHUB_REF##*/}"
           ) >> "${GITHUB_ENV}"
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-docker-${{ env.image_tag }}
-          status: pending
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: build-docker-${{ env.image_tag }}
+          state: pending
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           # list of Docker images to use as base name for tags
           images: |
@@ -92,7 +112,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         continue-on-error: false
         with:
           load: true
@@ -106,49 +126,45 @@ jobs:
           cache-from: type=gha,scope=${{ env.image_tag }}
           cache-to: type=gha,mode=max,scope=${{ env.image_tag }}
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-docker-${{ env.image_tag }}
-          status: ${{ job.status }}
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: build-docker-${{ env.image_tag }}
+          state: ${{ job.status }}
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-docker
-          status: ${{ job.status }}
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: build-docker
+          state: ${{ job.status }}
 
   # -------------------------------------------------------
   # Pre-commit
   # -------------------------------------------------------
-
   pre-commit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Forces Node 24 runtime
+    needs: [build-docker-images]
     permissions:
-      # needed by akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
+      # needed by guibranco/github-status-action-v2@v1
       statuses: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@v7
         if: ${{ success() }}
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -156,22 +172,19 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - uses: tibdex/github-app-token@v2
+      - uses: actions/create-github-app-token@v3.1.1
         if: ${{ success() }}
         id: generate-token
         with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: pre-commit-megalinter
-          status: pending
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: pre-commit-megalinter
+          state: pending
 
       - name: Set env vars
         id: vars
@@ -182,35 +195,36 @@ jobs:
           ) >> "${GITHUB_ENV}"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
-      - uses: actions/setup-go@v5
+      - uses: fchastanet/github-action-setup-shfmt@v4.0.0
+
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25.7"
           check-latest: false
 
-      - run: |
+      - name: Install requirements
+        run: |
           set -exo pipefail
           ./.github/scripts/install-dev.sh
-
-      - uses: fchastanet/github-action-setup-shfmt@v4.0.0
 
       - name: Transform pre-commit config for GitHub
         if: ${{ success() }}
         run: .github/preCommitGeneration.sh
 
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
+        uses: j178/prek-action@v2
         id: preCommit
         with:
-          extra_args: >-
+          extra-args: >-
             -c .pre-commit-config-github.yaml -a --hook-stage manual
 
       - name: MegaLinter
         id: ml
-        if: ${{ always() }}
+        if: ${{ !cancelled() }}
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/latest/flavors/
         uses: oxsecurity/megalinter/flavors/go@v9
@@ -228,28 +242,47 @@ jobs:
 
       - name: Upload MegaLinter artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MegaLinter reports
+          retention-days: 2
+          overwrite: true
           path: |
             megalinter-reports
             mega-linter.log
 
-      - name: Create Pull Request
-        id: cpr
+      - name: MegaLinter/Precommit has updated sources
         if: >
-          (
+          steps.preCommit.outcome == 'failure' || (
+            steps.ml.outputs.has_updated_sources == 1 && (
+              env.APPLY_FIXES_EVENT == 'all' ||
+              env.APPLY_FIXES_EVENT == github.event_name
+            )
+          )
+        run: |
+          echo "COND_UPDATED_SOURCES=true" >> "${GITHUB_ENV}"
+
+      - name: is apply fixes needed ?
+        if: >
+          env.APPLY_FIXES_MODE == 'pull_request' && (
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name ==
             github.repository
-          ) && (
-            steps.preCommit.conclusion == 'failure' ||
-            steps.ml.conclusion == 'failure'
-          ) && !contains(github.event.head_commit.message, 'skip fix')
-        uses: peter-evans/create-pull-request@v7
+          )
+        run: |
+          echo "COND_APPLY_FIXES_NEEDED=true" >> "${GITHUB_ENV}"
+
+      - name: Create Pull Request
+        id: cpr
+        # prettier-ignore
+        if: >
+          env.COND_UPDATED_SOURCES == 'true' &&
+          env.COND_APPLY_FIXES_NEEDED == 'true' &&
+          !contains(github.event.head_commit.message, 'skip fix')
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ steps.generate-token.outputs.token }}
-          committer: fchastanet <fchastanet@gmail.com>
+          committer: fchastanet <237869+fchastanet@users.noreply.github.com>
           branch: update/pre-commit-fixes-${{ env.branch_name }}
           delete-branch: true
           title: lint fixes
@@ -268,38 +301,38 @@ jobs:
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: pre-commit-megalinter
-          status: ${{ job.status }}
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: pre-commit-megalinter
+          state: ${{ job.status }}
 
   # -------------------------------------------------------
   # Unit tests
   # -------------------------------------------------------
-  test:
-    strategy:
-      matrix:
-        go-version: [1.25.7]
-        os: [ubuntu-latest]
+  unit-tests:
     runs-on: ${{ matrix.os }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Forces Node 24 runtime
+    needs: [build-docker-images]
     permissions:
-      # needed by akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
+      # needed by guibranco/github-status-action-v2@v1
       statuses: write
       # needed by marocchino/sticky-pull-request-comment
       pull-requests: write
-
+    strategy:
+      fail-fast: true
+      matrix:
+        go-version: [1.25.7]
+        os: [ubuntu-latest]
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
 
       - name: Downloads the dependencies
@@ -311,40 +344,31 @@ jobs:
           go fmt ./...
           mkdir -p logs || true
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-${{matrix.os}}
-          status: pending
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: build-${{matrix.os}}
+          state: pending
 
       - name: build the binary
         run: |
           set -exo pipefail
           ./.github/scripts/build-local.sh
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: build-${{matrix.os}}
-          status: ${{ job.status }}
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: build-${{matrix.os}}
+          state: ${{ job.status }}
 
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          name: unit-tests-${{matrix.os}}
-          status: pending
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: unit-tests-${{matrix.go-version}}-${{matrix.os}}
+          state: pending
 
       - name: Install gocover-cobertura
         run: |
@@ -364,9 +388,8 @@ jobs:
 
       - name: Run tests
         run: |
-          go test -race -json -v -coverprofile=logs/coverage.log ./... 2>&1 |
-            tee logs/tests.log |
-            gotestfmt
+          go test -coverprofile=logs/coverage.log  -covermode=atomic -coverpkg=./... ./... 2>&1 |
+            tee logs/tests.log | gotestfmt
 
       # Upload the original go test log as an artifact for later review.
       - name: Upload test log
@@ -377,58 +400,38 @@ jobs:
           path: logs/coverage.log
           if-no-files-found: error
 
-      - name: Convert go coverage to cobertura format
-        run: gocover-cobertura < logs/coverage.log > logs/coverage.xml
-
-      - name: Generate code coverage report
-        uses: irongut/CodeCoverageSummary@v1.3.0
+      - name: check test coverage
+        uses: vladopajic/go-test-coverage@v2
         with:
-          filename: logs/coverage.xml
-          badge: false
-          fail_below_min: false
-          format: markdown
-          hide_branch_rate: false
-          hide_complexity: true
-          indicators: true
-          output: both
-          thresholds: "60 80"
+          config: ./.testcoverage.yml
 
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
+      - uses: guibranco/github-status-action-v2@v1
+        if: ${{ env.COND_PUSH_OR_PR }}
         with:
-          recreate: true
-          path: code-coverage-results.md
-
-      - uses: akatov/commit-status-updater@219d3f932547cad092e384c7a36bf4d963739c35
-        if: |-
-          ${{
-            github.event_name == 'pull_request' ||
-            github.event_name == 'push'
-          }}
-        with:
-          name: unit-tests-${{matrix.os}}
-          status: ${{ job.status }}
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: unit-tests-${{matrix.go-version}}-${{matrix.os}}
+          state: ${{ job.status }}
 
   # -------------------------------------------------------
   # Build and deploy documentation
   # -------------------------------------------------------
   build-deploy:
     needs:
-      - test
+      - unit-tests
       - pre-commit
     # Only run if the test and pre-commit jobs succeeded, and if the push is on master branch or if it's a workflow dispatch event
     if: |-
       ${{
-        needs.test.result == 'success' &&
+        needs.unit-tests.result == 'success' &&
         needs.pre-commit.result == 'success' &&
         github.ref == 'refs/heads/master'
       }}
     uses: fchastanet/my-documents/.github/workflows/build-site-action.yml@master
     with:
       site-name: "bash-compiler"
-      site-dir: "_site-content"
       checkout-repo: "fchastanet/bash-compiler"
+      site-dir: "_site-content"
+    secrets: inherit
     permissions:
       contents: read
       pages: write

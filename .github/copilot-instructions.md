@@ -368,7 +368,7 @@ func TestSomething(t *testing.T) {
 
 ### Status Checks
 
-Uses `akatov/commit-status-updater` to create granular status checks:
+Uses `guibranco/github-status-action-v2` to create granular status checks:
 
 - `build-docker`
 - `pre-commit-megalinter`

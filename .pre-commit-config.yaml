@@ -32,6 +32,7 @@ repos:
             ^\.devskim.json$|
             ^\.?secretlintrc\.yml$|
             ^\.vscode/|
+            ^\.testcoverage.yml$|
             ^\.?checkov\.yml$|
             ^\.?secretlintrc\.json$|
             ^githubReleaseManager.yaml$|

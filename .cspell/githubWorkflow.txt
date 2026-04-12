@@ -1,5 +1,7 @@
 autoupdate
 COND
+covermode
+coverpkg
 DOCKERHUB
 fchastanetl
 friday

@@ -1,6 +1,8 @@
 Aftertabs
 allowInts
 allowStrs
+coverpkg
+coverprofile
 CPES
 cpes
 crashlytics
@@ -27,5 +29,6 @@ shellcheckrc
 structslop
 tabwidth
 tagname
+testcoverage
 UNINDEXED
 unindexed
