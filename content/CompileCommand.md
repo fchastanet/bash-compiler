@@ -2,11 +2,10 @@
 title: Compile Command
 description: Detailed documentation for the bash-compiler compile command
 weight: 20
+type: docs
 categories: [documentation]
 tags: [compile, directives, templates]
-creationDate: 2026-02-14
-lastUpdated: 2026-02-14
-date: '2026-04-07T21:20:53+02:00'
+date: '2026-02-14T21:20:53+02:00'
 lastmod: '2026-04-07T21:20:53+02:00'
 version: '1.1'
 ---

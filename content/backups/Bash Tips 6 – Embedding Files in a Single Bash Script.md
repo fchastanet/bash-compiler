@@ -4,12 +4,13 @@ description: Techniques for embedding files into a single bash script using base
 weight: 20
 categories: [documentation]
 tags: [bash, scripting, embedding files, base64 encoding, process substitution]
+type: docs
 backup:
   author: Michał Zieliński
   authorUrl: https://blog.tratif.com/author/mzielinski/
   originalUrl: https://blog.tratif.com/2023/02/17/bash-tips-6-embedding-files-in-a-single-bash-script/
-creationDate: 2023-02-17
-lastUpdated: 2026-02-27
+date: 2023-02-17
+lastmod: 2026-02-27
 version: '1.0'
 ---
 

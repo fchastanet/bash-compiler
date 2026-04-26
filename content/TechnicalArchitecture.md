@@ -2,10 +2,11 @@
 title: Technical architecture
 description: Technical architecture of bash-compiler
 weight: 30
+type: docs
 categories: [documentation]
 tags: [technical architecture, design, implementation]
-creationDate: 2025-04-09
-lastUpdated: 2026-02-24
+date: 2025-04-09
+lastmod: 2026-02-24
 version: '1.0'
 ---
 

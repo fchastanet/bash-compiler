@@ -2,6 +2,8 @@
 title: Backup Pages
 description: Archive of external reference material preserved for long-term access
 weight: 100
+type: docs
+sidebar_root_for: self
 categories: [documentation, backups]
 tags: [archive, reference, backup]
 ---

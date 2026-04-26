@@ -2,10 +2,11 @@
 title: Development
 description: Guidelines for developing and contributing to bash-compiler
 weight: 40
+type: docs
 categories: [documentation]
 tags: [development, contribution, guidelines]
-creationDate: 2025-04-09
-lastUpdated: 2026-03-01
+date: 2025-04-09
+lastmod: 2026-03-01
 version: '2.0'
 ---
 
