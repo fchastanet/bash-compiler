@@ -27,6 +27,7 @@ const (
 	LogFieldCode             = "code"
 	LogFieldLength           = "length"
 	LogFieldSourceCodeLoaded = "sourceCodeLoaded"
+	contextCompiler          = "compiler"
 )
 
 var removeTrailingSpacesRegexp = regexp.MustCompile(
@@ -113,7 +114,7 @@ type CompileContextData struct {
 func compilerValidationError(fieldName string, fieldValue any) error {
 	return &customerrors.ValidationError{
 		InnerError: nil,
-		Context:    "compiler",
+		Context:    contextCompiler,
 		FieldName:  fieldName,
 		FieldValue: fieldValue,
 	}
@@ -334,7 +335,11 @@ func (context CompileContext) renderFunctionAsTemplate(
 	functionInfo *functionInfoStruct,
 ) (err error) {
 	functionInfo.SourceCodeAsTemplate = true
-	slog.Debug("renderEachFunctionAsTemplate", logger.LogFieldFunc, functionInfo.FunctionName)
+	slog.Debug(
+		"renderEachFunctionAsTemplate",
+		logger.LogFieldFunc,
+		functionInfo.FunctionName,
+	)
 	newCode, err := context.templateContext.RenderFromTemplateContent(
 		compileContextData.templateContextData,
 		functionInfo.SourceCode,
@@ -342,7 +347,8 @@ func (context CompileContext) renderFunctionAsTemplate(
 	if err != nil {
 		return err
 	}
-	slog.Debug("renderEachFunctionAsTemplate",
+	slog.Debug(
+		"renderEachFunctionAsTemplate",
 		logger.LogFieldFunc, functionInfo.FunctionName,
 		LogFieldCode, newCode,
 	)
@@ -380,7 +386,8 @@ func (CompileContext) nonFrameworkFunctionRegexpCompile(
 	for _, reg := range compileContextData.config.FunctionsIgnoreRegexpList {
 		re, err := regexp.Compile(reg)
 		if err != nil {
-			slog.Warn("ignored invalid regexp",
+			slog.Warn(
+				"ignored invalid regexp",
 				logger.LogFieldVariableValue, reg,
 				logger.LogFieldErr, err,
 			)
@@ -443,7 +450,8 @@ func (CompileContext) insertFunctionsCode(
 		if isFuncShouldBeSkipped(functionInfo, insertPosition) {
 			continue
 		}
-		slog.Debug("Append",
+		slog.Debug(
+			"Append",
 			LogFieldSourceCodeLen, len(functionInfo.SourceCode),
 			LogFieldInsertPosition, functionInfo.InsertPosition,
 		)
@@ -475,7 +483,8 @@ func (context CompileContext) retrieveAllFunctionsContent(
 			slog.Debug("Function source code loaded", logger.LogFieldFunc, functionName)
 			continue
 		}
-		slog.Debug("Loading Function source code from file",
+		slog.Debug(
+			"Loading Function source code from file",
 			logger.LogFieldFunc, functionName,
 			logger.LogFieldFilePath, functionInfo.SrcFile,
 		)
@@ -576,7 +585,8 @@ func (context CompileContext) retrieveEachFunctionPath(
 		addedFiles = addedFiles || newZZZAddedFiles || newUnderscoreAddedFiles
 	}
 
-	slog.Debug("Found these",
+	slog.Debug(
+		"Found these",
 		logger.LogFieldVariableName, "bashFrameworkFunctions",
 		logger.LogFieldVariableValue, getSortedFunctionNamesFromMap(compileContextData.functionsMap),
 	)
@@ -602,7 +612,8 @@ func (context CompileContext) extractUniqueFrameworkFunctions(
 		matches := bashFrameworkFunctionRegexp.FindAllString(string(line), -1)
 		for _, funcName := range matches {
 			if _, keyExists := compileContextData.functionsMap[funcName]; !keyExists {
-				slog.Debug("Found new",
+				slog.Debug(
+					"Found new",
 					logger.LogFieldVariableName, "bashFrameworkFunction",
 					logger.LogFieldVariableValue, funcName,
 				)

@@ -49,7 +49,8 @@ func scanFile(confFileContent *os.File, variables map[string]string, variableNam
 		}
 		matches := variableSetRegexp.FindStringSubmatch(string(line))
 		if matches == nil {
-			slog.Warn("Ignore invalid line",
+			slog.Warn(
+				"Ignore invalid line",
 				logger.LogFieldLineNumber, lineNumber,
 				logger.LogFieldLineContent, line,
 			)
@@ -59,7 +60,8 @@ func scanFile(confFileContent *os.File, variables map[string]string, variableNam
 		name := matches[variableSetRegexpNameGroupIndex]
 		value := matches[variableSetRegexpValueGroupIndex]
 		if _, ok := variables[name]; ok {
-			slog.Warn("overwriting variable",
+			slog.Warn(
+				"overwriting variable",
 				logger.LogFieldLineNumber, lineNumber,
 				logger.LogFieldVariableName, name,
 			)

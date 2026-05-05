@@ -6,13 +6,15 @@ type: docs
 weight: 10
 tags: [compile, directives, templates]
 date: '2026-02-14'
-lastmod: '2026-04-26T19:37:49+02:00'
-version: '1.2'
+lastmod: '2026-05-06T00:16:54+02:00'
+version: '1.3'
 ---
 
 {{% pageinfo %}} The `compile` command is a powerful feature of the bash-compiler that allows you to compile your bash
 scripts into executable binaries. This command takes all your independent bash snippets and transforms them into a
 single file containing all needed dependencies that can be executed directly on your system. {{% /pageinfo %}}
+
+{{< img src="assets/bash-compiler-homepage.jpg" alt="Bash Compiler illustration" >}}
 
 ## 1. Alternatives
 

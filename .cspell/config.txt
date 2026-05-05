@@ -20,6 +20,7 @@ gtpl
 ignoreFuncs
 Lastmod
 logrus
+oxipng
 pageinfo
 Println
 sarif
@@ -32,3 +33,4 @@ tagname
 testcoverage
 UNINDEXED
 unindexed
+webp

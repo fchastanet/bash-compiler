@@ -9,6 +9,8 @@ import (
 	"gotest.tools/v3/assert"
 )
 
+const cmdName = "cmd"
+
 func getDefaultExpectedCli(expectedCli *cli) error {
 	var expectedYamlFiles []string
 	currentDir, err := os.Getwd()
@@ -45,7 +47,7 @@ func TestArgs(t *testing.T) {
 	assert.NilError(t, err)
 
 	t.Run("no arg", func(t *testing.T) {
-		defaultCase(t, []string{"cmd"})
+		defaultCase(t, []string{cmdName})
 	})
 
 	t.Run("rootDir provided (go run mode simulated)", func(t *testing.T) {
@@ -53,7 +55,7 @@ func TestArgs(t *testing.T) {
 	})
 
 	t.Run("root does not exist", func(t *testing.T) {
-		os.Args = []string{"cmd", "-r", "inexistent"}
+		os.Args = []string{cmdName, "-r", "inexistent"}
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
 		assert.ErrorContains(t, err, "rootDir option should not be provided")
@@ -71,7 +73,7 @@ func TestArgs(t *testing.T) {
 		err := getDefaultExpectedCli(expectedCli)
 		assert.NilError(t, err)
 		expectedTargetDir := string(expectedCli.RootDirectory)
-		os.Args = []string{"cmd", "-t", expectedTargetDir}
+		os.Args = []string{cmdName, "-t", expectedTargetDir}
 		expectedCli.IntermediateFilesDir = IntermediateFilesDir(expectedTargetDir)
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
@@ -85,7 +87,7 @@ func TestArgs(t *testing.T) {
 		assert.NilError(t, err)
 		expectedCli.Debug = true
 		expectedCli.LogLevel = int(slog.LevelDebug)
-		os.Args = []string{"cmd", "-d"}
+		os.Args = []string{cmdName, "-d"}
 		cli := &cli{} //nolint:exhaustruct //test
 		err = parseArgs(cli)
 		assert.NilError(t, err)
@@ -93,7 +95,7 @@ func TestArgs(t *testing.T) {
 	})
 
 	t.Run("yaml file", func(t *testing.T) {
-		os.Args = []string{"cmd", "file-binary.yaml"}
+		os.Args = []string{cmdName, "file-binary.yaml"}
 		expectedCli := &cli{} //nolint:exhaustruct //test
 		err := getDefaultExpectedCli(expectedCli)
 		assert.NilError(t, err)

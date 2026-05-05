@@ -23,9 +23,12 @@ var (
 )
 
 const (
-	templateFieldFunctionName = "functionName"
-	templateFieldCode         = "code"
-	templateFieldRequires     = "requires"
+	templateFieldFunctionName          = "functionName"
+	templateFieldCode                  = "code"
+	templateFieldRequires              = "requires"
+	contextRequire                     = "annotationRequire"
+	fieldCheckRequirementsTemplateName = "checkRequirementsTemplateName"
+	fieldRequireTemplateName           = "requireTemplateName"
 )
 
 type requiredFunctionNotFoundError struct {
@@ -78,22 +81,22 @@ func (annotationProcessor *requireAnnotationProcessor) Init(
 	}
 	annotationProcessor.compileContextData = compileContextData
 	checkRequirementsTemplateName, err := compileContextData.config.AnnotationsConfig.
-		GetStringValue("checkRequirementsTemplateName")
+		GetStringValue(fieldCheckRequirementsTemplateName)
 	if err != nil {
 		return &customerrors.ValidationError{
 			InnerError: err,
-			Context:    "compileContextData.config.AnnotationsConfig",
-			FieldName:  "checkRequirementsTemplateName",
+			Context:    contextRequire,
+			FieldName:  fieldCheckRequirementsTemplateName,
 			FieldValue: nil,
 		}
 	}
 	requireTemplateName, err := compileContextData.config.AnnotationsConfig.
-		GetStringValue("requireTemplateName")
+		GetStringValue(fieldRequireTemplateName)
 	if err != nil {
 		return &customerrors.ValidationError{
 			InnerError: err,
-			Context:    "compileContextData.config.AnnotationsConfig",
-			FieldName:  "requireTemplateName",
+			Context:    contextRequire,
+			FieldName:  fieldRequireTemplateName,
 			FieldValue: nil,
 		}
 	}

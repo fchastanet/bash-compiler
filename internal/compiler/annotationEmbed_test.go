@@ -6,6 +6,7 @@ import (
 
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 	"gotest.tools/v3/assert"
 )
@@ -69,7 +70,7 @@ func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateName(t *testi
 	})
 	// jscpd:ignore-end
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field embedFileTemplateName value <nil> inner error missing key: embedFileTemplateName")
+		"context annotationEmbed field embedFileTemplateName value <nil> inner error missing key: embedFileTemplateName")
 }
 
 func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateDir(t *testing.T) {
@@ -79,14 +80,14 @@ func TestEmbedInitInvalidCompileContextDataMissingEmbedFileTemplateDir(t *testin
 		&render.TemplateContextData{}, //nolint:exhaustruct // test
 		&model.CompilerConfig{ //nolint:exhaustruct // test
 			AnnotationsConfig: structures.Dictionary{
-				"embedFileTemplateName": "templateName",
+				fieldEmbedFileTemplateName: logger.LogFieldTemplateName,
 			},
 		},
 		make(map[string]functionInfoStruct),
 		[]*regexp.Regexp{},
 	})
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field embedDirTemplateName value <nil> inner error missing key: embedDirTemplateName")
+		"context annotationEmbed field "+fieldEmbedDirTemplateName+" value <nil> inner error missing key: "+fieldEmbedDirTemplateName)
 }
 
 func getValidEmbedProcessor(t *testing.T) AnnotationProcessorInterface {
@@ -157,8 +158,8 @@ func getCompileContextData() *CompileContextData {
 		&render.TemplateContextData{}, //nolint:exhaustruct // test
 		&model.CompilerConfig{ //nolint:exhaustruct // test
 			AnnotationsConfig: structures.Dictionary{
-				"embedFileTemplateName": "templateName",
-				"embedDirTemplateName":  "templateDir",
+				fieldEmbedFileTemplateName: logger.LogFieldTemplateName,
+				fieldEmbedDirTemplateName:  "templateDir",
 			},
 		},
 		make(map[string]functionInfoStruct),

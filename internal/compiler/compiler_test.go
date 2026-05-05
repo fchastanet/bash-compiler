@@ -9,6 +9,10 @@ import (
 	"gotest.tools/v3/golden"
 )
 
+const (
+	testDataDir = "./testdata"
+)
+
 // *******************************************
 // mockAnnotation
 type mockAnnotation struct {
@@ -126,7 +130,7 @@ func TestCompileFunctionNotFound(t *testing.T) {
 func TestCompileDuplicatedFunctionDirective(t *testing.T) {
 	resultCode, err := compile(
 		"# FUNCTIONS\n# FUNCTIONS\nMyPackage::function",
-		[]string{}, simulateGoodRenderingCallback, []string{"./testdata"},
+		[]string{}, simulateGoodRenderingCallback, []string{testDataDir},
 	)
 	assert.Error(t, err, "duplicated FUNCTIONS directive on line 2")
 	assert.Equal(t, "", resultCode)
@@ -135,7 +139,7 @@ func TestCompileDuplicatedFunctionDirective(t *testing.T) {
 func TestCompileFunctionIgnoredFunction(t *testing.T) {
 	resultCode, err := compile("Ignore::ignoredFunction", []string{
 		"Ignore::ignoredFunction",
-	}, simulateFailingRenderingCallback, []string{"./testdata"})
+	}, simulateFailingRenderingCallback, []string{testDataDir})
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "Ignore::ignoredFunction\n", resultCode)
 }
@@ -145,7 +149,7 @@ func TestCompileOneFunctionFound(t *testing.T) {
 		"# FUNCTIONS\nMyPackage::function",
 		[]string{},
 		simulateGoodRenderingCallback,
-		[]string{"./testdata"},
+		[]string{testDataDir},
 	)
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileOneFunctionFound.txt")
@@ -156,7 +160,7 @@ func TestCompileOneFunctionFoundWith_AndZZZ(t *testing.T) {
 		"# FUNCTIONS\nMyCompletePackage::function",
 		[]string{},
 		simulateGoodRenderingCallback,
-		[]string{"./testdata"},
+		[]string{testDataDir},
 	)
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileOneFunctionFoundWith_AndZZZ.txt")
@@ -167,7 +171,7 @@ func TestCompileDependentFunction(t *testing.T) {
 		"# FUNCTIONS\nMyPackage::useDependentFunction",
 		[]string{},
 		simulateGoodRenderingCallback,
-		[]string{"./testdata"},
+		[]string{testDataDir},
 	)
 	assert.Equal(t, err, nil)
 	golden.Assert(t, resultCode, "expectedTestCompileDependentFunction.txt")

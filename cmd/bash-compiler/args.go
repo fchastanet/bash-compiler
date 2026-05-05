@@ -108,7 +108,8 @@ func (intermediateFilesDir *IntermediateFilesDir) Validate(
 
 func parseArgs(cli *cli) (err error) {
 	// just need the yaml file, from which all the dependencies will be deduced
-	kong.Parse(cli,
+	kong.Parse(
+		cli,
 		kong.Name("bash-compiler"),
 		kong.Description("From a yaml file describing the bash application, "+
 			"interprets the templates and import the necessary bash functions"),

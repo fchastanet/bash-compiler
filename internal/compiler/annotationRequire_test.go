@@ -7,6 +7,7 @@ import (
 
 	"github.com/fchastanet/bash-compiler/internal/model"
 	"github.com/fchastanet/bash-compiler/internal/render"
+	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 	"github.com/fchastanet/bash-compiler/internal/utils/structures"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/golden"
@@ -78,7 +79,7 @@ func TestRequireInitInvalidCompileContextDataMissingRequirementsTemplateName(t *
 	})
 	// jscpd:ignore-end
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field checkRequirementsTemplateName value <nil> inner error missing key: checkRequirementsTemplateName")
+		"context annotationRequire field checkRequirementsTemplateName value <nil> inner error missing key: checkRequirementsTemplateName")
 }
 
 func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T) {
@@ -95,7 +96,7 @@ func TestRequireInitInvalidCompileContextDataMissingRequireTemplate(t *testing.T
 		ignoreFunctionsRegexp: []*regexp.Regexp{},
 	})
 	assert.Error(t, err, "validation failed invalid value : "+
-		"context compileContextData.config.AnnotationsConfig field requireTemplateName value <nil> inner error missing key: requireTemplateName")
+		"context annotationRequire field requireTemplateName value <nil> inner error missing key: requireTemplateName")
 }
 
 func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
@@ -105,7 +106,7 @@ func getValidRequireProcessor(t *testing.T) AnnotationProcessorInterface {
 		&render.TemplateContextData{}, //nolint:exhaustruct // test
 		&model.CompilerConfig{ //nolint:exhaustruct // test
 			AnnotationsConfig: structures.Dictionary{
-				"checkRequirementsTemplateName": "templateName",
+				"checkRequirementsTemplateName": logger.LogFieldTemplateName,
 				"requireTemplateName":           "template",
 			},
 		},
@@ -194,7 +195,7 @@ func (annotation *annotationRequireGenerateMock) RenderResource(_ string, _ stri
 func getRequireProcessorMocked() *requireAnnotationProcessor {
 	requireProcessor := &requireAnnotationProcessor{ //nolint:exhaustruct // test
 		annotationProcessor:           annotationProcessor{},
-		checkRequirementsTemplateName: "templateName",
+		checkRequirementsTemplateName: logger.LogFieldTemplateName,
 		requireTemplateName:           "requireTemplateName",
 	}
 

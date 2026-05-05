@@ -14,6 +14,24 @@ repos:
         args: ["yapf", "-i"]
         types: ["python"]
 
+  - repo: https://github.com/sudosubin/pre-commit-image
+    rev: v0.1.2
+    hooks:
+      # resize image to max resolution of 800x600
+      - id: image
+        args: [--max-width, "1200", --max-height, "1200"]
+        files: \.(avif|heic|heif|jpeg|jpg|png|webp)$
+        exclude: |
+          (?x)(
+            ^assets/favicons/
+          )
+
+  - repo: https://github.com/oxipng/oxipng
+    rev: v10.1.0
+    hooks:
+      - id: oxipng
+        args: ["-o", "4", "--strip", "safe", "--alpha"]
+
   - repo: local
     hooks:
       - id: v8r
@@ -132,6 +150,16 @@ repos:
           )
         stages: [pre-commit, pre-push, manual]
       - id: check-added-large-files
+        files: \.(avif|heic|heif|jpeg|jpg|png|webp)$
+        args: [--maxkb=1024, --enforce-all]
+        exclude: |
+          (?x)(
+            ^content/assets/bash-compiler-homepage\.png$
+          )
+      - id: check-added-large-files
+        # check for non image files larger than 100KB
+        args: [--maxkb=128]
+        exclude: \.(avif|heic|heif|jpeg|jpg|png|webp)$
       - id: forbid-new-submodules
       - id: mixed-line-ending
         args: [--fix=lf]

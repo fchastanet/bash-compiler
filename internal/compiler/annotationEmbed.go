@@ -12,6 +12,12 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/logger"
 )
 
+const (
+	contextEmbed               = "annotationEmbed"
+	fieldEmbedFileTemplateName = "embedFileTemplateName"
+	fieldEmbedDirTemplateName  = "embedDirTemplateName"
+)
+
 var embedRegexp = regexp.MustCompile(
 	`(?m)# @embed[ \t]+["']?(?P<resource>[^ \t"']+)["']?[ \t]+(AS|as|As)[ \t]+(?P<asName>[^ \t]+)$`,
 )
@@ -56,7 +62,7 @@ func NewEmbedAnnotationProcessor() AnnotationProcessorInterface {
 func validationError(fieldName string, fieldValue any) error {
 	return &customerrors.ValidationError{
 		InnerError: nil,
-		Context:    "annotationEmbed",
+		Context:    contextEmbed,
 		FieldName:  fieldName,
 		FieldValue: fieldValue,
 	}
@@ -78,22 +84,22 @@ func (annotationProcessor *embedAnnotationProcessor) Init(
 	}
 	annotationProcessor.embedMap = make(map[string]string)
 
-	embedFileTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedFileTemplateName")
+	embedFileTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue(fieldEmbedFileTemplateName)
 	if logger.FancyHandleError(err) {
 		return &customerrors.ValidationError{
 			InnerError: err,
-			Context:    "compileContextData.config.AnnotationsConfig",
-			FieldName:  "embedFileTemplateName",
+			Context:    contextEmbed,
+			FieldName:  fieldEmbedFileTemplateName,
 			FieldValue: nil,
 		}
 	}
 
-	embedDirTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue("embedDirTemplateName")
+	embedDirTemplateName, err := compileContextData.config.AnnotationsConfig.GetStringValue(fieldEmbedDirTemplateName)
 	if logger.FancyHandleError(err) {
 		return &customerrors.ValidationError{
 			InnerError: err,
-			Context:    "compileContextData.config.AnnotationsConfig",
-			FieldName:  "embedDirTemplateName",
+			Context:    contextEmbed,
+			FieldName:  fieldEmbedDirTemplateName,
 			FieldValue: nil,
 		}
 	}

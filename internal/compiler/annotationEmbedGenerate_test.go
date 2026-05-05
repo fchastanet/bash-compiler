@@ -54,8 +54,8 @@ func newAnnotationEmbedGenerate(
 ) *annotationEmbedGenerate {
 	templateName := "fakeTemplate"
 	return &annotationEmbedGenerate{
-		embedDirTemplateName:  "embedDirTemplateName",
-		embedFileTemplateName: "embedFileTemplateName",
+		embedDirTemplateName:  fieldEmbedDirTemplateName,
+		embedFileTemplateName: fieldEmbedFileTemplateName,
 		templateContextData: &render.TemplateContextData{
 			TemplateContext: &templateContextMock{
 				templateContextRenderFunc,
@@ -106,14 +106,14 @@ func createEmbedGenerate(t *testing.T, result string, expectedTemplateName strin
 }
 
 func TestRenderResourceFile(t *testing.T) {
-	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, "embedFileTemplateName")
+	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, fieldEmbedFileTemplateName)
 	code, err := embedGenerate.RenderResource(asNameLabel, "annotationEmbed.go", 1)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, expectedTransformedCode, code)
 }
 
 func TestRenderResourceDir(t *testing.T) {
-	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, "embedDirTemplateName")
+	embedGenerate := createEmbedGenerate(t, expectedTransformedCode, fieldEmbedDirTemplateName)
 	pwd, err := os.Getwd()
 	assert.Equal(t, err, nil)
 	code, err := embedGenerate.RenderResource(asNameLabel, pwd, 1)

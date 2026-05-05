@@ -40,7 +40,8 @@ func MustInclude(
 	templateData any,
 	templateContextData TemplateContextData,
 ) (output string, err error) {
-	slog.Debug("MustInclude",
+	slog.Debug(
+		"MustInclude",
 		logger.LogFieldTemplateName, templateName,
 		logger.LogFieldTemplateData, templateData,
 	)
@@ -81,7 +82,8 @@ func includeFileAsTemplate(
 	logger.Check(err)
 
 	code, err := templateContextData.TemplateContext.RenderFromTemplateContent(
-		&templateContextData, string(fileContent))
+		&templateContextData, string(fileContent),
+	)
 	logger.Check(err)
 	return code
 }

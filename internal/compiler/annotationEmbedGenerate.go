@@ -14,6 +14,13 @@ import (
 	"github.com/fchastanet/bash-compiler/internal/utils/tarhelper"
 )
 
+const (
+	fieldAsName   = "asName"
+	fieldFileMode = "fileMode"
+	fieldBase64   = "base64"
+	fieldMd5sum   = "md5sum"
+)
+
 type annotationEmbedGenerateInterface interface {
 	RenderResource(asName string, resource string, lineNumber int) (string, error)
 }
@@ -84,10 +91,10 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderFile(
 	}
 
 	data := map[string]string{
-		"asName":   asName,
-		"fileMode": fmt.Sprintf("%o", fileMode.Perm()),
-		"base64":   base64,
-		"md5sum":   md5sum,
+		fieldAsName:   asName,
+		fieldFileMode: fmt.Sprintf("%o", fileMode.Perm()),
+		fieldBase64:   base64,
+		fieldMd5sum:   md5sum,
 	}
 	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedFileTemplateName,
@@ -134,9 +141,9 @@ func (annotationEmbedGenerate *annotationEmbedGenerate) renderDir(
 	}
 
 	data := map[string]string{
-		"asName": asName,
-		"base64": base64,
-		"md5sum": md5sum,
+		fieldAsName: asName,
+		fieldBase64: base64,
+		fieldMd5sum: md5sum,
 	}
 	code, err = annotationEmbedGenerate.renderTemplate(
 		data, annotationEmbedGenerate.embedDirTemplateName,
