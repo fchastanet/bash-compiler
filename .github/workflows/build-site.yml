@@ -18,6 +18,7 @@ jobs:
       site-name: "bash-compiler"
       checkout-repo: "fchastanet/bash-compiler"
       site-dir: "_site-content"
+    secrets: inherit
     permissions:
       contents: read
       pages: write

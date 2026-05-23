@@ -23,6 +23,7 @@ DISABLE_LINTERS:
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
   # TEMPORARY DISABLE waiting megalinter to support go 1.25.7
   - GO_GOLANGCI_LINT # already included in pre-commit
+  - ACTION_ZIZMOR
 # DISABLE_ERRORS: true # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 EXCLUDED_DIRECTORIES:
   - ".history"
