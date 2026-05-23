@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go-version: [1.25.7]
+        go-version: [1.25.10]
         os: [ubuntu-latest]
     steps:
       - name: Checkout
@@ -203,7 +203,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.25.7"
+          go-version: "1.25.10"
           check-latest: false
 
       - name: Install requirements
@@ -238,7 +238,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MEGALINTER_CONFIG: .mega-linter-githubAction.yml
           CI_MODE: 1
-          GOTOOLCHAIN: go1.25.7+auto
+          GOTOOLCHAIN: go1.25.10+auto
 
       - name: Upload MegaLinter artifacts
         if: success() || failure()
@@ -324,7 +324,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go-version: [1.25.7]
+        go-version: [1.25.10]
         os: [ubuntu-latest]
     steps:
       - name: Install Go

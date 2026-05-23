@@ -5,16 +5,16 @@ weight: 40
 type: docs
 categories: [documentation]
 tags: [development, contribution, guidelines]
-date: 2025-04-09
-lastmod: 2026-03-01
-version: '2.0'
+date: '2025-04-09'
+lastmod: '2026-05-23T23:25:51+02:00'
+version: '2.1'
 ---
 
 ## 1. Requirements
 
 ### 1.1. Go Version
 
-This project requires **Go 1.25.7** or later.
+This project requires **Go 1.25.10** or later.
 
 To check your current Go version:
 
@@ -57,7 +57,7 @@ Build with Docker:
 .github/scripts/build-docker.sh
 ```
 
-Build locally (requires Go 1.25.7):
+Build locally (requires Go 1.25.10):
 
 ```bash
 .github/scripts/build-local.sh

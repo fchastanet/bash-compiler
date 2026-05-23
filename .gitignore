@@ -80,6 +80,7 @@ logs/
 # npm
 package-lock.json
 node_modules/
+.yarn/install-state.gz
 
 examples/generated
 megalinter-reports/

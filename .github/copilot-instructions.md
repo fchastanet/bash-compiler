@@ -345,7 +345,7 @@ func TestSomething(t *testing.T) {
 **Jobs:**
 
 1. **build-docker-images** - Builds and pushes Docker image
-   - Go 1.25.7, Ubuntu 24.04
+   - Go 1.25.10, Ubuntu 24.04
    - Uses BuildKit caching
    - Pushes to DockerHub
 
@@ -420,26 +420,26 @@ tag: 1.0.0
 
 ### 1. Go Version
 
-**Current Status (March 2026):** Project upgraded to **Go 1.25.7**
+**Current Status (May 2026):** Project upgraded to **Go 1.25.10**
 
-The project uses Go 1.25.7 across all contexts:
+The project uses Go 1.25.10 across all contexts:
 
-- **go.mod:** `go 1.25.7` (minimum language version)
-- **toolchain:** `toolchain go1.25.7+auto` (ensures consistent Go version)
-- **Dockerfile:** Uses Go 1.25.7-alpine for production builds
-- **CI Workflows:** Uses Go 1.25.7 in GitHub Actions matrix
+- **go.mod:** `go 1.25.10` (minimum language version)
+- **toolchain:** `toolchain go1.25.10+auto` (ensures consistent Go version)
+- **Dockerfile:** Uses Go 1.25.10-alpine for production builds
+- **CI Workflows:** Uses Go 1.25.10 in GitHub Actions matrix
 
 **Development Setup:**
-- Install Go 1.25.7 from [golang.org/dl](https://golang.org/dl)
-- Verify: `go version` should show `go1.25.7`
+- Install Go 1.25.10 from [golang.org/dl](https://golang.org/dl)
+- Verify: `go version` should show `go1.25.10`
 
 **Upgrading from Previous Versions:**
 
-1. Install Go 1.25.7
+1. Install Go 1.25.10
 2. Update `go.mod` to specify new version:
    ```go
-   go 1.25.7
-   toolchain go1.25.7+auto
+   go 1.25.10
+   toolchain go1.25.10+auto
    ```
 3. Update all dependencies:
    ```bash
@@ -459,14 +459,14 @@ The project uses Go 1.25.7 across all contexts:
    go build ./cmd/bash-compiler
    ```
 
-**Dependency Updates:** With Go 1.25.7, the following key dependencies were updated:
-- `kcl-lang.io/kcl-go` → v0.12.3 (now supports Go 1.25.7)
-- `google.golang.org/grpc` → v1.79.1
+**Dependency Updates:** With Go 1.25.10, stdlib security vulnerabilities from 1.25.7 are resolved
+(GO-2026-4601 through GO-2026-4971). Key dependencies remain:
+- `kcl-lang.io/kcl-go` → v0.12.3
+- `google.golang.org/grpc` → v1.81.1
 - `google.golang.org/protobuf` → v1.36.11
-- `golang.org/x/net` → v0.51.0
-- Additional improvements to OpenTelemetry and other transitive dependencies
+- `golang.org/x/net` → v0.55.0
 
-**Action:** Ensure all development uses Go 1.25.7 for consistency with CI/CD and production builds.
+**Action:** Ensure all development uses Go 1.25.10 for consistency with CI/CD and production builds.
 
 ### 2. Template Parsing
 
