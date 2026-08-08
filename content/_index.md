@@ -6,8 +6,8 @@ type: docs
 weight: 10
 tags: [compile, directives, templates]
 date: '2026-02-14'
-lastmod: '2026-05-06T00:16:54+02:00'
-version: '1.3'
+lastmod: '2026-08-08T14:26:12+02:00'
+version: '1.4'
 ---
 
 {{% pageinfo %}} The `compile` command is a powerful feature of the bash-compiler that allows you to compile your bash
@@ -20,9 +20,3 @@ single file containing all needed dependencies that can be executed directly on 
 
 - Convert ecmascript to bash
   - <https://github.com/Ph0enixKM/Amber> alpha version - 2024-05-25
-
-## 2. Browse Lists
-
-Select a list from the sidebar to explore resources.
-
-{{< articles-list >}}

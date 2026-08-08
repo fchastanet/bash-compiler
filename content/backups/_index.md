@@ -6,6 +6,9 @@ type: docs
 sidebar_root_for: self
 categories: [documentation, backups]
 tags: [archive, reference, backup]
+date: '2026-08-08T14:26:12+02:00'
+lastmod: '2026-08-08T14:26:12+02:00'
+version: '1.0'
 ---
 
 {{% pageinfo %}}
@@ -20,9 +23,7 @@ property rights.
 
 ## 1. Backup Pages Currently Archived
 
-The following pages have been archived:
-
-{{< articles-list >}}
+Check sidebar for a list of pages that have been archived.
 
 ## 2. About Backup Pages
 
