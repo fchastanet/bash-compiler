@@ -45,7 +45,7 @@ FILTER_REGEX_EXCLUDE: |
   )
 FILEIO_REPORTER: false
 PRE_COMMANDS:
-  - command: go env -w GOTOOLCHAIN=go1.25.10+auto
+  - command: go env -w GOTOOLCHAIN=go1.26.5+auto
     cwd: "workspace"
   - command: yarn add --dev eslint-plugin-json eslint-config-prettier
     cwd: "workspace"
@@ -168,7 +168,7 @@ MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: |
 
 GO_GOLANGCI_LINT_CLI_LINT_MODE: project # will remove the list of files as arguments and run the linter with root workspace cwd
 GO_GOLANGCI_LINT_ARGUMENTS:
-  ["--go", "1.25.10", "--out-format", "sarif", "--verbose", "./..."]
+  ["--go", "1.26.5", "--out-format", "sarif", "--verbose", "./..."]
 LOG_LEVEL: DEBUG # will show you the exact command run
 
 REPOSITORY_DEVSKIM_ARGUMENTS:
