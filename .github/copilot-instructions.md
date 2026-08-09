@@ -430,6 +430,7 @@ The project uses Go 1.26.5 across all contexts:
 - **CI Workflows:** Uses Go 1.26.5 in GitHub Actions matrix
 
 **Development Setup:**
+
 - Install Go 1.26.5 from [golang.org/dl](https://golang.org/dl)
 - Verify: `go version` should show `go1.26.5`
 
@@ -437,30 +438,40 @@ The project uses Go 1.26.5 across all contexts:
 
 1. Install Go 1.26.5
 2. Update `go.mod` to specify new version:
+
    ```go
    go 1.26.5
    toolchain go1.26.5+auto
    ```
+
 3. Update all dependencies:
+
    ```bash
    go get -u ./...
    ```
+
 4. Tidy and verify:
+
    ```bash
    go mod tidy
    go mod verify
    ```
+
 5. Run tests:
+
    ```bash
    go test ./... -race
    ```
+
 6. Build to verify:
+
    ```bash
    go build ./cmd/bash-compiler
    ```
 
 **Dependency Updates:** With Go 1.26.5, stdlib security vulnerabilities from 1.25.7 are resolved
 (GO-2026-4601 through GO-2026-4971). Key dependencies remain:
+
 - `kcl-lang.io/kcl-go` → v0.12.3
 - `google.golang.org/grpc` → v1.81.1
 - `google.golang.org/protobuf` → v1.36.11

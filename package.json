@@ -3,8 +3,8 @@
   "name": "bash-compiler-linters",
   "cspell": "cspell.yaml",
   "devDependencies": {
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-json": "^4.0.1"
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-json": "^5.0.0"
   },
   "resolutions": {
     "lodash": "^4.17.23"
