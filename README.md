@@ -37,3 +37,4 @@ imported framework functions will be imported as well (of course only once).
 [Development](https://bash-compiler.devlab.top/docs/development/) and
 [Technical architecture](https://bash-compiler.devlab.top/docs/technicalarchitecture/) documentation are available for
 more details about the project.
+
