@@ -124,6 +124,7 @@ func parseArgs(cli *cli) (err error) {
 			NoExpandSubcommands: true,
 			WrapUpperBound:      constMaxScreenSize,
 			ValueFormatter:      kong.DefaultHelpValueFormatter,
+			NoAppDescFormat:     true,
 		}),
 		kong.Vars{
 			"version": "3.2.0",
