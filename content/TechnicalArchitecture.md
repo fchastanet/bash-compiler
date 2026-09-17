@@ -1,13 +1,13 @@
 ---
 title: Technical architecture
 description: Technical architecture of bash-compiler
-weight: 30
+weight: 60
 type: docs
 categories: [documentation]
 tags: [technical architecture, design, implementation]
 date: 2025-04-09
-lastmod: 2026-02-24
-version: '1.0'
+lastmod: '2026-09-17'
+version: '1.1'
 ---
 
 ## 1. Go Libraries used
@@ -70,4 +70,5 @@ Template filter functions, `internal/render/functions/index.go` includes:
 
 ## 3. Compiler
 
-see [Compile command](https://bash-compiler.devlab.top/docs/compilecommand/).
+see {{% mdlink text="How the compiler works" path="/howitworks" %}} and {{% mdlink text="Compile command"
+path="/compilecommand" %}}.

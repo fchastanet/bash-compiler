@@ -32,8 +32,11 @@ imported framework functions will be imported as well (of course only once).
 > - [Bash Dev Env](https://bash-dev-env.devlab.top/)
 > - **[Bash Compiler](https://bash-compiler.devlab.top/)**
 
-## 1. Technical architecture
+## 1. Documentation
 
-[Development](https://bash-compiler.devlab.top/docs/development/) and
-[Technical architecture](https://bash-compiler.devlab.top/docs/technicalarchitecture/) documentation are available for
-more details about this project.
+- [Compile command](https://bash-compiler.devlab.top/compilecommand/) - CLI arguments, flags and configuration file
+- [Directives](https://bash-compiler.devlab.top/directives/) - `BIN_FILE`, `FUNCTIONS` and the `@embed` annotation
+- [Requirements](https://bash-compiler.devlab.top/requirements/) - the `@require` annotation and its dependency tree
+- [How the compiler works](https://bash-compiler.devlab.top/howitworks/) - compilation passes and diagrams
+- [Technical architecture](https://bash-compiler.devlab.top/technicalarchitecture/) - Go libraries and template engine
+- [Development](https://bash-compiler.devlab.top/development/) - build, test and contribution workflow

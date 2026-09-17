@@ -1,10 +1,13 @@
 backquotes
 Chastanet
+compilecommand
 cuelang
 distroless
 DOCKERHUB
+howitworks
 inlines
 lastmod
+mdlink
 Michał
 noarchive
 nocache
@@ -15,7 +18,9 @@ nosnippet
 notranslate
 nullary
 pageinfo
+relref
 stdlib
+technicalarchitecture
 templating
 TMPDIR
 Tratif
