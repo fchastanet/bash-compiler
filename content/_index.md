@@ -73,7 +73,7 @@ convention:
 
 ## 4. Quick start
 
-Build the compiler from source (Go 1.26.5 or later):
+Build the compiler from source (Go 1.26.8 or later):
 
 ```bash
 git clone https://github.com/fchastanet/bash-compiler.git

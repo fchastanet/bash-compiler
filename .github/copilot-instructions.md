@@ -345,7 +345,7 @@ func TestSomething(t *testing.T) {
 **Jobs:**
 
 1. **build-docker-images** - Builds and pushes Docker image
-   - Go 1.26.5, Ubuntu 24.04
+   - Go 1.26.8, Ubuntu 24.04
    - Uses BuildKit caching
    - Pushes to DockerHub
 
@@ -420,28 +420,28 @@ tag: 1.0.0
 
 ### 1. Go Version
 
-**Current Status (May 2026):** Project upgraded to **Go 1.26.5**
+**Current Status (May 2026):** Project upgraded to **Go 1.26.8**
 
-The project uses Go 1.26.5 across all contexts:
+The project uses Go 1.26.8 across all contexts:
 
-- **go.mod:** `go 1.26.5` (minimum language version)
-- **toolchain:** `toolchain go1.26.5+auto` (ensures consistent Go version)
-- **Dockerfile:** Uses Go 1.26.5-alpine for production builds
-- **CI Workflows:** Uses Go 1.26.5 in GitHub Actions matrix
+- **go.mod:** `go 1.26.8` (minimum language version)
+- **toolchain:** `toolchain go1.26.8+auto` (ensures consistent Go version)
+- **Dockerfile:** Uses Go 1.26.8-alpine for production builds
+- **CI Workflows:** Uses Go 1.26.8 in GitHub Actions matrix
 
 **Development Setup:**
 
-- Install Go 1.26.5 from [golang.org/dl](https://golang.org/dl)
-- Verify: `go version` should show `go1.26.5`
+- Install Go 1.26.8 from [golang.org/dl](https://golang.org/dl)
+- Verify: `go version` should show `go1.26.8`
 
 **Upgrading from Previous Versions:**
 
-1. Install Go 1.26.5
+1. Install Go 1.26.8
 2. Update `go.mod` to specify new version:
 
    ```go
-   go 1.26.5
-   toolchain go1.26.5+auto
+   go 1.26.8
+   toolchain go1.26.8+auto
    ```
 
 3. Update all dependencies:
@@ -469,7 +469,7 @@ The project uses Go 1.26.5 across all contexts:
    go build ./cmd/bash-compiler
    ```
 
-**Dependency Updates:** With Go 1.26.5, stdlib security vulnerabilities from 1.25.7 are resolved
+**Dependency Updates:** With Go 1.26.8, stdlib security vulnerabilities from 1.25.7 are resolved
 (GO-2026-4601 through GO-2026-4971). Key dependencies remain:
 
 - `kcl-lang.io/kcl-go` → v0.12.3
@@ -477,7 +477,7 @@ The project uses Go 1.26.5 across all contexts:
 - `google.golang.org/protobuf` → v1.36.11
 - `golang.org/x/net` → v0.55.0
 
-**Action:** Ensure all development uses Go 1.26.5 for consistency with CI/CD and production builds.
+**Action:** Ensure all development uses Go 1.26.8 for consistency with CI/CD and production builds.
 
 ### 2. Template Parsing
 

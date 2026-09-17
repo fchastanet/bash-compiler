@@ -14,7 +14,7 @@ version: '2.3'
 
 ### 1.1. Go Version
 
-This project requires **Go 1.26.5** or later.
+This project requires **Go 1.26.8** or later.
 
 To check your current Go version:
 
@@ -57,7 +57,7 @@ Build with Docker:
 .github/scripts/build-docker.sh
 ```
 
-Build locally (requires Go 1.26.5):
+Build locally (requires Go 1.26.8):
 
 ```bash
 .github/scripts/build-local.sh

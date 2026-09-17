@@ -127,7 +127,7 @@ func parseArgs(cli *cli) (err error) {
 			NoAppDescFormat:     true,
 		}),
 		kong.Vars{
-			"version": "3.2.0",
+			"version": "3.2.1",
 		},
 	)
 
